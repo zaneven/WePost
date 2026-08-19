@@ -9,10 +9,10 @@ interface TemplateProps {
 
 export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
   return (
-    <div className="w-full h-full bg-[#fcfbf9] text-[#1a1a1a] p-12 md:p-14 flex flex-col justify-between select-none relative overflow-hidden font-serif border border-neutral-200/80 shadow-2xl">
+    <div className="w-full h-full bg-[#fcfbf9] text-[#1a1a1a] p-8 md:p-10 flex flex-col justify-between select-none relative overflow-hidden font-serif border border-neutral-200/80 shadow-2xl">
       {/* 顶部极简网格与期刊头 */}
       <header className="relative z-10">
-        <div className="flex items-center justify-between border-b border-neutral-800/80 pb-4">
+        <div className="flex items-center justify-between border-b border-neutral-800/80 pb-3">
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 bg-neutral-900 rotate-45" />
             <span className="font-mono text-xs tracking-[0.3em] uppercase text-neutral-600 font-semibold">
@@ -26,20 +26,20 @@ export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 副标题与小标题 */}
         {data.subtitle && (
-          <div className="pt-4 flex items-center gap-2 text-xs font-mono text-neutral-500 uppercase tracking-widest">
+          <div className="pt-3 flex items-center gap-2 text-xs font-mono text-neutral-500 uppercase tracking-widest">
             <Bookmark className="w-3.5 h-3.5 text-neutral-700" />
             <span>{data.subtitle}</span>
           </div>
         )}
 
         {/* 标题 */}
-        <h1 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight text-neutral-950 leading-[1.3] font-serif">
+        <h1 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight text-neutral-950 leading-[1.3] font-serif">
           {data.title}
         </h1>
       </header>
 
       {/* 中间正文主体与首字下沉排版 */}
-      <main className="my-auto py-6 relative z-10">
+      <main className="my-auto py-3 relative z-10 overflow-hidden">
         <MarkdownRenderer
           content={data.content}
           fontSize={data.fontSize}

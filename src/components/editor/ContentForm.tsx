@@ -157,7 +157,15 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             <Quote className="w-3.5 h-3.5 text-neutral-700" />
             正文内容 (支持轻量 Markdown)
           </label>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
+            <button
+              type="button"
+              onClick={() => insertMarkdown('## ', '')}
+              title="二级标题 ## title"
+              className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+            >
+              H2
+            </button>
             <button
               type="button"
               onClick={() => insertMarkdown('**', '**')}
@@ -206,15 +214,31 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             >
               <List className="w-3.5 h-3.5" />
             </button>
+            <button
+              type="button"
+              onClick={() => insertMarkdown('1. ')}
+              title="有序列表 1. item"
+              className="px-1.5 py-0.5 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+            >
+              1.
+            </button>
+            <button
+              type="button"
+              onClick={() => insertMarkdown('\n---\n')}
+              title="分割线 ---"
+              className="px-1 py-0.5 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+            >
+              —
+            </button>
           </div>
         </div>
 
         <textarea
           id="card-content-textarea"
-          rows={7}
+          rows={8}
           value={data.content}
           onChange={(e) => onChange({ content: e.target.value })}
-          placeholder="输入正文，段落之间空一行，支持 **加粗**、*斜体*、> 引用金句、- 列表..."
+          placeholder="输入正文，段落之间空一行。支持 ## 标题、**加粗**、*斜体*、> 引用金句、- 列表、1. 编号、--- 分割线..."
           className="w-full text-sm font-normal rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 p-3 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 font-sans"
         />
       </div>

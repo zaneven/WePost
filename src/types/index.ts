@@ -1,4 +1,4 @@
-# WePost Core Types
+// WePost Core Types
 export interface Article {
   id: string;
   title: string;

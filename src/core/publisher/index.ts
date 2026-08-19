@@ -1,5 +1,5 @@
 // WePost Publisher Core Interface
-import type { Article, PublishResult } from '../types';
+import type { Article, PublishResult } from '@/types';
 
 export interface IPublisher {
   readonly platformId: string;

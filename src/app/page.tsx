@@ -111,7 +111,7 @@ export default function HomePage() {
       {/* 主体工作台 */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* 左侧控制区 (固定宽度) */}
-        <aside className="w-full lg:w-[460px] xl:w-[500px] border-r border-neutral-200 bg-white flex flex-col h-[50vh] lg:h-full z-10 shadow-lg">
+        <aside className="w-full lg:w-[460px] xl:w-[500px] border-r border-neutral-200 bg-white text-neutral-900 flex flex-col h-[50vh] lg:h-full z-10 shadow-lg">
           {/* 导航标签切换 */}
           <div className="flex border-b border-neutral-200 px-4 pt-3 bg-neutral-50/70">
             <button

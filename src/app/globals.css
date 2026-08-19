@@ -15,6 +15,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  input, textarea, select {
+    color: #171717;
+  }
 }
 
 /* 自定义滚动条样式 */

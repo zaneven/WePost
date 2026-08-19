@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onResetExample }) => {
   return (
-    <header className="h-14 border-b border-neutral-800/90 bg-neutral-950/95 backdrop-blur-xl sticky top-0 z-50 px-5 flex items-center justify-between text-neutral-100 flex-shrink-0">
+    <header className="h-14 border-b border-neutral-800/90 bg-neutral-950/95 backdrop-blur-xl w-full flex-shrink-0 z-50 px-5 flex items-center justify-between text-neutral-100 select-none">
       {/* 左侧 Logo 与品牌 */}
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-neutral-950">

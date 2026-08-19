@@ -104,16 +104,16 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-neutral-950">
-      {/* 顶部导航 */}
+    <div className="w-full h-screen h-[100dvh] flex flex-col overflow-hidden bg-neutral-950">
+      {/* 顶部固定导航 */}
       <Header onResetExample={handleResetExample} />
 
-      {/* 主体工作台 */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* 左侧控制区 (固定宽度) */}
-        <aside className="w-full lg:w-[460px] xl:w-[500px] border-r border-neutral-200 bg-white text-neutral-900 flex flex-col h-[50vh] lg:h-full z-10 shadow-lg">
+      {/* 主体工作台 (严格占满剩余高度，禁止外层滚动) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+        {/* 左侧控制区 (独立内部滚动) */}
+        <aside className="w-full lg:w-[460px] xl:w-[500px] h-full flex flex-col flex-shrink-0 min-h-0 overflow-hidden border-r border-neutral-200 bg-white text-neutral-900 z-10 shadow-lg">
           {/* 导航标签切换 */}
-          <div className="flex border-b border-neutral-200 px-4 pt-3 bg-neutral-50/70">
+          <div className="flex border-b border-neutral-200 px-4 pt-3 bg-neutral-50/70 flex-shrink-0">
             <button
               onClick={() => setActiveTab('content')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
@@ -151,8 +151,8 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* 表单内容滚动区 */}
-          <div className="flex-1 overflow-y-auto p-6">
+          {/* 表单内容滚动区 (仅此处内部滚动) */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-6">
             {activeTab === 'content' && (
               <ContentForm
                 data={cardData}
@@ -171,8 +171,8 @@ export default function HomePage() {
           </div>
         </aside>
 
-        {/* 右侧实时画板区域 */}
-        <main className="flex-1 flex flex-col h-[50vh] lg:h-full overflow-hidden">
+        {/* 右侧实时画板区域 (自适应一屏显示，禁止任何外部滚动) */}
+        <main className="flex-1 min-w-0 h-full flex flex-col min-h-0 overflow-hidden">
           <CardStage data={cardData} renderRef={exportTargetRef} />
         </main>
       </div>

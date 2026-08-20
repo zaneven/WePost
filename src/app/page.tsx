@@ -11,6 +11,7 @@ import { ContentForm } from '@/components/editor/ContentForm';
 import { StyleToolbar } from '@/components/editor/StyleToolbar';
 import { ExportPanel } from '@/components/editor/ExportPanel';
 import { CardStage } from '@/components/canvas/CardStage';
+import { BottomActionBar } from '@/components/editor/BottomActionBar';
 import { useCardExport, DEFAULT_EXPORT_CONFIG } from '@/lib/useCardExport';
 import { Edit3, Palette, Download } from 'lucide-react';
 
@@ -97,7 +98,7 @@ export default function HomePage() {
   }, [history]);
 
   return (
-    <div className="w-full min-h-[100dvh] flex flex-col bg-neutral-950 lg:h-[100dvh] lg:overflow-hidden">
+    <div className="w-full min-h-[100dvh] flex flex-col bg-neutral-950 lg:h-[100dvh] lg:overflow-hidden relative select-none">
       {/* 顶部固定导航 */}
       <Header
         onResetExample={handleResetExample}
@@ -108,7 +109,7 @@ export default function HomePage() {
       />
 
       {/* 主体工作台：大屏左右双栏；小屏纵向流式排列，画板优先可见 */}
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row lg:overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row lg:overflow-hidden pb-14 lg:pb-0">
         {/* 左侧控制区 (大屏固定宽度内部滚动；小屏自适应高度) */}
         <aside className="w-full lg:w-[460px] xl:w-[500px] flex flex-col flex-shrink-0 min-h-0 border-r border-neutral-800/60 bg-neutral-50 text-neutral-900 z-10 shadow-2xl shadow-black/20 lg:h-full lg:overflow-hidden order-2 lg:order-1">
           {/* 导航标签切换 */}
@@ -124,7 +125,7 @@ export default function HomePage() {
               aria-selected={activeTab === 'content'}
               aria-controls="panel-content"
               onClick={() => setActiveTab('content')}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                 activeTab === 'content'
                   ? 'border-white text-white bg-neutral-900 rounded-t-lg'
                   : 'border-transparent text-neutral-500 hover:text-white'
@@ -141,7 +142,7 @@ export default function HomePage() {
               aria-selected={activeTab === 'style'}
               aria-controls="panel-style"
               onClick={() => setActiveTab('style')}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                 activeTab === 'style'
                   ? 'border-white text-white bg-neutral-900 rounded-t-lg'
                   : 'border-transparent text-neutral-500 hover:text-white'
@@ -158,7 +159,7 @@ export default function HomePage() {
               aria-selected={activeTab === 'export'}
               aria-controls="panel-export"
               onClick={() => setActiveTab('export')}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                 activeTab === 'export'
                   ? 'border-white text-white bg-neutral-900 rounded-t-lg'
                   : 'border-transparent text-neutral-500 hover:text-white'
@@ -199,10 +200,10 @@ export default function HomePage() {
           </div>
         </aside>
 
-        {/* 右侧实时画板区域 (小屏按比例智能分配高度，大屏自适应一屏) */}
+        {/* 右侧实时画板区域 (小屏按比例智能分配高度，大屏占据全部剩余空间并自适应放大) */}
         <main
-          className="flex-1 min-w-0 flex flex-col min-h-0 lg:h-full lg:overflow-hidden order-1 lg:order-2"
-          style={{ height: `${mobileStageHeightVh}vh` }}
+          className="flex-1 min-w-0 flex flex-col min-h-0 h-[var(--mobile-stage-h)] lg:h-full lg:overflow-hidden order-1 lg:order-2"
+          style={{ '--mobile-stage-h': `${mobileStageHeightVh}vh` } as React.CSSProperties}
         >
           <CardStage
             data={cardData}
@@ -210,6 +211,11 @@ export default function HomePage() {
             exportState={cardExport}
           />
         </main>
+      </div>
+
+      {/* 底部固定操作条 (吸底固定在页面底部) */}
+      <div className="fixed lg:static bottom-0 left-0 right-0 z-40 flex-shrink-0">
+        <BottomActionBar data={cardData} exportState={cardExport} />
       </div>
     </div>
   );

@@ -110,12 +110,12 @@ export default function HomePage() {
       {/* 主体工作台：大屏左右双栏；小屏纵向流式排列，画板优先可见 */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row lg:overflow-hidden">
         {/* 左侧控制区 (大屏固定宽度内部滚动；小屏自适应高度) */}
-        <aside className="w-full lg:w-[460px] xl:w-[500px] flex flex-col flex-shrink-0 min-h-0 border-r border-neutral-200 bg-white text-neutral-900 z-10 shadow-lg lg:h-full lg:overflow-hidden order-2 lg:order-1">
+        <aside className="w-full lg:w-[460px] xl:w-[500px] flex flex-col flex-shrink-0 min-h-0 border-r border-neutral-800/60 bg-neutral-50 text-neutral-900 z-10 shadow-2xl shadow-black/20 lg:h-full lg:overflow-hidden order-2 lg:order-1">
           {/* 导航标签切换 */}
           <div
             role="tablist"
             aria-label="编辑面板切换"
-            className="flex border-b border-neutral-200 px-4 pt-3 bg-neutral-50/70 flex-shrink-0"
+            className="flex border-b border-neutral-800 px-4 pt-3 bg-neutral-950 flex-shrink-0"
           >
             <button
               type="button"
@@ -126,8 +126,8 @@ export default function HomePage() {
               onClick={() => setActiveTab('content')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'content'
-                  ? 'border-neutral-900 text-neutral-900 bg-white rounded-t-lg shadow-sm'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-900'
+                  ? 'border-white text-white bg-neutral-900 rounded-t-lg'
+                  : 'border-transparent text-neutral-500 hover:text-white'
               }`}
             >
               <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
@@ -143,8 +143,8 @@ export default function HomePage() {
               onClick={() => setActiveTab('style')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'style'
-                  ? 'border-neutral-900 text-neutral-900 bg-white rounded-t-lg shadow-sm'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-900'
+                  ? 'border-white text-white bg-neutral-900 rounded-t-lg'
+                  : 'border-transparent text-neutral-500 hover:text-white'
               }`}
             >
               <Palette className="w-3.5 h-3.5" aria-hidden="true" />
@@ -160,8 +160,8 @@ export default function HomePage() {
               onClick={() => setActiveTab('export')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'export'
-                  ? 'border-neutral-900 text-neutral-900 bg-white rounded-t-lg shadow-sm'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-900'
+                  ? 'border-white text-white bg-neutral-900 rounded-t-lg'
+                  : 'border-transparent text-neutral-500 hover:text-white'
               }`}
             >
               <Download className="w-3.5 h-3.5" aria-hidden="true" />

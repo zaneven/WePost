@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { CardData } from '@/types/card';
+import { useToast } from '@/components/ui/Toast';
 import {
   Type,
   Tag,
@@ -13,7 +14,9 @@ import {
   List,
   MessageSquareQuote,
   BookOpen,
-  AlertTriangle
+  AlertTriangle,
+  Eraser,
+  Clipboard
 } from 'lucide-react';
 
 interface ContentFormProps {
@@ -30,6 +33,43 @@ export const ContentForm: React.FC<ContentFormProps> = ({
   onApplyPresetSample,
   isOverflowing = false,
 }) => {
+  const toast = useToast();
+
+  // 复制当前文案全文到系统剪贴板
+  const handleCopyText = useCallback(async () => {
+    const text = [
+      data.title,
+      data.subtitle,
+      data.tag,
+      data.content,
+      `${data.author} · ${data.date}`,
+      data.footerText,
+    ]
+      .map((s) => s?.trim())
+      .filter(Boolean)
+      .join('\n\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.show('文案已复制到剪贴板', 'success');
+    } catch (err) {
+      console.error('复制文案失败:', err);
+      toast.show('复制文案失败，请检查浏览器权限', 'error');
+    }
+  }, [data, toast]);
+
+  const handleClearAll = useCallback(() => {
+    onChange({
+      title: '',
+      subtitle: '',
+      tag: '',
+      content: '',
+      author: '',
+      date: '',
+      footerText: '',
+    });
+    toast.show('已清空全部文案', 'info');
+  }, [onChange, toast]);
+
   const insertMarkdown = (prefix: string, suffix: string = '') => {
     const textarea = document.getElementById('card-content-textarea') as HTMLTextAreaElement;
     if (!textarea) return;
@@ -106,6 +146,28 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             态度先锋
           </button>
         </div>
+      </div>
+
+      {/* 文案快捷操作：清空 / 复制全文 */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleCopyText}
+          title="复制当前全部文案到剪贴板"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:bg-neutral-50 transition-colors"
+        >
+          <Clipboard className="w-3.5 h-3.5" aria-hidden="true" />
+          复制全文
+        </button>
+        <button
+          type="button"
+          onClick={handleClearAll}
+          title="清空所有文案字段"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 hover:border-red-300 hover:text-red-600 text-neutral-700 hover:bg-red-50/50 transition-colors"
+        >
+          <Eraser className="w-3.5 h-3.5" aria-hidden="true" />
+          清空全部
+        </button>
       </div>
 
       {/* 标题区 */}

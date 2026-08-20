@@ -63,6 +63,21 @@ export function getCanvasDimensions(
   return { width: meta.canvasWidth, height: meta.canvasHeight };
 }
 
+/**
+ * 移动端画板占位高度（vh）。
+ * 按比例智能分配：竖屏（9:16 / 3:4）给更大空间，正方形适中，宽幅（2.35:1 / 4:3）较小，
+ * 避免写死 60vh 导致竖屏卡片被压成极小、宽幅则大量留白。
+ * 结果受 [42, 70] vh 区间约束。
+ */
+export function getMobileStageHeightVh(ratio: AspectRatioType): number {
+  const { width, height } = getCanvasDimensions(ratio);
+  // 卡片高宽比 → 映射到 vh 占比
+  const cardAspect = height / width;
+  // 宽幅（cardAspect 小）→ 较小 vh；竖屏（cardAspect 大）→ 较大 vh
+  const vh = 38 + cardAspect * 18;
+  return Math.max(42, Math.min(70, Math.round(vh)));
+}
+
 export const TEMPLATES: TemplateMeta[] = [
   {
     id: 'minimal-magazine',

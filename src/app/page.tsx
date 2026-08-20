@@ -2,9 +2,10 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CardData } from '@/types/card';
-import { INITIAL_CARD_DATA } from '@/core/templates/registry';
+import { INITIAL_CARD_DATA, getMobileStageHeightVh } from '@/core/templates/registry';
 import { buildPresetData, type PresetType } from '@/data/presets';
 import { useCardHistory } from '@/lib/useCardHistory';
+import { useCardOverflow } from '@/lib/useCardOverflow';
 import { Header } from '@/components/editor/Header';
 import { ContentForm } from '@/components/editor/ContentForm';
 import { StyleToolbar } from '@/components/editor/StyleToolbar';
@@ -35,6 +36,10 @@ export default function HomePage() {
   const exportTargetRef = useRef<HTMLDivElement>(null);
   // 导出配置在画板快捷操作与配置面板间共享（单一数据源）
   const cardExport = useCardExport(DEFAULT_EXPORT_CONFIG);
+  // 移动端画板高度：按当前比例智能分配（竖屏更高、宽幅更小）
+  const mobileStageHeightVh = getMobileStageHeightVh(cardData.aspectRatio);
+  // 检测卡片内容是否溢出画板（被裁切），用于编辑区预警
+  const isOverflowing = useCardOverflow('wepost-card-export-target', cardData);
 
   const handleUpdateCard = useCallback(
     (updates: Partial<CardData>) => {
@@ -177,6 +182,7 @@ export default function HomePage() {
                 data={cardData}
                 onChange={handleUpdateCard}
                 onApplyPresetSample={handleApplyPresetSample}
+                isOverflowing={isOverflowing}
               />
             )}
 
@@ -193,8 +199,11 @@ export default function HomePage() {
           </div>
         </aside>
 
-        {/* 右侧实时画板区域 (小屏优先可见并占据稳定高度，大屏自适应一屏) */}
-        <main className="flex-1 min-w-0 flex flex-col min-h-0 h-[60vh] lg:h-full lg:overflow-hidden order-1 lg:order-2">
+        {/* 右侧实时画板区域 (小屏按比例智能分配高度，大屏自适应一屏) */}
+        <main
+          className="flex-1 min-w-0 flex flex-col min-h-0 lg:h-full lg:overflow-hidden order-1 lg:order-2"
+          style={{ height: `${mobileStageHeightVh}vh` }}
+        >
           <CardStage
             data={cardData}
             renderRef={exportTargetRef}

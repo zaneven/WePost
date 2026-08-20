@@ -12,19 +12,23 @@ import {
   Highlighter,
   List,
   MessageSquareQuote,
-  BookOpen
+  BookOpen,
+  AlertTriangle
 } from 'lucide-react';
 
 interface ContentFormProps {
   data: CardData;
   onChange: (updates: Partial<CardData>) => void;
   onApplyPresetSample: (type: 'essay' | 'quote' | 'news' | 'note' | 'acid') => void;
+  /** 卡片内容是否已溢出画板（被裁切） */
+  isOverflowing?: boolean;
 }
 
 export const ContentForm: React.FC<ContentFormProps> = ({
   data,
   onChange,
   onApplyPresetSample,
+  isOverflowing = false,
 }) => {
   const insertMarkdown = (prefix: string, suffix: string = '') => {
     const textarea = document.getElementById('card-content-textarea') as HTMLTextAreaElement;
@@ -266,8 +270,28 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           value={data.content}
           onChange={(e) => onChange({ content: e.target.value })}
           placeholder="输入正文，段落之间空一行。支持 ## 标题、**加粗**、*斜体*、> 引用金句、- 列表、1. 编号、--- 分割线..."
-          className="w-full text-sm font-normal rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 p-3 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 font-sans"
+          className={`w-full text-sm font-normal rounded-lg border bg-white text-neutral-900 placeholder:text-neutral-400 p-3 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 font-sans ${
+            isOverflowing
+              ? 'border-amber-400 focus:ring-amber-500/20 focus:border-amber-500'
+              : 'border-neutral-300 focus:border-neutral-900'
+          }`}
+          aria-describedby="card-content-hint"
         />
+        {/* 字符计数 + 溢出预警 */}
+        <div
+          id="card-content-hint"
+          className={`mt-1.5 flex items-center justify-between text-[11px] transition-colors ${
+            isOverflowing ? 'text-amber-600' : 'text-neutral-400'
+          }`}
+        >
+          <span className="flex items-center gap-1">
+            {isOverflowing && <AlertTriangle className="w-3 h-3" aria-hidden="true" />}
+            {isOverflowing
+              ? '正文已超出画板范围，部分内容将被裁切，建议精简或缩小字号'
+              : '段落之间空一行以正确分块'}
+          </span>
+          <span className="font-mono flex-shrink-0">{data.content.length} 字</span>
+        </div>
       </div>
 
       {/* 署名、日期与页脚 */}

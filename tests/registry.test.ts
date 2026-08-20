@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ASPECT_RATIOS, TEMPLATES, getCanvasDimensions, INITIAL_CARD_DATA } from '@/core/templates/registry';
+import { ASPECT_RATIOS, TEMPLATES, getCanvasDimensions, getMobileStageHeightVh, INITIAL_CARD_DATA } from '@/core/templates/registry';
 
 describe('registry: ASPECT_RATIOS', () => {
   it('每个比例都包含完整的导出尺寸与画板逻辑尺寸', () => {
@@ -36,6 +36,30 @@ describe('getCanvasDimensions', () => {
   it('未知比例回退为默认 3:4 尺寸', () => {
     // @ts-expect-error 故意传入非法值测试回退
     expect(getCanvasDimensions('bogus')).toEqual({ width: 540, height: 720 });
+  });
+});
+
+describe('getMobileStageHeightVh', () => {
+  it('返回值落在 [42, 70] vh 区间', () => {
+    for (const r of ['3:4', '1:1', '9:16', '2.35:1', '4:3'] as const) {
+      const vh = getMobileStageHeightVh(r);
+      expect(vh).toBeGreaterThanOrEqual(42);
+      expect(vh).toBeLessThanOrEqual(70);
+    }
+  });
+
+  it('竖屏比例分配的高度大于宽幅比例', () => {
+    // 9:16（最竖）应高于 2.35:1（最宽）
+    expect(getMobileStageHeightVh('9:16')).toBeGreaterThan(getMobileStageHeightVh('2.35:1'));
+    // 3:4 也应高于 4:3
+    expect(getMobileStageHeightVh('3:4')).toBeGreaterThan(getMobileStageHeightVh('4:3'));
+  });
+
+  it('未知比例回退为默认区间内值', () => {
+    // @ts-expect-error 故意传入非法值测试回退
+    const vh = getMobileStageHeightVh('bogus');
+    expect(vh).toBeGreaterThanOrEqual(42);
+    expect(vh).toBeLessThanOrEqual(70);
   });
 });
 

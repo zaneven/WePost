@@ -179,7 +179,11 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             <Quote className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
             正文内容 (支持轻量 Markdown)
           </label>
-          <div className="flex items-center gap-1 flex-wrap" role="group" aria-label="Markdown 格式工具">
+          <div
+            className="flex items-center gap-1 flex-nowrap overflow-x-auto pb-1 -mb-1 wepost-toolbar-scroll"
+            role="group"
+            aria-label="Markdown 格式工具"
+          >
             <button
               type="button"
               onClick={() => insertMarkdown('## ', '')}

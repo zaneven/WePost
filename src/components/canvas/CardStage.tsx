@@ -188,12 +188,17 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef, exportSta
         </div>
       </div>
 
-      {/* 底部常驻导出操作条 (替代纯状态文案，让导出成为一等公民) */}
+      {/* 底部常驻导出操作条 (实时状态信息 + 导出主操作) */}
       <div className="border-t border-neutral-800/80 bg-neutral-950/90 px-4 py-2.5 flex items-center justify-between gap-3 z-20 flex-shrink-0">
         <div className="flex items-center gap-2 text-[11px] text-neutral-500 font-mono min-w-0">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-          <span className="hidden sm:inline truncate">{rawW * 2} × {rawH * 2} px · @2x</span>
-          <span className="sm:hidden">{data.aspectRatio}</span>
+          <span className="hidden md:inline truncate font-medium text-neutral-200">
+            {currentTemplate?.name}
+          </span>
+          <span className="text-neutral-600 hidden md:inline">·</span>
+          <span className="truncate">{data.aspectRatio}</span>
+          <span className="text-neutral-600">·</span>
+          <span className="truncate">{data.content.length} 字</span>
         </div>
         <div className="flex items-center gap-2">
           {/* 复制到剪贴板 */}

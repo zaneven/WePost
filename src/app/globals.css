@@ -50,3 +50,23 @@
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Markdown 工具栏横向滚动（隐藏滚动条，可滚动时悬停温和显现） */
+.wepost-toolbar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 150, 150, 0.25) transparent;
+}
+.wepost-toolbar-scroll::-webkit-scrollbar {
+  height: 3px;
+}
+.wepost-toolbar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wepost-toolbar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0);
+  border-radius: 9999px;
+}
+.wepost-toolbar-scroll:hover::-webkit-scrollbar-thumb,
+.wepost-toolbar-scroll:focus::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.3);
+}

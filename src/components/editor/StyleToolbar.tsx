@@ -135,18 +135,25 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({ data, onChange }) =>
               正文字号
             </label>
             <div className="flex bg-neutral-100 p-0.5 rounded-lg">
-              {(['sm', 'base', 'lg', 'xl'] as FontSizeType[]).map((size) => (
+              {([
+                { value: 'sm', label: '小', px: '14' },
+                { value: 'base', label: '中', px: '16' },
+                { value: 'lg', label: '大', px: '18' },
+                { value: 'xl', label: '特大', px: '20' },
+              ] as { value: FontSizeType; label: string; px: string }[]).map((size) => (
                 <button
-                  key={size}
+                  key={size.value}
                   type="button"
-                  onClick={() => onChange({ fontSize: size })}
-                  className={`flex-1 py-1 text-xs rounded-md font-medium capitalize transition-all ${
-                    data.fontSize === size
+                  onClick={() => onChange({ fontSize: size.value })}
+                  title={`${size.label}号 · ${size.px}px`}
+                  className={`flex-1 py-1 text-xs rounded-md font-medium transition-all flex flex-col items-center leading-none ${
+                    data.fontSize === size.value
                       ? 'bg-white text-neutral-900 shadow-sm'
                       : 'text-neutral-500 hover:text-neutral-800'
                   }`}
                 >
-                  {size.toUpperCase()}
+                  <span>{size.label}</span>
+                  <span className="text-[9px] font-mono opacity-60 mt-0.5">{size.px}</span>
                 </button>
               ))}
             </div>

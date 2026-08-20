@@ -1,5 +1,6 @@
 import React from 'react';
 import { CardData } from '@/types/card';
+import { getCanvasDimensions } from '@/core/templates/registry';
 import { MinimalMagazine } from '../templates/MinimalMagazine';
 import { DarkGlass } from '../templates/DarkGlass';
 import { VintageNews } from '../templates/VintageNews';
@@ -13,25 +14,8 @@ interface CardRendererProps {
 }
 
 export const CardRenderer: React.FC<CardRendererProps> = ({ data, renderRef }) => {
-  // 根据比例获取容器基础尺寸 (逻辑像素)
-  const getDimensions = () => {
-    switch (data.aspectRatio) {
-      case '3:4':
-        return { width: 540, height: 720 };
-      case '1:1':
-        return { width: 600, height: 600 };
-      case '9:16':
-        return { width: 450, height: 800 };
-      case '2.35:1':
-        return { width: 705, height: 300 };
-      case '4:3':
-        return { width: 640, height: 480 };
-      default:
-        return { width: 540, height: 720 };
-    }
-  };
-
-  const { width, height } = getDimensions();
+  // 根据比例获取容器基础尺寸 (逻辑像素，统一数据源: registry)
+  const { width, height } = getCanvasDimensions(data.aspectRatio);
 
   const renderTemplate = () => {
     switch (data.templateId) {

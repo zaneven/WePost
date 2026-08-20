@@ -1,7 +1,8 @@
 import React from 'react';
 import { CardData } from '@/types/card';
 import { MarkdownRenderer } from '../canvas/MarkdownRenderer';
-import { Zap, Flame, Target, Star } from 'lucide-react';
+import { CardLayout } from '../canvas/CardLayout';
+import { Zap, Flame } from 'lucide-react';
 
 interface TemplateProps {
   data: CardData;
@@ -9,7 +10,7 @@ interface TemplateProps {
 
 export const AcidBold: React.FC<TemplateProps> = ({ data }) => {
   return (
-    <div className="w-full h-full bg-[#facc15] text-black p-8 md:p-10 flex flex-col justify-between select-none relative overflow-hidden font-sans border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+    <CardLayout className="bg-[#facc15] text-black p-8 md:p-10 font-sans border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
       {/* 顶部态度标签 */}
       <header className="relative z-10">
         <div className="flex items-center justify-between pb-4">
@@ -69,6 +70,6 @@ export const AcidBold: React.FC<TemplateProps> = ({ data }) => {
           </div>
         )}
       </footer>
-    </div>
+    </CardLayout>
   );
 };

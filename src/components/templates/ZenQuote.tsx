@@ -1,7 +1,7 @@
 import React from 'react';
 import { CardData } from '@/types/card';
 import { MarkdownRenderer } from '../canvas/MarkdownRenderer';
-import { Feather, Sparkle } from 'lucide-react';
+import { CardLayout } from '../canvas/CardLayout';
 
 interface TemplateProps {
   data: CardData;
@@ -9,7 +9,7 @@ interface TemplateProps {
 
 export const ZenQuote: React.FC<TemplateProps> = ({ data }) => {
   return (
-    <div className="w-full h-full bg-[#fbfbfa] text-[#1c1917] p-12 md:p-16 flex flex-col justify-between select-none relative overflow-hidden font-serif border border-stone-200 shadow-2xl">
+    <CardLayout className="bg-[#fbfbfa] text-[#1c1917] p-12 md:p-16 font-serif border border-stone-200 shadow-2xl">
       {/* 顶部极简朱砂红点缀 */}
       <header className="relative z-10">
         <div className="flex items-center justify-between pb-6">
@@ -66,6 +66,6 @@ export const ZenQuote: React.FC<TemplateProps> = ({ data }) => {
           {data.watermarkText?.slice(0, 4) || '清心'}
         </div>
       </footer>
-    </div>
+    </CardLayout>
   );
 };

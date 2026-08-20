@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { CardData, ExportConfig } from '@/types/card';
-import { exportCardImage, copyCardToClipboard } from '@/core/export/exporter';
-import { 
-  Download, 
-  Copy, 
-  Check, 
-  Sparkles, 
-  FileImage, 
-  Layers,
+import { buildCardFilename } from '@/lib/filename';
+import { useToast } from '@/components/ui/Toast';
+import {
+  Download,
+  Copy,
+  Check,
+  Sparkles,
+  FileImage,
   Loader2
 } from 'lucide-react';
 
@@ -29,6 +29,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [copiedSuccess, setCopiedSuccess] = useState(false);
+  const toast = useToast();
 
   const getExportElement = (): HTMLElement | null => {
     return document.getElementById(renderTargetId);
@@ -40,12 +41,13 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
 
     try {
       setIsExporting(true);
-      const safeTitle = data.title.replace(/[\\/:*?"<>|]/g, '').slice(0, 20) || 'wepost-card';
-      const filename = `wepost-${data.templateId}-${safeTitle}`;
+      // 动态加载导出依赖 (html-to-image / file-saver)，避免进入首屏 bundle
+      const { exportCardImage } = await import('@/core/export/exporter');
+      const filename = buildCardFilename(data.templateId, data.title);
       await exportCardImage(el, filename, config);
     } catch (err) {
       console.error('下载失败:', err);
-      alert('导出图片失败，请重试');
+      toast.show('导出图片失败，请重试', 'error');
     } finally {
       setIsExporting(false);
     }
@@ -57,12 +59,13 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
 
     try {
       setIsCopying(true);
+      const { copyCardToClipboard } = await import('@/core/export/exporter');
       await copyCardToClipboard(el);
       setCopiedSuccess(true);
       setTimeout(() => setCopiedSuccess(false), 2500);
     } catch (err) {
       console.error('复制失败:', err);
-      alert('直接复制到剪贴板失败，可尝试直接点击“下载图片”');
+      toast.show('复制到剪贴板失败，可尝试直接点击下载图片', 'error');
     } finally {
       setIsCopying(false);
     }

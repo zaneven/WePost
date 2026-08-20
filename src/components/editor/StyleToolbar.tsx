@@ -1,22 +1,17 @@
 import React from 'react';
-import { 
-  CardData, 
-  TemplateId, 
-  AspectRatioType, 
-  FontSizeType, 
-  AlignType, 
-  FontFamilyType 
+import {
+  CardData,
+  FontSizeType
 } from '@/types/card';
 import { TEMPLATES, ASPECT_RATIOS } from '@/core/templates/registry';
-import { 
-  Layout, 
-  Palette, 
-  Sliders, 
-  AlignLeft, 
-  AlignCenter, 
+import {
+  Layout,
+  Palette,
+  Sliders,
+  AlignLeft,
+  AlignCenter,
   AlignJustify,
-  Check,
-  Type
+  Check
 } from 'lucide-react';
 
 interface StyleToolbarProps {
@@ -97,7 +92,7 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({ data, onChange }) =>
                       isSelected ? 'text-neutral-300' : 'text-neutral-400'
                     }`}
                   >
-                    {item.ratio === '3:4' ? '1080 × 1440' : item.ratio === '1:1' ? '1080 × 1080' : item.ratio === '9:16' ? '1080 × 1920' : item.ratio === '2.35:1' ? '1080 × 460' : '1080 × 810'}
+                    {item.width} × {item.height}
                   </div>
                 </div>
                 {isSelected && <Check className="w-4 h-4 text-white" />}

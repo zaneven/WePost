@@ -1,120 +1,122 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { CardData, TemplateId } from '@/types/card';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { CardData } from '@/types/card';
 import { INITIAL_CARD_DATA } from '@/core/templates/registry';
+import { buildPresetData, type PresetType } from '@/data/presets';
+import { useCardHistory } from '@/lib/useCardHistory';
 import { Header } from '@/components/editor/Header';
 import { ContentForm } from '@/components/editor/ContentForm';
 import { StyleToolbar } from '@/components/editor/StyleToolbar';
 import { ExportPanel } from '@/components/editor/ExportPanel';
 import { CardStage } from '@/components/canvas/CardStage';
-import { Edit3, Palette, Download, Sparkles } from 'lucide-react';
+import { ToastProvider } from '@/components/ui/Toast';
+import { Edit3, Palette, Download } from 'lucide-react';
+
+const STORAGE_KEY = 'wepost:card-data:v1';
+
+/** 从 localStorage 读取上次编辑内容，与默认值合并以保证字段完整 */
+function loadPersistedCardData(): CardData {
+  if (typeof window === 'undefined') return INITIAL_CARD_DATA;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return INITIAL_CARD_DATA;
+    const parsed = JSON.parse(raw) as Partial<CardData>;
+    return { ...INITIAL_CARD_DATA, ...parsed };
+  } catch {
+    return INITIAL_CARD_DATA;
+  }
+}
 
 export default function HomePage() {
-  const [cardData, setCardData] = useState<CardData>(INITIAL_CARD_DATA);
+  const history = useCardHistory<CardData>(INITIAL_CARD_DATA);
+  const cardData = history.present;
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'export'>('content');
   const exportTargetRef = useRef<HTMLDivElement>(null);
 
-  const handleUpdateCard = (updates: Partial<CardData>) => {
-    setCardData((prev) => ({ ...prev, ...updates }));
-  };
+  const handleUpdateCard = useCallback(
+    (updates: Partial<CardData>) => {
+      history.set((prev) => ({ ...prev, ...updates }));
+    },
+    [history]
+  );
 
-  const handleResetExample = () => {
-    setCardData(INITIAL_CARD_DATA);
-  };
+  const handleResetExample = useCallback(() => {
+    history.set(INITIAL_CARD_DATA, { immediate: true });
+  }, [history]);
 
-  const handleApplyPresetSample = (type: 'essay' | 'quote' | 'news' | 'note' | 'acid') => {
-    switch (type) {
-      case 'essay':
-        setCardData({
-          ...cardData,
-          templateId: 'minimal-magazine',
-          title: '在喧嚣的时代，重塑深度思考的秩序',
-          subtitle: 'THINKING IN DEPTH / 思考碎片',
-          tag: '深度阅读',
-          content: `真正的专注，不是在安静的环境里做简单的事，而是在充满干扰的世界中守住内心的秩序。\n\n我们每天接收海量的信息碎片，却越来越少体验到思维深潜的愉悦。阅读长文、推演逻辑、写下真实感悟，是抵抗思维退化的终极武器。\n\n> 所谓卓越，就是将平凡的事反复雕琢，直到它泛出理性的光芒。\n\n放慢脚步，给大脑留出留白的时间，让灵感在沉淀中自然生长。`,
-          author: 'WePost 研习社',
-          date: '2026.08.19 · ISSUE 042',
-          footerText: '保持专注 · 持续创造 · 记录真实的世界',
-          fontFamily: 'serif',
-          aspectRatio: '3:4',
-        });
-        break;
-      case 'quote':
-        setCardData({
-          ...cardData,
-          templateId: 'zen-quote',
-          title: '山不让尘，川不辞盈',
-          subtitle: '静水流深 · 东方禅思',
-          tag: '东方美学',
-          content: `万物皆有其时。\n\n急于奔赴结果，往往错过路旁的清风与明月。\n\n> 懂得留白的人，才能在繁芜的生活中寻得内心的从容。\n\n不争亦不随，在自己的时区里安静绽放。`,
-          author: '林泉散人',
-          date: '岁在丙午 · 秋月',
-          footerText: '虚室生白 · 吉祥止止',
-          fontFamily: 'serif',
-          aspectRatio: '3:4',
-        });
-        break;
-      case 'news':
-        setCardData({
-          ...cardData,
-          templateId: 'vintage-news',
-          title: 'AI 时代的自媒体内容创作：从流量追逐到价值深耕',
-          subtitle: 'THE DAILY DISPATCH / 晨读参考',
-          tag: '行业前瞻',
-          content: `当生成式工具让内容生产的边际成本趋近于零，唯有具备独特审美与真实洞察的表达才具备长久生命力。\n\n- 机器提供效率，人类注入温度\n- 信息同质化加速，个人 IP 成为核心护城河\n- 精美排版与克制设计，正重塑读者的阅读信任\n\n> 真正的内容创作者，从不盲从算法，而是用文字重塑算法的世界。`,
-          author: '特约观察员',
-          date: 'EST. 2026 · NO. 88',
-          footerText: '每日晨读 · 见微知著',
-          fontFamily: 'serif',
-          aspectRatio: '3:4',
-        });
-        break;
-      case 'note':
-        setCardData({
-          ...cardData,
-          templateId: 'warm-memo',
-          title: '给今天认真生活的自己点个赞',
-          subtitle: 'DAILY JOURNAL / 温暖日常',
-          tag: '治愈便签',
-          content: `喝了一杯热咖啡，读完了搁置很久的一本书。\n\n生活其实不需要每天都波澜壮阔，那些由一顿热饭、一次散步、一句问候组成的微小瞬间，才是支撑我们走得很远的秘密力量。\n\n> 慢慢来，谁不是一边经历迷茫，一边闪闪发光呢？\n\n今天也辛苦啦，今晚早点睡吧！`,
-          author: '温暖收集官',
-          date: 'TODAY // 晴朗',
-          footerText: '温和对待世界，安静做好自己',
-          fontFamily: 'kaiti',
-          aspectRatio: '1:1',
-        });
-        break;
-      case 'acid':
-        setCardData({
-          ...cardData,
-          templateId: 'acid-bold',
-          title: '打破既定框架，做不被定义的创造者！',
-          subtitle: 'BREAK THE RULES // 青年态度',
-          tag: '态度先锋',
-          content: `如果大家都走同一条路，那终点注定平庸无奇。\n\n保持尖锐，敢于对无趣说不！你的独特，就是你面对这个世界最硬核的底牌。\n\n> 不要等风来，要做卷起风暴的那个人！\n\n- 拒绝标签化人生\n- 永远好奇，永远折腾\n- 为自己的热爱全力以赴`,
-          author: '态度先锋队',
-          date: '2026 / VOL.09',
-          footerText: '拒绝平庸 · 勇敢发声 · DO SOMETHING COOL',
-          fontFamily: 'sans',
-          aspectRatio: '3:4',
-        });
-        break;
-    }
-  };
+  const handleApplyPresetSample = useCallback(
+    (type: PresetType) => {
+      history.set(buildPresetData(cardData, type), { immediate: true });
+    },
+    [cardData, history]
+  );
+
+  // 客户端挂载后从 localStorage 恢复（replace 不入历史栈，避免污染撤销）
+  useEffect(() => {
+    history.replace(loadPersistedCardData());
+    // 仅执行一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 持久化：防抖写入 localStorage
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cardData));
+      } catch {
+        // 容量超限或隐私模式，静默忽略
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [cardData]);
+
+  // 全局撤销 / 重做快捷键 (Cmd/Ctrl+Z、Cmd/Ctrl+Shift+Z 或 Y)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        if (e.shiftKey) history.redo();
+        else history.undo();
+      } else if (e.key === 'y' || e.key === 'Y') {
+        e.preventDefault();
+        history.redo();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [history]);
 
   return (
-    <div className="w-full h-screen h-[100dvh] flex flex-col overflow-hidden bg-neutral-950">
+    <ToastProvider>
+    <div className="w-full min-h-[100dvh] flex flex-col bg-neutral-950 lg:h-[100dvh] lg:overflow-hidden">
       {/* 顶部固定导航 */}
-      <Header onResetExample={handleResetExample} />
+      <Header
+        onResetExample={handleResetExample}
+        onUndo={history.undo}
+        onRedo={history.redo}
+        canUndo={history.canUndo}
+        canRedo={history.canRedo}
+      />
 
-      {/* 主体工作台 (严格占满剩余高度，禁止外层滚动) */}
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
-        {/* 左侧控制区 (独立内部滚动) */}
-        <aside className="w-full lg:w-[460px] xl:w-[500px] h-full flex flex-col flex-shrink-0 min-h-0 overflow-hidden border-r border-neutral-200 bg-white text-neutral-900 z-10 shadow-lg">
+      {/* 主体工作台：大屏左右双栏；小屏纵向流式排列，画板优先可见 */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row lg:overflow-hidden">
+        {/* 左侧控制区 (大屏固定宽度内部滚动；小屏自适应高度) */}
+        <aside className="w-full lg:w-[460px] xl:w-[500px] flex flex-col flex-shrink-0 min-h-0 border-r border-neutral-200 bg-white text-neutral-900 z-10 shadow-lg lg:h-full lg:overflow-hidden order-2 lg:order-1">
           {/* 导航标签切换 */}
-          <div className="flex border-b border-neutral-200 px-4 pt-3 bg-neutral-50/70 flex-shrink-0">
+          <div
+            role="tablist"
+            aria-label="编辑面板切换"
+            className="flex border-b border-neutral-200 px-4 pt-3 bg-neutral-50/70 flex-shrink-0"
+          >
             <button
+              type="button"
+              role="tab"
+              id="tab-content"
+              aria-selected={activeTab === 'content'}
+              aria-controls="panel-content"
               onClick={() => setActiveTab('content')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'content'
@@ -122,11 +124,16 @@ export default function HomePage() {
                   : 'border-transparent text-neutral-500 hover:text-neutral-900'
               }`}
             >
-              <Edit3 className="w-3.5 h-3.5" />
+              <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
               <span>文案编辑</span>
             </button>
 
             <button
+              type="button"
+              role="tab"
+              id="tab-style"
+              aria-selected={activeTab === 'style'}
+              aria-controls="panel-style"
               onClick={() => setActiveTab('style')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'style'
@@ -134,11 +141,16 @@ export default function HomePage() {
                   : 'border-transparent text-neutral-500 hover:text-neutral-900'
               }`}
             >
-              <Palette className="w-3.5 h-3.5" />
+              <Palette className="w-3.5 h-3.5" aria-hidden="true" />
               <span>风格与排版</span>
             </button>
 
             <button
+              type="button"
+              role="tab"
+              id="tab-export"
+              aria-selected={activeTab === 'export'}
+              aria-controls="panel-export"
               onClick={() => setActiveTab('export')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
                 activeTab === 'export'
@@ -146,13 +158,19 @@ export default function HomePage() {
                   : 'border-transparent text-neutral-500 hover:text-neutral-900'
               }`}
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
               <span>导出与复制</span>
             </button>
           </div>
 
-          {/* 表单内容滚动区 (仅此处内部滚动) */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-6">
+          {/* 表单内容滚动区 (大屏仅此处内部滚动) */}
+          <div
+            role="tabpanel"
+            id={`panel-${activeTab}`}
+            aria-labelledby={`tab-${activeTab}`}
+            tabIndex={0}
+            className="flex-1 min-h-0 lg:overflow-y-auto p-6 focus:outline-none"
+          >
             {activeTab === 'content' && (
               <ContentForm
                 data={cardData}
@@ -171,11 +189,12 @@ export default function HomePage() {
           </div>
         </aside>
 
-        {/* 右侧实时画板区域 (自适应一屏显示，禁止任何外部滚动) */}
-        <main className="flex-1 min-w-0 h-full flex flex-col min-h-0 overflow-hidden">
+        {/* 右侧实时画板区域 (小屏优先可见并占据稳定高度，大屏自适应一屏) */}
+        <main className="flex-1 min-w-0 flex flex-col min-h-0 h-[60vh] lg:h-full lg:overflow-hidden order-1 lg:order-2">
           <CardStage data={cardData} renderRef={exportTargetRef} />
         </main>
       </div>
     </div>
+    </ToastProvider>
   );
 }

@@ -1,7 +1,8 @@
 import React from 'react';
 import { CardData } from '@/types/card';
 import { MarkdownRenderer } from '../canvas/MarkdownRenderer';
-import { Terminal, Shield, Zap, Sparkles } from 'lucide-react';
+import { CardLayout } from '../canvas/CardLayout';
+import { Terminal, Zap, Sparkles } from 'lucide-react';
 
 interface TemplateProps {
   data: CardData;
@@ -9,7 +10,7 @@ interface TemplateProps {
 
 export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
   return (
-    <div className="w-full h-full bg-[#07090e] text-slate-100 p-10 md:p-12 flex flex-col justify-between select-none relative overflow-hidden font-sans border border-slate-800 shadow-2xl">
+    <CardLayout className="bg-[#07090e] text-slate-100 p-10 md:p-12 font-sans border border-slate-800 shadow-2xl">
       {/* 科技感背景光晕效果 */}
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -36,7 +37,8 @@ export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
         {/* 副标题 */}
         {data.subtitle && (
           <div className="pt-4 text-xs font-mono text-cyan-300/70 uppercase tracking-widest">
-            // {data.subtitle}
+            {'// '}
+            {data.subtitle}
           </div>
         )}
 
@@ -78,6 +80,6 @@ export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
           </div>
         )}
       </footer>
-    </div>
+    </CardLayout>
   );
 };

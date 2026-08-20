@@ -1,7 +1,8 @@
 import React from 'react';
 import { CardData } from '@/types/card';
 import { MarkdownRenderer } from '../canvas/MarkdownRenderer';
-import { Newspaper, Award, Calendar, Quote } from 'lucide-react';
+import { CardLayout } from '../canvas/CardLayout';
+import { Newspaper, Award, Calendar } from 'lucide-react';
 
 interface TemplateProps {
   data: CardData;
@@ -9,7 +10,7 @@ interface TemplateProps {
 
 export const VintageNews: React.FC<TemplateProps> = ({ data }) => {
   return (
-    <div className="w-full h-full bg-[#f6eee3] text-[#2c2416] p-8 md:p-10 flex flex-col justify-between select-none relative overflow-hidden font-serif border-4 border-[#3d2e1e] shadow-2xl">
+    <CardLayout className="bg-[#f6eee3] text-[#2c2416] p-8 md:p-10 font-serif border-4 border-[#3d2e1e] shadow-2xl">
       {/* 报纸双细线内边框 */}
       <div className="absolute inset-2 border border-[#8a7258] pointer-events-none" />
 
@@ -72,6 +73,6 @@ export const VintageNews: React.FC<TemplateProps> = ({ data }) => {
           </div>
         )}
       </footer>
-    </div>
+    </CardLayout>
   );
 };

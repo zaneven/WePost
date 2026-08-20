@@ -1,7 +1,8 @@
 import React from 'react';
 import { CardData } from '@/types/card';
 import { MarkdownRenderer } from '../canvas/MarkdownRenderer';
-import { Compass, Sparkles, Feather, Bookmark } from 'lucide-react';
+import { CardLayout } from '../canvas/CardLayout';
+import { Sparkles, Feather, Bookmark } from 'lucide-react';
 
 interface TemplateProps {
   data: CardData;
@@ -9,7 +10,7 @@ interface TemplateProps {
 
 export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
   return (
-    <div className="w-full h-full bg-[#fcfbf9] text-[#1a1a1a] p-8 md:p-10 flex flex-col justify-between select-none relative overflow-hidden font-serif border border-neutral-200/80 shadow-2xl">
+    <CardLayout className="bg-[#fcfbf9] text-[#1a1a1a] p-8 md:p-10 font-serif border border-neutral-200/80 shadow-2xl">
       {/* 顶部极简网格与期刊头 */}
       <header className="relative z-10">
         <div className="flex items-center justify-between border-b border-neutral-800/80 pb-3">
@@ -77,6 +78,6 @@ export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
       <div className="absolute right-6 top-1/3 -translate-y-1/2 pointer-events-none opacity-[0.03] select-none">
         <span className="font-serif text-[180px] font-black leading-none text-neutral-950">W</span>
       </div>
-    </div>
+    </CardLayout>
   );
 };

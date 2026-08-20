@@ -20,7 +20,6 @@ export interface CardData {
   author: string;
   date: string;
   footerText: string;
-  showQrPlaceholder: boolean;
   templateId: TemplateId;
   aspectRatio: AspectRatioType;
   fontSize: FontSizeType;
@@ -36,8 +35,10 @@ export interface CardData {
 export interface AspectRatioMeta {
   label: string;
   ratio: AspectRatioType;
-  width: number;
-  height: number;
+  width: number; // 导出物理像素宽
+  height: number; // 导出物理像素高
+  canvasWidth: number; // 画板逻辑渲染宽
+  canvasHeight: number; // 画板逻辑渲染高
   description: string;
 }
 
@@ -54,6 +55,6 @@ export interface TemplateMeta {
 
 export interface ExportConfig {
   scale: 2 | 3;
-  format: 'png' | 'jpeg' | 'webp';
+  format: 'png' | 'jpeg';
   quality: number; // 0.8 - 1.0
 }

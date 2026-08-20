@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CardData } from '@/types/card';
 import { CardRenderer } from './CardRenderer';
-import { TEMPLATES } from '@/core/templates/registry';
-import { ZoomIn, ZoomOut, Maximize2, RotateCcw, Eye, Sparkles } from 'lucide-react';
+import { TEMPLATES, getCanvasDimensions } from '@/core/templates/registry';
+import { ZoomIn, ZoomOut, Maximize2, Eye } from 'lucide-react';
 
 interface CardStageProps {
   data: CardData;
@@ -16,22 +16,9 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
 
   const currentTemplate = TEMPLATES.find((t) => t.id === data.templateId);
 
-  // 获取卡片逻辑宽高
+  // 获取卡片逻辑宽高 (统一数据源: registry)
   const getCardDimensions = useCallback(() => {
-    switch (data.aspectRatio) {
-      case '3:4':
-        return { width: 540, height: 720 };
-      case '1:1':
-        return { width: 600, height: 600 };
-      case '9:16':
-        return { width: 450, height: 800 };
-      case '2.35:1':
-        return { width: 705, height: 300 };
-      case '4:3':
-        return { width: 640, height: 480 };
-      default:
-        return { width: 540, height: 720 };
-    }
+    return getCanvasDimensions(data.aspectRatio);
   }, [data.aspectRatio]);
 
   // 自适应计算缩放比例
@@ -126,9 +113,10 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
             type="button"
             onClick={handleZoomOut}
             title="缩小"
+            aria-label="缩小"
             className="p-1 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded transition-colors"
           >
-            <ZoomOut className="w-3.5 h-3.5" />
+            <ZoomOut className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
           <span className="font-mono text-[11px] text-neutral-200 px-2 min-w-[44px] text-center font-semibold">
             {Math.round(zoom * 100)}%
@@ -137,15 +125,17 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
             type="button"
             onClick={handleZoomIn}
             title="放大"
+            aria-label="放大"
             className="p-1 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded transition-colors"
           >
-            <ZoomIn className="w-3.5 h-3.5" />
+            <ZoomIn className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
           <div className="w-[1px] h-3 bg-neutral-800 mx-0.5" />
           <button
             type="button"
             onClick={handleResetZoom}
             title="100% 原始大小"
+            aria-label="原始大小 100%"
             className={`px-1.5 py-0.5 text-[10px] font-mono rounded transition-colors ${
               !isAutoFit && Math.abs(zoom - 1.0) < 0.02
                 ? 'bg-neutral-800 text-white font-bold'
@@ -164,7 +154,7 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
             }`}
           >
-            <Maximize2 className="w-3 h-3" />
+            <Maximize2 className="w-3 h-3" aria-hidden="true" />
             <span>自适应一屏</span>
           </button>
         </div>

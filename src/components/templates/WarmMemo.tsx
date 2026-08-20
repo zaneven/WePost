@@ -1,6 +1,7 @@
 import React from 'react';
 import { CardData } from '@/types/card';
 import { MarkdownRenderer } from '../canvas/MarkdownRenderer';
+import { CardLayout } from '../canvas/CardLayout';
 import { Sun, Heart, Coffee, Pin } from 'lucide-react';
 
 interface TemplateProps {
@@ -9,7 +10,7 @@ interface TemplateProps {
 
 export const WarmMemo: React.FC<TemplateProps> = ({ data }) => {
   return (
-    <div className="w-full h-full bg-[#fbf7ee] text-[#44382c] p-8 md:p-11 flex flex-col justify-between select-none relative overflow-hidden font-sans border border-amber-200/80 shadow-2xl">
+    <CardLayout className="bg-[#fbf7ee] text-[#44382c] p-8 md:p-11 font-sans border border-amber-200/80 shadow-2xl">
       {/* 顶部半透明拟物胶带效果 */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-amber-200/40 backdrop-blur-sm border-x border-amber-300/40 -rotate-1 shadow-sm pointer-events-none z-20" />
 
@@ -72,6 +73,6 @@ export const WarmMemo: React.FC<TemplateProps> = ({ data }) => {
           </div>
         )}
       </footer>
-    </div>
+    </CardLayout>
   );
 };

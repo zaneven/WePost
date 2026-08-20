@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AlignType, FontSizeType } from '@/types/card';
 
 interface MarkdownRendererProps {
@@ -9,101 +9,118 @@ interface MarkdownRendererProps {
   themeStyle?: 'minimal' | 'dark' | 'vintage' | 'warm' | 'zen' | 'acid';
 }
 
-export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
-  content,
-  fontSize = 'base',
-  align = 'left',
-  accentColor = '#2563eb',
-  themeStyle = 'minimal',
-}) => {
-  // 字号映射
-  const fontSizeClasses: Record<FontSizeType, string> = {
-    sm: 'text-[14px] leading-[1.8]',
-    base: 'text-[16px] leading-[1.85]',
-    lg: 'text-[18px] leading-[1.9]',
-    xl: 'text-[20px] leading-[1.95]',
-  };
+// 字号映射 (常量，避免随组件重渲染重建)
+const FONT_SIZE_CLASSES: Record<FontSizeType, string> = {
+  sm: 'text-[14px] leading-[1.8]',
+  base: 'text-[16px] leading-[1.85]',
+  lg: 'text-[18px] leading-[1.9]',
+  xl: 'text-[20px] leading-[1.95]',
+};
 
-  // 对齐映射
-  const alignClasses: Record<AlignType, string> = {
-    left: 'text-left',
-    center: 'text-center',
-    justify: 'text-justify',
-  };
+// 对齐映射
+const ALIGN_CLASSES: Record<AlignType, string> = {
+  left: 'text-left',
+  center: 'text-center',
+  justify: 'text-justify',
+};
 
-  // 解析行内样式
-  const renderInlineStyles = (text: string): React.ReactNode => {
-    const parts: React.ReactNode[] = [];
-    const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|==.*?==)/g;
-    const tokens = text.split(regex);
+export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
+  ({
+    content,
+    fontSize = 'base',
+    align = 'left',
+    accentColor = '#2563eb',
+    themeStyle = 'minimal',
+  }) => {
+    // 缓存解析结果：仅在 content / accentColor / themeStyle 变化时重新解析，
+    // 避免每次按键都对全文做 split + 正则匹配。
+    const renderedBlocks = useMemo(() => {
+      // 解析行内样式 (定义在 useMemo 内部，避免成为外部依赖)
+      const renderInlineStyles = (text: string): React.ReactNode => {
+        const parts: React.ReactNode[] = [];
+        const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|==.*?==)/g;
+        const tokens = text.split(regex);
 
-    tokens.forEach((token, index) => {
-      if (token.startsWith('**') && token.endsWith('**')) {
-        parts.push(
-          <strong key={index} className="font-bold tracking-tight opacity-100 text-inherit">
-            {token.slice(2, -2)}
-          </strong>
-        );
-      } else if (token.startsWith('*') && token.endsWith('*')) {
-        parts.push(
-          <em key={index} className="italic opacity-90">
-            {token.slice(1, -1)}
-          </em>
-        );
-      } else if (token.startsWith('`') && token.endsWith('`')) {
-        parts.push(
-          <code
-            key={index}
-            className={`px-1.5 py-0.5 mx-0.5 rounded font-mono text-[0.88em] font-medium ${
-              themeStyle === 'dark'
-                ? 'bg-white/10 text-cyan-300'
-                : themeStyle === 'acid'
-                ? 'bg-black text-white'
-                : 'bg-black/5 text-neutral-800'
-            }`}
-          >
-            {token.slice(1, -1)}
-          </code>
-        );
-      } else if (token.startsWith('==') && token.endsWith('==')) {
-        parts.push(
-          <mark
-            key={index}
-            className="px-1.5 py-0.5 mx-0.5 rounded bg-amber-300/60 dark:bg-amber-500/30 text-inherit font-medium"
-          >
-            {token.slice(2, -2)}
-          </mark>
-        );
-      } else {
-        parts.push(token);
-      }
-    });
+        tokens.forEach((token, index) => {
+          if (!token) return;
+          if (token.startsWith('**') && token.endsWith('**')) {
+            parts.push(
+              <strong key={index} className="font-bold tracking-tight opacity-100 text-inherit">
+                {token.slice(2, -2)}
+              </strong>
+            );
+          } else if (token.startsWith('*') && token.endsWith('*')) {
+            parts.push(
+              <em key={index} className="italic opacity-90">
+                {token.slice(1, -1)}
+              </em>
+            );
+          } else if (token.startsWith('`') && token.endsWith('`')) {
+            parts.push(
+              <code
+                key={index}
+                className={`px-1.5 py-0.5 mx-0.5 rounded font-mono text-[0.88em] font-medium ${
+                  themeStyle === 'dark'
+                    ? 'bg-white/10 text-cyan-300'
+                    : themeStyle === 'acid'
+                    ? 'bg-black text-white'
+                    : 'bg-black/5 text-neutral-800'
+                }`}
+              >
+                {token.slice(1, -1)}
+              </code>
+            );
+          } else if (token.startsWith('==') && token.endsWith('==')) {
+            parts.push(
+              <mark
+                key={index}
+                className="px-1.5 py-0.5 mx-0.5 rounded bg-amber-300/60 dark:bg-amber-500/30 text-inherit font-medium"
+              >
+                {token.slice(2, -2)}
+              </mark>
+            );
+          } else {
+            parts.push(token);
+          }
+        });
 
-    return parts;
-  };
+        return parts;
+      };
 
-  // 分割大段落（支持单行/双行换行与块级元素提取）
-  const blocks = content.split('\n\n').filter((b) => b.trim().length > 0);
+      const blocks = content.split('\n\n').filter((b) => b.trim().length > 0);
 
-  return (
-    <div className={`space-y-4 ${fontSizeClasses[fontSize]} ${alignClasses[align]}`}>
-      {blocks.map((block, bIndex) => {
+      return blocks.map((block, bIndex) => {
         const trimmed = block.trim();
 
         // 1. 分割线 (--- 或 *** 或 ___)
         if (/^[-*_]{3,}$/.test(trimmed)) {
           return (
             <div key={bIndex} className="my-6 py-2 flex items-center justify-center gap-3">
-              <div className={`h-[1px] flex-1 ${
-                themeStyle === 'dark' ? 'bg-slate-700' : themeStyle === 'acid' ? 'bg-black h-[2px]' : 'bg-neutral-300'
-              }`} />
+              <div
+                className={`h-[1px] flex-1 ${
+                  themeStyle === 'dark'
+                    ? 'bg-slate-700'
+                    : themeStyle === 'acid'
+                    ? 'bg-black h-[2px]'
+                    : 'bg-neutral-300'
+                }`}
+              />
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: accentColor }} />
-                <span className="w-1.5 h-1.5 rotate-45 opacity-60" style={{ backgroundColor: accentColor }} />
+                <span
+                  className="w-1.5 h-1.5 rotate-45 opacity-60"
+                  style={{ backgroundColor: accentColor }}
+                />
               </div>
-              <div className={`h-[1px] flex-1 ${
-                themeStyle === 'dark' ? 'bg-slate-700' : themeStyle === 'acid' ? 'bg-black h-[2px]' : 'bg-neutral-300'
-              }`} />
+              <div
+                className={`h-[1px] flex-1 ${
+                  themeStyle === 'dark'
+                    ? 'bg-slate-700'
+                    : themeStyle === 'acid'
+                    ? 'bg-black h-[2px]'
+                    : 'bg-neutral-300'
+                }`}
+              />
             </div>
           );
         }
@@ -134,7 +151,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             <h3
               key={bIndex}
               className={`text-lg md:text-xl font-bold tracking-tight my-3 flex items-center gap-2 ${
-                themeStyle === 'dark' ? 'text-cyan-300' : themeStyle === 'acid' ? 'text-black font-black' : 'text-neutral-900'
+                themeStyle === 'dark'
+                  ? 'text-cyan-300'
+                  : themeStyle === 'acid'
+                  ? 'text-black font-black'
+                  : 'text-neutral-900'
               }`}
             >
               <span
@@ -161,7 +182,10 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
         // 5. 引用块 (> Quote)
         if (trimmed.startsWith('>')) {
-          const quoteLines = trimmed.split('\n').map((l) => l.replace(/^>\s*/, '')).join('\n');
+          const quoteLines = trimmed
+            .split('\n')
+            .map((l) => l.replace(/^>\s*/, ''))
+            .join('\n');
           return (
             <div
               key={bIndex}
@@ -251,7 +275,10 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         // 8. 普通段落 (支持段落内部单行换行)
         const lines = trimmed.split('\n');
         return (
-          <p key={bIndex} className="tracking-normal text-inherit opacity-90 break-words leading-relaxed">
+          <p
+            key={bIndex}
+            className="tracking-normal text-inherit opacity-90 break-words leading-relaxed"
+          >
             {lines.map((line, lIndex) => (
               <React.Fragment key={lIndex}>
                 {renderInlineStyles(line)}
@@ -260,7 +287,15 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             ))}
           </p>
         );
-      })}
-    </div>
-  );
-};
+      });
+    }, [content, accentColor, themeStyle]);
+
+    return (
+      <div className={`space-y-4 ${FONT_SIZE_CLASSES[fontSize]} ${ALIGN_CLASSES[align]}`}>
+        {renderedBlocks}
+      </div>
+    );
+  }
+);
+
+MarkdownRenderer.displayName = 'MarkdownRenderer';

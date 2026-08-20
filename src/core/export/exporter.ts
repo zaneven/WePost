@@ -1,7 +1,21 @@
 import { toPng, toJpeg, toBlob } from 'html-to-image';
-import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { ExportConfig } from '@/types/card';
+
+/**
+ * 等待页面字体完全加载就绪后再执行导出，
+ * 避免系统字体（Songti SC / STKaiti 等）尚未就绪时回退为默认字体，
+ * 导致导出图片衬线 / 楷体样式丢失。
+ */
+async function ensureFontsReady(): Promise<void> {
+  if (typeof document !== 'undefined' && document.fonts?.ready) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      // 字体就绪检测失败不阻断导出流程
+    }
+  }
+}
 
 /**
  * 导出单张卡片图片并触发本地下载
@@ -11,6 +25,8 @@ export async function exportCardImage(
   filename: string = 'wepost-card',
   config: ExportConfig = { scale: 2, format: 'png', quality: 0.95 }
 ): Promise<void> {
+  await ensureFontsReady();
+
   const pixelRatio = config.scale || 2;
 
   const filter = (node: HTMLElement) => {
@@ -26,6 +42,10 @@ export async function exportCardImage(
     quality: config.quality,
     cacheBust: true,
     filter,
+    // 卡片大量使用系统字体（Songti SC / STKaiti / PingFang SC），
+    // 这些字体无法被 html-to-image 通过 fetch 内联（受同源策略限制），
+    // 关闭字体嵌入以避免导出报错或长时间挂起，渲染时由浏览器原生字体栈保证。
+    skipFonts: true,
   };
 
   let dataUrl = '';
@@ -42,10 +62,13 @@ export async function exportCardImage(
  * 将卡片复制到系统剪贴板 (PNG Blob)
  */
 export async function copyCardToClipboard(element: HTMLElement): Promise<boolean> {
+  await ensureFontsReady();
+
   try {
     const blob = await toBlob(element, {
       pixelRatio: 2,
       cacheBust: true,
+      skipFonts: true,
     });
 
     if (!blob) {
@@ -63,25 +86,4 @@ export async function copyCardToClipboard(element: HTMLElement): Promise<boolean
     console.error('复制图片到剪贴板失败:', error);
     throw error;
   }
-}
-
-/**
- * 批量将多张卡片打包为 ZIP 下载
- */
-export async function exportMultipleCardsAsZip(
-  elements: HTMLElement[],
-  zipFilename: string = 'wepost-cards-batch'
-): Promise<void> {
-  const zip = new JSZip();
-
-  for (let i = 0; i < elements.length; i++) {
-    const el = elements[i];
-    const blob = await toBlob(el, { pixelRatio: 2 });
-    if (blob) {
-      zip.file(`card-${String(i + 1).padStart(2, '0')}.png`, blob);
-    }
-  }
-
-  const content = await zip.generateAsync({ type: 'blob' });
-  saveAs(content, `${zipFilename}.zip`);
 }

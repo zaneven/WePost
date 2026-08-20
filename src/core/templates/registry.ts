@@ -1,4 +1,4 @@
-import { TemplateMeta, AspectRatioMeta, CardData, TemplateId } from '@/types/card';
+import { TemplateMeta, AspectRatioMeta, AspectRatioType, CardData } from '@/types/card';
 
 export const ASPECT_RATIOS: AspectRatioMeta[] = [
   {
@@ -6,6 +6,8 @@ export const ASPECT_RATIOS: AspectRatioMeta[] = [
     ratio: '3:4',
     width: 1080,
     height: 1440,
+    canvasWidth: 540,
+    canvasHeight: 720,
     description: '微信图文多图、小红书贴图首选，排版视觉最舒适',
   },
   {
@@ -13,6 +15,8 @@ export const ASPECT_RATIOS: AspectRatioMeta[] = [
     ratio: '1:1',
     width: 1080,
     height: 1080,
+    canvasWidth: 600,
+    canvasHeight: 600,
     description: '朋友圈九宫格、金句摘录、每日打卡',
   },
   {
@@ -20,6 +24,8 @@ export const ASPECT_RATIOS: AspectRatioMeta[] = [
     ratio: '9:16',
     width: 1080,
     height: 1920,
+    canvasWidth: 450,
+    canvasHeight: 800,
     description: '微信视频号动态、故事长图、手机全屏壁纸',
   },
   {
@@ -27,6 +33,8 @@ export const ASPECT_RATIOS: AspectRatioMeta[] = [
     ratio: '2.35:1',
     width: 1080,
     height: 460,
+    canvasWidth: 705,
+    canvasHeight: 300,
     description: '微信公众平台推文主封面头图',
   },
   {
@@ -34,9 +42,26 @@ export const ASPECT_RATIOS: AspectRatioMeta[] = [
     ratio: '4:3',
     width: 1080,
     height: 810,
+    canvasWidth: 640,
+    canvasHeight: 480,
     description: '横版卡片、PPT配图、横屏分享',
   },
 ];
+
+/**
+ * 根据画面比例获取画板逻辑渲染尺寸 (逻辑像素)。
+ * 作为唯一的尺寸数据源，供 CardStage / CardRenderer 等组件统一引用，
+ * 避免多处硬编码导致的尺寸不一致。
+ */
+export function getCanvasDimensions(
+  ratio: AspectRatioType
+): { width: number; height: number } {
+  const meta = ASPECT_RATIOS.find((item) => item.ratio === ratio);
+  if (!meta) {
+    return { width: 540, height: 720 };
+  }
+  return { width: meta.canvasWidth, height: meta.canvasHeight };
+}
 
 export const TEMPLATES: TemplateMeta[] = [
   {
@@ -109,7 +134,6 @@ export const INITIAL_CARD_DATA: CardData = {
   author: 'WePost 研习社',
   date: '2026.08.19 · ISSUE 042',
   footerText: '保持专注 · 持续创造 · 记录真实的世界',
-  showQrPlaceholder: true,
   templateId: 'minimal-magazine',
   aspectRatio: '3:4',
   fontSize: 'base',

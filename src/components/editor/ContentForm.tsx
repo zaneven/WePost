@@ -1,18 +1,17 @@
 import React from 'react';
 import { CardData } from '@/types/card';
-import { 
-  Type, 
-  Tag, 
-  User, 
-  Calendar, 
-  Quote, 
-  Bold, 
-  Italic, 
-  Code, 
-  Highlighter, 
-  List, 
+import {
+  Type,
+  Tag,
+  User,
+  Calendar,
+  Quote,
+  Bold,
+  Italic,
+  Code,
+  Highlighter,
+  List,
   MessageSquareQuote,
-  Sparkles,
   BookOpen
 } from 'lucide-react';
 
@@ -58,10 +57,14 @@ export const ContentForm: React.FC<ContentFormProps> = ({
     <div className="space-y-6 text-neutral-900">
       {/* 预设文案快速切换 */}
       <div>
-        <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <BookOpen className="w-3.5 h-3.5 text-neutral-800" />
+        <div
+          role="group"
+          aria-label="灵感速选文案"
+          className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-2 flex items-center gap-1.5"
+        >
+          <BookOpen className="w-3.5 h-3.5 text-neutral-800" aria-hidden="true" />
           <span>灵感速选文案</span>
-        </label>
+        </div>
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
@@ -104,14 +107,18 @@ export const ContentForm: React.FC<ContentFormProps> = ({
       {/* 标题区 */}
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-neutral-800 mb-1 flex items-center justify-between">
+          <label
+            htmlFor="card-title"
+            className="block text-xs font-medium text-neutral-800 mb-1 flex items-center justify-between"
+          >
             <span className="flex items-center gap-1.5 font-bold">
-              <Type className="w-3.5 h-3.5 text-neutral-700" />
+              <Type className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
               主标题
             </span>
             <span className="text-[11px] text-neutral-500 font-normal">支持核心观点</span>
           </label>
           <textarea
+            id="card-title"
             rows={2}
             value={data.title}
             onChange={(e) => onChange({ title: e.target.value })}
@@ -122,10 +129,14 @@ export const ContentForm: React.FC<ContentFormProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 mb-1">
+            <label
+              htmlFor="card-subtitle"
+              className="block text-xs font-semibold text-neutral-700 mb-1"
+            >
               副标题 / 栏目名
             </label>
             <input
+              id="card-subtitle"
               type="text"
               value={data.subtitle}
               onChange={(e) => onChange({ subtitle: e.target.value })}
@@ -135,11 +146,15 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1">
-              <Tag className="w-3 h-3 text-neutral-600" />
+            <label
+              htmlFor="card-tag"
+              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+            >
+              <Tag className="w-3 h-3 text-neutral-600" aria-hidden="true" />
               分类标签
             </label>
             <input
+              id="card-tag"
               type="text"
               value={data.tag}
               onChange={(e) => onChange({ tag: e.target.value })}
@@ -153,15 +168,19 @@ export const ContentForm: React.FC<ContentFormProps> = ({
       {/* 正文编辑区 */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
-            <Quote className="w-3.5 h-3.5 text-neutral-700" />
+          <label
+            htmlFor="card-content-textarea"
+            className="text-xs font-bold text-neutral-800 flex items-center gap-1.5"
+          >
+            <Quote className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
             正文内容 (支持轻量 Markdown)
           </label>
-          <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex items-center gap-1 flex-wrap" role="group" aria-label="Markdown 格式工具">
             <button
               type="button"
               onClick={() => insertMarkdown('## ', '')}
               title="二级标题 ## title"
+              aria-label="插入二级标题"
               className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
               H2
@@ -170,54 +189,61 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               type="button"
               onClick={() => insertMarkdown('**', '**')}
               title="加粗 **text**"
+              aria-label="加粗"
               className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
-              <Bold className="w-3.5 h-3.5" />
+              <Bold className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => insertMarkdown('*', '*')}
               title="斜体 *text*"
+              aria-label="斜体"
               className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
-              <Italic className="w-3.5 h-3.5" />
+              <Italic className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => insertMarkdown('> ')}
               title="引用卡片 > quote"
+              aria-label="插入引用"
               className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
-              <MessageSquareQuote className="w-3.5 h-3.5" />
+              <MessageSquareQuote className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => insertMarkdown('==', '==')}
               title="重点高亮 ==highlight=="
+              aria-label="重点高亮"
               className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
-              <Highlighter className="w-3.5 h-3.5" />
+              <Highlighter className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => insertMarkdown('`', '`')}
               title="行内代码 `code`"
+              aria-label="行内代码"
               className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
-              <Code className="w-3.5 h-3.5" />
+              <Code className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => insertMarkdown('- ')}
               title="无序列表 - item"
+              aria-label="无序列表"
               className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
-              <List className="w-3.5 h-3.5" />
+              <List className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => insertMarkdown('1. ')}
               title="有序列表 1. item"
+              aria-label="有序列表"
               className="px-1.5 py-0.5 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
               1.
@@ -226,6 +252,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               type="button"
               onClick={() => insertMarkdown('\n---\n')}
               title="分割线 ---"
+              aria-label="分割线"
               className="px-1 py-0.5 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
             >
               —
@@ -247,11 +274,15 @@ export const ContentForm: React.FC<ContentFormProps> = ({
       <div className="space-y-3 pt-2 border-t border-neutral-200">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1">
-              <User className="w-3 h-3 text-neutral-600" />
+            <label
+              htmlFor="card-author"
+              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+            >
+              <User className="w-3 h-3 text-neutral-600" aria-hidden="true" />
               作者 / 公众号署名
             </label>
             <input
+              id="card-author"
               type="text"
               value={data.author}
               onChange={(e) => onChange({ author: e.target.value })}
@@ -261,11 +292,15 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-neutral-600" />
+            <label
+              htmlFor="card-date"
+              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+            >
+              <Calendar className="w-3 h-3 text-neutral-600" aria-hidden="true" />
               日期 / 期数
             </label>
             <input
+              id="card-date"
               type="text"
               value={data.date}
               onChange={(e) => onChange({ date: e.target.value })}
@@ -276,10 +311,14 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-neutral-700 mb-1">
+          <label
+            htmlFor="card-footer-text"
+            className="block text-xs font-semibold text-neutral-700 mb-1"
+          >
             底部标语 / Slogan
           </label>
           <input
+            id="card-footer-text"
             type="text"
             value={data.footerText}
             onChange={(e) => onChange({ footerText: e.target.value })}
@@ -289,8 +328,12 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          <label className="text-xs font-semibold text-neutral-700 flex items-center gap-2 cursor-pointer">
+          <label
+            htmlFor="card-show-watermark"
+            className="text-xs font-semibold text-neutral-700 flex items-center gap-2 cursor-pointer"
+          >
             <input
+              id="card-show-watermark"
               type="checkbox"
               checked={data.showWatermark ?? true}
               onChange={(e) => onChange({ showWatermark: e.target.checked })}
@@ -301,10 +344,12 @@ export const ContentForm: React.FC<ContentFormProps> = ({
 
           {data.showWatermark && (
             <input
+              id="card-watermark-text"
               type="text"
               value={data.watermarkText || ''}
               onChange={(e) => onChange({ watermarkText: e.target.value })}
               placeholder="水印文字"
+              aria-label="水印文字"
               className="w-36 text-xs font-medium rounded border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900"
             />
           )}

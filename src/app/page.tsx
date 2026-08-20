@@ -10,7 +10,7 @@ import { ContentForm } from '@/components/editor/ContentForm';
 import { StyleToolbar } from '@/components/editor/StyleToolbar';
 import { ExportPanel } from '@/components/editor/ExportPanel';
 import { CardStage } from '@/components/canvas/CardStage';
-import { ToastProvider } from '@/components/ui/Toast';
+import { useCardExport, DEFAULT_EXPORT_CONFIG } from '@/lib/useCardExport';
 import { Edit3, Palette, Download } from 'lucide-react';
 
 const STORAGE_KEY = 'wepost:card-data:v1';
@@ -33,6 +33,8 @@ export default function HomePage() {
   const cardData = history.present;
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'export'>('content');
   const exportTargetRef = useRef<HTMLDivElement>(null);
+  // 导出配置在画板快捷操作与配置面板间共享（单一数据源）
+  const cardExport = useCardExport(DEFAULT_EXPORT_CONFIG);
 
   const handleUpdateCard = useCallback(
     (updates: Partial<CardData>) => {
@@ -90,7 +92,6 @@ export default function HomePage() {
   }, [history]);
 
   return (
-    <ToastProvider>
     <div className="w-full min-h-[100dvh] flex flex-col bg-neutral-950 lg:h-[100dvh] lg:overflow-hidden">
       {/* 顶部固定导航 */}
       <Header
@@ -184,17 +185,23 @@ export default function HomePage() {
             )}
 
             {activeTab === 'export' && (
-              <ExportPanel data={cardData} renderTargetId="wepost-card-export-target" />
+              <ExportPanel
+                data={cardData}
+                exportState={cardExport}
+              />
             )}
           </div>
         </aside>
 
         {/* 右侧实时画板区域 (小屏优先可见并占据稳定高度，大屏自适应一屏) */}
         <main className="flex-1 min-w-0 flex flex-col min-h-0 h-[60vh] lg:h-full lg:overflow-hidden order-1 lg:order-2">
-          <CardStage data={cardData} renderRef={exportTargetRef} />
+          <CardStage
+            data={cardData}
+            renderRef={exportTargetRef}
+            exportState={cardExport}
+          />
         </main>
       </div>
     </div>
-    </ToastProvider>
   );
 }

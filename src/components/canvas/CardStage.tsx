@@ -2,14 +2,18 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CardData } from '@/types/card';
 import { CardRenderer } from './CardRenderer';
 import { TEMPLATES, getCanvasDimensions } from '@/core/templates/registry';
-import { ZoomIn, ZoomOut, Maximize2, Eye } from 'lucide-react';
+import type { useCardExport } from '@/lib/useCardExport';
+import { ZoomIn, ZoomOut, Maximize2, Eye, Download, Copy, Check, Loader2 } from 'lucide-react';
+
+type ExportState = ReturnType<typeof useCardExport>;
 
 interface CardStageProps {
   data: CardData;
   renderRef?: React.RefObject<HTMLDivElement>;
+  exportState: ExportState;
 }
 
-export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
+export const CardStage: React.FC<CardStageProps> = ({ data, renderRef, exportState }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState<number>(0.75);
   const [isAutoFit, setIsAutoFit] = useState<boolean>(true);
@@ -184,15 +188,57 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
         </div>
       </div>
 
-      {/* 底部状态信息条 */}
-      <div className="h-8 border-t border-neutral-800/80 bg-neutral-950/90 px-5 flex items-center justify-between text-[11px] text-neutral-500 font-mono z-20 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span>所见即所得 · 纯客户端秒级无损渲染</span>
+      {/* 底部常驻导出操作条 (替代纯状态文案，让导出成为一等公民) */}
+      <div className="border-t border-neutral-800/80 bg-neutral-950/90 px-4 py-2.5 flex items-center justify-between gap-3 z-20 flex-shrink-0">
+        <div className="flex items-center gap-2 text-[11px] text-neutral-500 font-mono min-w-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+          <span className="hidden sm:inline truncate">{rawW * 2} × {rawH * 2} px · @2x</span>
+          <span className="sm:hidden">{data.aspectRatio}</span>
         </div>
-        <div className="flex items-center gap-4">
-          <span>{rawW * 2} × {rawH * 2} px (@2x)</span>
-          <span>超清无损导出</span>
+        <div className="flex items-center gap-2">
+          {/* 复制到剪贴板 */}
+          <button
+            type="button"
+            onClick={() => exportState.handleCopyClipboard()}
+            disabled={exportState.isCopying}
+            aria-label="复制图片到剪贴板"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              exportState.copiedSuccess
+                ? 'bg-emerald-600 text-white'
+                : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-100'
+            }`}
+          >
+            {exportState.isCopying ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+            ) : exportState.copiedSuccess ? (
+              <Check className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+            <span className="hidden sm:inline">
+              {exportState.copiedSuccess ? '已复制' : '复制图片'}
+            </span>
+          </button>
+
+          {/* 下载主操作 */}
+          <button
+            type="button"
+            onClick={() => exportState.handleDownload(data)}
+            disabled={exportState.isExporting}
+            aria-label={`下载 ${exportState.config.scale}x 高清图片`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-md shadow-emerald-500/20"
+          >
+            {exportState.isExporting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+            <span>
+              {exportState.isExporting
+                ? '导出中…'
+                : `下载 ${exportState.config.scale}x`}
+            </span>
+          </button>
         </div>
       </div>
     </div>

@@ -5,6 +5,10 @@ import {
 } from '@/types/card';
 import { TEMPLATES, ASPECT_RATIOS } from '@/core/templates/registry';
 import {
+  TemplateThumbnail,
+  AspectRatioThumbnail,
+} from '@/components/canvas/TemplateThumbnail';
+import {
   Layout,
   Palette,
   Sliders,
@@ -37,27 +41,39 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({ data, onChange }) =>
                 key={tmpl.id}
                 type="button"
                 onClick={() => onChange({ templateId: tmpl.id })}
-                className={`relative p-3 rounded-xl border text-left transition-all group overflow-hidden ${
+                aria-pressed={isSelected}
+                className={`relative rounded-xl border text-left transition-all group overflow-hidden ${
                   isSelected
-                    ? 'border-neutral-900 ring-2 ring-neutral-900/10 shadow-sm bg-neutral-50'
-                    : 'border-neutral-200 hover:border-neutral-400 bg-white'
+                    ? 'border-neutral-900 ring-2 ring-neutral-900/10 shadow-sm'
+                    : 'border-neutral-200 hover:border-neutral-400'
                 }`}
               >
-                {/* 顶部色彩小标 */}
-                <div className="flex items-center justify-between mb-2">
+                {/* 真实模板缩略图预览 */}
+                <div className="relative">
+                  <TemplateThumbnail
+                    templateId={tmpl.id}
+                    aspectRatio={data.aspectRatio}
+                    width={160}
+                  />
+                  {/* 选中态遮罩 + 角标 */}
                   <div
-                    className="w-5 h-5 rounded-md border border-black/10 shadow-inner flex items-center justify-center text-white"
-                    style={{ background: tmpl.bgPreview }}
-                  >
-                    {isSelected && <Check className="w-3 h-3 text-neutral-900" />}
-                  </div>
-                  <span className="text-[10px] font-mono text-neutral-400">
-                    {tmpl.tags[0]}
-                  </span>
+                    className={`absolute inset-0 transition-opacity ${
+                      isSelected ? 'bg-neutral-900/10' : 'bg-transparent'
+                    }`}
+                  />
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-neutral-900 flex items-center justify-center shadow-md">
+                      <Check className="w-3 h-3 text-white" aria-hidden="true" />
+                    </div>
+                  )}
                 </div>
-
-                <div className="font-bold text-xs text-neutral-900">{tmpl.name}</div>
-                <div className="text-[10px] text-neutral-500 font-mono line-clamp-1">{tmpl.subtitle}</div>
+                {/* 名称条 */}
+                <div className="px-2 py-1.5 bg-white">
+                  <div className="font-bold text-xs text-neutral-900">{tmpl.name}</div>
+                  <div className="text-[10px] text-neutral-400 font-mono line-clamp-1">
+                    {tmpl.tags[0]}
+                  </div>
+                </div>
               </button>
             );
           })}
@@ -79,13 +95,16 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({ data, onChange }) =>
                 key={item.ratio}
                 type="button"
                 onClick={() => onChange({ aspectRatio: item.ratio })}
-                className={`p-2.5 rounded-lg border text-left flex items-center justify-between transition-all ${
+                aria-pressed={isSelected}
+                className={`p-2.5 rounded-lg border text-left flex items-center gap-2.5 transition-all ${
                   isSelected
                     ? 'border-neutral-900 bg-neutral-900 text-white font-medium shadow-sm'
                     : 'border-neutral-200 hover:border-neutral-300 bg-white text-neutral-800'
                 }`}
               >
-                <div>
+                {/* 真实比例可视化矩形 */}
+                <AspectRatioThumbnail ratio={item.ratio} />
+                <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold">{item.label}</div>
                   <div
                     className={`text-[10px] ${
@@ -95,7 +114,7 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({ data, onChange }) =>
                     {item.width} × {item.height}
                   </div>
                 </div>
-                {isSelected && <Check className="w-4 h-4 text-white" />}
+                {isSelected && <Check className="w-4 h-4 text-white flex-shrink-0" aria-hidden="true" />}
               </button>
             );
           })}

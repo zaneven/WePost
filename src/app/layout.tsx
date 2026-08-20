@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { ToastProvider } from '@/components/ui/Toast';
 
 export const metadata: Metadata = {
   title: 'WePost - 现代微信贴图号图片生成器 & 高审美排版工作台',
@@ -43,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className="antialiased min-h-[100dvh] bg-neutral-950 text-neutral-900 flex flex-col">
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

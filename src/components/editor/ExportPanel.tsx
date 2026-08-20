@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { CardData, ExportConfig } from '@/types/card';
-import { buildCardFilename } from '@/lib/filename';
-import { useToast } from '@/components/ui/Toast';
+import React from 'react';
+import { CardData } from '@/types/card';
+import type { useCardExport } from '@/lib/useCardExport';
 import {
   Download,
   Copy,
@@ -11,65 +10,23 @@ import {
   Loader2
 } from 'lucide-react';
 
+type ExportState = ReturnType<typeof useCardExport>;
+
 interface ExportPanelProps {
   data: CardData;
-  renderTargetId?: string;
+  exportState: ExportState;
 }
 
-export const ExportPanel: React.FC<ExportPanelProps> = ({
-  data,
-  renderTargetId = 'wepost-card-export-target',
-}) => {
-  const [config, setConfig] = useState<ExportConfig>({
-    scale: 2,
-    format: 'png',
-    quality: 0.95,
-  });
-
-  const [isExporting, setIsExporting] = useState(false);
-  const [isCopying, setIsCopying] = useState(false);
-  const [copiedSuccess, setCopiedSuccess] = useState(false);
-  const toast = useToast();
-
-  const getExportElement = (): HTMLElement | null => {
-    return document.getElementById(renderTargetId);
-  };
-
-  const handleDownload = async () => {
-    const el = getExportElement();
-    if (!el) return;
-
-    try {
-      setIsExporting(true);
-      // 动态加载导出依赖 (html-to-image / file-saver)，避免进入首屏 bundle
-      const { exportCardImage } = await import('@/core/export/exporter');
-      const filename = buildCardFilename(data.templateId, data.title);
-      await exportCardImage(el, filename, config);
-    } catch (err) {
-      console.error('下载失败:', err);
-      toast.show('导出图片失败，请重试', 'error');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleCopyClipboard = async () => {
-    const el = getExportElement();
-    if (!el) return;
-
-    try {
-      setIsCopying(true);
-      const { copyCardToClipboard } = await import('@/core/export/exporter');
-      await copyCardToClipboard(el);
-      setCopiedSuccess(true);
-      setTimeout(() => setCopiedSuccess(false), 2500);
-    } catch (err) {
-      console.error('复制失败:', err);
-      toast.show('复制到剪贴板失败，可尝试直接点击下载图片', 'error');
-    } finally {
-      setIsCopying(false);
-    }
-  };
+export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState }) => {
+  const {
+    config,
+    setConfig,
+    isExporting,
+    isCopying,
+    copiedSuccess,
+    handleDownload,
+    handleCopyClipboard,
+  } = exportState;
 
   return (
     <div className="space-y-5">
@@ -149,7 +106,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
         {/* 一键复制到剪贴板 */}
         <button
           type="button"
-          onClick={handleCopyClipboard}
+          onClick={() => handleCopyClipboard()}
           disabled={isCopying}
           className={`w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all shadow-md ${
             copiedSuccess
@@ -178,7 +135,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
         {/* 下载高清图片 */}
         <button
           type="button"
-          onClick={handleDownload}
+          onClick={() => handleDownload(data)}
           disabled={isExporting}
           className="w-full py-3 px-4 rounded-xl border border-neutral-300 hover:border-neutral-900 hover:bg-neutral-50 text-neutral-900 font-semibold text-sm flex items-center justify-center gap-2 transition-all"
         >

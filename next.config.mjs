@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 静态导出配置（构建产物输出至 out 文件夹，适配 Cloudflare Pages 静态托管）
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
   // 严格模式：开发期双调用 effect / reducer 以暴露副作用。
   // useCardHistory 已规避嵌套 state updater，replace 与键盘 effect 均幂等，可安全开启。
   reactStrictMode: true,

@@ -30,7 +30,7 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({ data, onChange }) =>
       <div>
         <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
           <Palette className="w-3.5 h-3.5 text-neutral-700" />
-          <span>贴图风格模版 (6 款设计感预设)</span>
+          <span>贴图风格模版 ({TEMPLATES.length} 款设计感预设)</span>
         </label>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">

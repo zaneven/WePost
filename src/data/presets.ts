@@ -1,6 +1,15 @@
 import type { CardData } from '@/types/card';
 
-export type PresetType = 'essay' | 'quote' | 'news' | 'note' | 'acid';
+export type PresetType =
+  | 'essay'
+  | 'quote'
+  | 'news'
+  | 'note'
+  | 'acid'
+  | 'ink'
+  | 'code'
+  | 'editorial'
+  | 'neon';
 
 export interface PresetMeta {
   type: PresetType;
@@ -90,6 +99,70 @@ export const PRESETS: PresetMeta[] = [
       author: '态度先锋队',
       date: '2026 / VOL.09',
       footerText: '拒绝平庸 · 勇敢发声 · DO SOMETHING COOL',
+      fontFamily: 'sans',
+      aspectRatio: '3:4',
+    },
+  },
+  {
+    type: 'ink',
+    label: '水墨随笔',
+    overrides: {
+      templateId: 'ink-wash',
+      title: '山高水长，行稳致远',
+      subtitle: 'INK WASH / 水墨随笔',
+      tag: '东方意境',
+      content: `落笔处，山势已成。\n\n留白，是为了让风穿过纸面，让墨自己说话。\n\n> 急不如缓，缓中有力；静水流深，大音希声。\n\n写一页，读一页，皆是修行。`,
+      author: '半山居',
+      date: '甲辰年 · 仲秋',
+      footerText: '笔墨之间 · 自有天地',
+      fontFamily: 'serif',
+      aspectRatio: '3:4',
+    },
+  },
+  {
+    type: 'code',
+    label: '开发笔记',
+    overrides: {
+      templateId: 'terminal-code',
+      title: '少写代码，多读代码',
+      subtitle: '~/dev-notes — zsh',
+      tag: 'dev.note',
+      content: `好代码不是写出来的，是读出来的。\n\n- 先读三遍，再动一行\n- 删除，是最好的重构\n- 命名即设计\n\n> 提交信息要写给六个月后的自己看。`,
+      author: 'dev@wepost',
+      date: 'commit 4f9a2c1',
+      footerText: 'ship · learn · repeat',
+      fontFamily: 'mono',
+      aspectRatio: '9:16',
+    },
+  },
+  {
+    type: 'editorial',
+    label: '评论专栏',
+    overrides: {
+      templateId: 'editorial-bold',
+      title: '算法之外，仍需人的判断',
+      subtitle: 'OPINION / 评论专栏',
+      tag: '观点评论',
+      content: `当一切都能被生成，唯有判断不可被外包。\n\n效率归机器，温度归人。真正的护城河，是审美与品味。\n\n- 信息同质化时代，独特即稀缺\n- 克制，是最高级的表达\n\n> 不盲从算法，而重塑算法。`,
+      author: '特约评论员',
+      date: 'ISSUE 042 · 2026',
+      footerText: '以文字，重塑算法的世界',
+      fontFamily: 'sans',
+      aspectRatio: '3:4',
+    },
+  },
+  {
+    type: 'neon',
+    label: '赛博信号',
+    overrides: {
+      templateId: 'neon-cyber',
+      title: '在数字洪流里，保留一点叛逆',
+      subtitle: 'SIGNAL / 未来观察',
+      tag: '赛博',
+      content: `信号过载的夜里，做那个拒绝静默的人。\n\n> 与其被推流，不如自己造浪。\n\n保持锋利，保持好奇。`,
+      author: 'NEON.OPERATOR',
+      date: '2049.07.21',
+      footerText: 'jack in · ride the signal',
       fontFamily: 'sans',
       aspectRatio: '3:4',
     },

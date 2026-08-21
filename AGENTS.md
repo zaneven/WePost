@@ -131,6 +131,19 @@ WePost/
 
 ---
 
+### 5. 卡片数据预填充注入契约（#card= hash）
+
+为支持外部（如 `.claude/skills/wepost-card-gen` skill、分享链接）一键把结构化内容注入画板，应用接受 URL hash 形式的卡片数据预填充：
+
+- **协议**：`http://localhost:3000/#card=<base64url-json>`，其中 JSON 为合法的 `Partial<CardData>`。
+- **实现**：`src/lib/cardImport.ts` 的 `decodeCardDataFromHash`（纯函数，可单测）+ `loadCardDataFromHash`（读取并消费 hash）。
+- **优先级**：URL hash 注入 > localStorage 上次编辑 > `INITIAL_CARD_DATA` 默认示例。
+- **向后兼容**：无 `#card=` 时行为与此前完全一致；hash 消费后清除，刷新读取 localStorage 中的最新编辑。
+- **编码工具**：`scripts/gen-card-url.mjs`（读 CardData JSON 文件 → 输出预填充 URL）。
+- **约束**：注入的 `templateId` / `aspectRatio` 必须为合法枚举值；其余字段缺失时与默认值合并兜底。修改注入逻辑须同步更新 `tests/cardImport.test.ts`。
+
+---
+
 ## 7. Git 提交规范 (Conventional Commits)
 
 提交信息一律采用小写类型前缀，格式如下：

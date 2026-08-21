@@ -6,12 +6,22 @@ import type { CardData } from '@/types/card';
 const base: CardData = { ...INITIAL_CARD_DATA };
 
 describe('presets: PRESETS', () => {
-  it('注册了 5 个预设且 type 唯一', () => {
+  it('注册了 9 个预设且 type 唯一', () => {
     const types = PRESETS.map((p) => p.type);
-    expect(types).toHaveLength(5);
-    expect(new Set(types).size).toBe(5);
+    expect(types).toHaveLength(9);
+    expect(new Set(types).size).toBe(9);
     expect(types).toEqual(
-      expect.arrayContaining(['essay', 'quote', 'news', 'note', 'acid'])
+      expect.arrayContaining([
+        'essay',
+        'quote',
+        'news',
+        'note',
+        'acid',
+        'ink',
+        'code',
+        'editorial',
+        'neon',
+      ])
     );
   });
 
@@ -45,6 +55,19 @@ describe('buildPresetData', () => {
     const result = buildPresetData(base, 'acid');
     expect(result.fontFamily).toBe('sans');
     expect(result.templateId).toBe('acid-bold');
+  });
+
+  it('code 预设使用等宽字体、9:16 与终端代码模板', () => {
+    const result = buildPresetData(base, 'code');
+    expect(result.fontFamily).toBe('mono');
+    expect(result.aspectRatio).toBe('9:16');
+    expect(result.templateId).toBe('terminal-code');
+  });
+
+  it('ink 预设使用衬线与水墨留白模板', () => {
+    const result = buildPresetData(base, 'ink');
+    expect(result.fontFamily).toBe('serif');
+    expect(result.templateId).toBe('ink-wash');
   });
 
   it('未知预设返回原数据不变', () => {

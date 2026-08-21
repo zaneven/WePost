@@ -64,10 +64,24 @@ describe('getMobileStageHeightVh', () => {
 });
 
 describe('registry: TEMPLATES', () => {
-  it('注册了 6 个模板且 id 唯一', () => {
+  it('注册了 10 个模板且 id 唯一', () => {
     const ids = TEMPLATES.map((t) => t.id);
-    expect(ids).toHaveLength(6);
-    expect(new Set(ids).size).toBe(6);
+    expect(ids).toHaveLength(10);
+    expect(new Set(ids).size).toBe(10);
+  });
+
+  it('每个模板都有默认字体与强调色', () => {
+    for (const t of TEMPLATES) {
+      expect(t.defaultFont).toBeTruthy();
+      expect(t.accentColor).toMatch(/^#/);
+    }
+  });
+
+  it('新增的 4 个模板均已注册', () => {
+    const ids = TEMPLATES.map((t) => t.id);
+    expect(ids).toEqual(
+      expect.arrayContaining(['ink-wash', 'terminal-code', 'editorial-bold', 'neon-cyber'])
+    );
   });
 
   it('每个模板都有默认字体与强调色', () => {

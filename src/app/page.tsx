@@ -6,6 +6,7 @@ import { INITIAL_CARD_DATA, getMobileStageHeightVh } from '@/core/templates/regi
 import { buildPresetData, type PresetType } from '@/data/presets';
 import { useCardHistory } from '@/lib/useCardHistory';
 import { useCardOverflow } from '@/lib/useCardOverflow';
+import { loadCardDataFromHash } from '@/lib/cardImport';
 import { Header } from '@/components/editor/Header';
 import { ContentForm } from '@/components/editor/ContentForm';
 import { StyleToolbar } from '@/components/editor/StyleToolbar';
@@ -60,9 +61,24 @@ export default function HomePage() {
     [cardData, history]
   );
 
-  // 客户端挂载后从 localStorage 恢复（replace 不入历史栈，避免污染撤销）
+  // 客户端挂载后恢复数据（replace 不入历史栈，避免污染撤销）。
+  // 优先级：URL hash 注入（#card=<base64url>）> localStorage 上次编辑 > 默认示例。
+  // 这样 wepost-card-gen skill 生成的预填充链接可在挂载瞬间直接渲染卡片。
+  // 注：hash 注入时同步落盘 localStorage——React 18 StrictMode（reactStrictMode=true）
+  // 会双调用本 effect：首次消费 hash 并替换为注入值，第二次 hash 已被消费而回退到
+  // localStorage；同步写入保证第二次也能读回最新注入值，避免被陈旧 localStorage 覆盖。
   useEffect(() => {
-    history.replace(loadPersistedCardData());
+    const fromHash = loadCardDataFromHash();
+    if (fromHash) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fromHash));
+      } catch {
+        // 容量超限或隐私模式，静默忽略
+      }
+      history.replace(fromHash);
+    } else {
+      history.replace(loadPersistedCardData());
+    }
     // 仅执行一次
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

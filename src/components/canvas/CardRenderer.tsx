@@ -7,6 +7,10 @@ import { VintageNews } from '../templates/VintageNews';
 import { WarmMemo } from '../templates/WarmMemo';
 import { ZenQuote } from '../templates/ZenQuote';
 import { AcidBold } from '../templates/AcidBold';
+import { InkWash } from '../templates/InkWash';
+import { TerminalCode } from '../templates/TerminalCode';
+import { EditorialBold } from '../templates/EditorialBold';
+import { NeonCyber } from '../templates/NeonCyber';
 
 interface CardRendererProps {
   data: CardData;
@@ -31,6 +35,14 @@ export const CardRenderer: React.FC<CardRendererProps> = ({ data, renderRef }) =
         return <ZenQuote data={data} />;
       case 'acid-bold':
         return <AcidBold data={data} />;
+      case 'ink-wash':
+        return <InkWash data={data} />;
+      case 'terminal-code':
+        return <TerminalCode data={data} />;
+      case 'editorial-bold':
+        return <EditorialBold data={data} />;
+      case 'neon-cyber':
+        return <NeonCyber data={data} />;
       default:
         return <MinimalMagazine data={data} />;
     }

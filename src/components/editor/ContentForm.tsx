@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { CardData } from '@/types/card';
+import type { PresetType } from '@/data/presets';
 import { useToast } from '@/components/ui/Toast';
 import {
   Type,
@@ -22,7 +23,7 @@ import {
 interface ContentFormProps {
   data: CardData;
   onChange: (updates: Partial<CardData>) => void;
-  onApplyPresetSample: (type: 'essay' | 'quote' | 'news' | 'note' | 'acid') => void;
+  onApplyPresetSample: (type: PresetType) => void;
   /** 卡片内容是否已溢出画板（被裁切） */
   isOverflowing?: boolean;
 }
@@ -144,6 +145,34 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
           >
             态度先锋
+          </button>
+          <button
+            type="button"
+            onClick={() => onApplyPresetSample('ink')}
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+          >
+            水墨随笔
+          </button>
+          <button
+            type="button"
+            onClick={() => onApplyPresetSample('code')}
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+          >
+            开发笔记
+          </button>
+          <button
+            type="button"
+            onClick={() => onApplyPresetSample('editorial')}
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+          >
+            评论专栏
+          </button>
+          <button
+            type="button"
+            onClick={() => onApplyPresetSample('neon')}
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+          >
+            赛博信号
           </button>
         </div>
       </div>
@@ -335,7 +364,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           rows={8}
           value={data.content}
           onChange={(e) => onChange({ content: e.target.value })}
-          placeholder="输入正文，段落之间空一行。支持 ## 标题、**加粗**、*斜体*、> 引用金句、- 列表、1. 编号、--- 分割线..."
+          placeholder="输入正文，不同格式换行即可分块。支持 ## 标题、**加粗**、*斜体*、> 引用金句、- 列表、1. 编号、--- 分割线..."
           className={`w-full text-sm font-normal rounded-lg border bg-white text-neutral-900 placeholder:text-neutral-400 p-3 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 font-sans ${
             isOverflowing
               ? 'border-amber-400 focus:ring-amber-500/20 focus:border-amber-500'
@@ -354,7 +383,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             {isOverflowing && <AlertTriangle className="w-3 h-3" aria-hidden="true" />}
             {isOverflowing
               ? '正文已超出画板范围，部分内容将被裁切，建议精简或缩小字号'
-              : '段落之间空一行以正确分块'}
+              : '不同格式换行即可分块，空一行可分段'}
           </span>
           <span className="font-mono flex-shrink-0">{data.content.length} 字</span>
         </div>

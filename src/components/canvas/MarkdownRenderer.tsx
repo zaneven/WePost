@@ -9,6 +9,88 @@ interface MarkdownRendererProps {
   themeStyle?: 'minimal' | 'dark' | 'vintage' | 'warm' | 'zen' | 'acid';
 }
 
+// 块类型：每一行会被归类为下列之一
+type BlockType = 'hr' | 'h1' | 'h2' | 'h3' | 'quote' | 'ol' | 'ul' | 'paragraph';
+
+interface ParsedBlock {
+  type: BlockType;
+  /** 已逐行 trim 的有效行 */
+  lines: string[];
+}
+
+// 识别单行所属的块类型
+function detectLineType(line: string): BlockType | 'blank' {
+  const t = line.trim();
+  if (t.length === 0) return 'blank';
+  if (/^[-*_]{3,}$/.test(t)) return 'hr';
+  if (t.startsWith('# ')) return 'h1';
+  if (t.startsWith('## ')) return 'h2';
+  if (t.startsWith('### ')) return 'h3';
+  if (t.startsWith('>')) return 'quote';
+  if (/^\d+\.\s+/.test(t)) return 'ol';
+  if (/^[-*•]\s+/.test(t)) return 'ul';
+  return 'paragraph';
+}
+
+// 同类相邻行可合并为同一块的类型（列表 / 引用）
+const MERGEABLE_BLOCKS = new Set<BlockType>(['ul', 'ol', 'quote']);
+
+/**
+ * 将 Markdown 文本逐行扫描并按块类型聚合。
+ *
+ * 与原先的 `content.split('\n\n')` 不同，本解析器在「不同格式之间只需单换行即可正确分块」——
+ * 例如「## 标题」紧跟一行「正文」即可分别渲染为标题块与段落块，无需中间再空一行。
+ * 列表 / 引用的连续同类行仍会合并为同一块，段落内部的单行换行也仍按软换行处理。
+ */
+function parseBlocks(content: string): ParsedBlock[] {
+  const lines = content.split('\n');
+  const blocks: ParsedBlock[] = [];
+  let current: ParsedBlock | null = null;
+
+  const flush = () => {
+    if (current) {
+      blocks.push(current);
+      current = null;
+    }
+  };
+
+  for (const raw of lines) {
+    const type = detectLineType(raw);
+    const trimmedLine = raw.trim();
+
+    // 空行：结束当前块
+    if (type === 'blank') {
+      flush();
+      continue;
+    }
+
+    // 独立块：标题与分割线始终自成一块
+    if (type === 'hr' || type === 'h1' || type === 'h2' || type === 'h3') {
+      flush();
+      blocks.push({ type, lines: [trimmedLine] });
+      continue;
+    }
+
+    // 可合并块（列表 / 引用）：同类相邻行并入当前块
+    if (current && current.type === type && MERGEABLE_BLOCKS.has(type)) {
+      current.lines.push(trimmedLine);
+      continue;
+    }
+
+    // 段落：连续普通行合并（段落内部单行换行）
+    if (current && current.type === 'paragraph' && type === 'paragraph') {
+      current.lines.push(trimmedLine);
+      continue;
+    }
+
+    // 类型切换：结束当前块并开启新块
+    flush();
+    current = { type, lines: [trimmedLine] };
+  }
+  flush();
+  return blocks;
+}
+
 // 字号映射 (常量，避免随组件重渲染重建)
 const FONT_SIZE_CLASSES: Record<FontSizeType, string> = {
   sm: 'text-[14px] leading-[1.8]',
@@ -87,206 +169,210 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
         return parts;
       };
 
-      const blocks = content.split('\n\n').filter((b) => b.trim().length > 0);
+      const blocks = parseBlocks(content);
 
       return blocks.map((block, bIndex) => {
-        const trimmed = block.trim();
-
-        // 1. 分割线 (--- 或 *** 或 ___)
-        if (/^[-*_]{3,}$/.test(trimmed)) {
-          return (
-            <div key={bIndex} className="my-6 py-2 flex items-center justify-center gap-3">
-              <div
-                className={`h-[1px] flex-1 ${
-                  themeStyle === 'dark'
-                    ? 'bg-slate-700'
-                    : themeStyle === 'acid'
-                    ? 'bg-black h-[2px]'
-                    : 'bg-neutral-300'
-                }`}
-              />
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: accentColor }} />
-                <span
-                  className="w-1.5 h-1.5 rotate-45 opacity-60"
-                  style={{ backgroundColor: accentColor }}
+        switch (block.type) {
+          // 1. 分割线 (--- 或 *** 或 ___)
+          case 'hr':
+            return (
+              <div key={bIndex} className="my-6 py-2 flex items-center justify-center gap-3">
+                <div
+                  className={`h-[1px] flex-1 ${
+                    themeStyle === 'dark'
+                      ? 'bg-slate-700'
+                      : themeStyle === 'acid'
+                      ? 'bg-black h-[2px]'
+                      : 'bg-neutral-300'
+                  }`}
+                />
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: accentColor }} />
+                  <span
+                    className="w-1.5 h-1.5 rotate-45 opacity-60"
+                    style={{ backgroundColor: accentColor }}
+                  />
+                </div>
+                <div
+                  className={`h-[1px] flex-1 ${
+                    themeStyle === 'dark'
+                      ? 'bg-slate-700'
+                      : themeStyle === 'acid'
+                      ? 'bg-black h-[2px]'
+                      : 'bg-neutral-300'
+                  }`}
                 />
               </div>
-              <div
-                className={`h-[1px] flex-1 ${
+            );
+
+          // 2. 一级标题 (# Heading 1)
+          case 'h1': {
+            const titleText = block.lines[0].replace(/^#\s+/, '');
+            return (
+              <h2
+                key={bIndex}
+                className={`text-xl md:text-2xl font-bold tracking-tight my-4 pt-2 border-b pb-2 ${
                   themeStyle === 'dark'
-                    ? 'bg-slate-700'
+                    ? 'text-white border-slate-800'
                     : themeStyle === 'acid'
-                    ? 'bg-black h-[2px]'
-                    : 'bg-neutral-300'
+                    ? 'text-black border-black border-b-2 font-black'
+                    : 'text-neutral-900 border-neutral-200'
                 }`}
-              />
-            </div>
-          );
-        }
+              >
+                {renderInlineStyles(titleText)}
+              </h2>
+            );
+          }
 
-        // 2. 一级标题 (# Heading 1)
-        if (trimmed.startsWith('# ')) {
-          const titleText = trimmed.replace(/^#\s+/, '');
-          return (
-            <h2
-              key={bIndex}
-              className={`text-xl md:text-2xl font-bold tracking-tight my-4 pt-2 border-b pb-2 ${
-                themeStyle === 'dark'
-                  ? 'text-white border-slate-800'
-                  : themeStyle === 'acid'
-                  ? 'text-black border-black border-b-2 font-black'
-                  : 'text-neutral-900 border-neutral-200'
-              }`}
-            >
-              {renderInlineStyles(titleText)}
-            </h2>
-          );
-        }
+          // 3. 二级标题 (## Heading 2)
+          case 'h2': {
+            const titleText = block.lines[0].replace(/^##\s+/, '');
+            return (
+              <h3
+                key={bIndex}
+                className={`text-lg md:text-xl font-bold tracking-tight my-3 flex items-center gap-2 ${
+                  themeStyle === 'dark'
+                    ? 'text-cyan-300'
+                    : themeStyle === 'acid'
+                    ? 'text-black font-black'
+                    : 'text-neutral-900'
+                }`}
+              >
+                <span
+                  className="w-1 h-4 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: accentColor }}
+                />
+                <span>{renderInlineStyles(titleText)}</span>
+              </h3>
+            );
+          }
 
-        // 3. 二级标题 (## Heading 2)
-        if (trimmed.startsWith('## ')) {
-          const titleText = trimmed.replace(/^##\s+/, '');
-          return (
-            <h3
-              key={bIndex}
-              className={`text-lg md:text-xl font-bold tracking-tight my-3 flex items-center gap-2 ${
-                themeStyle === 'dark'
-                  ? 'text-cyan-300'
-                  : themeStyle === 'acid'
-                  ? 'text-black font-black'
-                  : 'text-neutral-900'
-              }`}
-            >
-              <span
-                className="w-1 h-4 rounded-full flex-shrink-0"
-                style={{ backgroundColor: accentColor }}
-              />
-              <span>{renderInlineStyles(titleText)}</span>
-            </h3>
-          );
-        }
+          // 4. 三级标题 (### Heading 3)
+          case 'h3': {
+            const titleText = block.lines[0].replace(/^###\s+/, '');
+            return (
+              <h4
+                key={bIndex}
+                className="text-base md:text-lg font-semibold tracking-normal my-2.5 opacity-95 text-inherit"
+              >
+                {renderInlineStyles(titleText)}
+              </h4>
+            );
+          }
 
-        // 4. 三级标题 (### Heading 3)
-        if (trimmed.startsWith('### ')) {
-          const titleText = trimmed.replace(/^###\s+/, '');
-          return (
-            <h4
-              key={bIndex}
-              className="text-base md:text-lg font-semibold tracking-normal my-2.5 opacity-95 text-inherit"
-            >
-              {renderInlineStyles(titleText)}
-            </h4>
-          );
-        }
-
-        // 5. 引用块 (> Quote)
-        if (trimmed.startsWith('>')) {
-          const quoteLines = trimmed
-            .split('\n')
-            .map((l) => l.replace(/^>\s*/, ''))
-            .join('\n');
-          return (
-            <div
-              key={bIndex}
-              className={`my-5 py-3 px-5 rounded-r-lg relative transition-all ${
-                themeStyle === 'dark'
-                  ? 'bg-white/5 border-l-4'
-                  : themeStyle === 'vintage'
-                  ? 'bg-amber-900/5 border-l-4 italic'
-                  : themeStyle === 'warm'
-                  ? 'bg-amber-500/10 border-l-4 rounded-lg'
-                  : themeStyle === 'acid'
-                  ? 'bg-black text-white border-2 border-black font-bold p-4'
-                  : themeStyle === 'zen'
-                  ? 'bg-transparent border-l-2 py-4 italic text-neutral-800'
-                  : 'bg-neutral-100/70 border-l-4'
-              }`}
-              style={{
-                borderColor: themeStyle === 'acid' ? '#000000' : accentColor,
-              }}
-            >
-              <div className="tracking-wide font-medium leading-relaxed opacity-95">
-                {renderInlineStyles(quoteLines)}
+          // 5. 引用块 (> Quote)
+          case 'quote': {
+            // 去除每行的 > 前缀，保留多行换行
+            const quoteLines = block.lines.map((l) => l.replace(/^>\s*/, ''));
+            return (
+              <div
+                key={bIndex}
+                className={`my-5 py-3 px-5 rounded-r-lg relative transition-all ${
+                  themeStyle === 'dark'
+                    ? 'bg-white/5 border-l-4'
+                    : themeStyle === 'vintage'
+                    ? 'bg-amber-900/5 border-l-4 italic'
+                    : themeStyle === 'warm'
+                    ? 'bg-amber-500/10 border-l-4 rounded-lg'
+                    : themeStyle === 'acid'
+                    ? 'bg-black text-white border-2 border-black font-bold p-4'
+                    : themeStyle === 'zen'
+                    ? 'bg-transparent border-l-2 py-4 italic text-neutral-800'
+                    : 'bg-neutral-100/70 border-l-4'
+                }`}
+                style={{
+                  borderColor: themeStyle === 'acid' ? '#000000' : accentColor,
+                }}
+              >
+                <div className="tracking-wide font-medium leading-relaxed opacity-95">
+                  {quoteLines.map((line, lIndex) => (
+                    <React.Fragment key={lIndex}>
+                      {renderInlineStyles(line)}
+                      {lIndex < quoteLines.length - 1 && <br />}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        }
+            );
+          }
 
-        // 6. 有序列表 (1. item)
-        if (/^\d+\.\s+/.test(trimmed)) {
-          const items = trimmed.split('\n').filter((l) => l.trim().length > 0);
-          return (
-            <ol key={bIndex} className="space-y-2 pl-1 my-3">
-              {items.map((item, iIndex) => {
-                const match = item.match(/^(\d+)\.\s+(.*)/);
-                const num = match ? match[1] : `${iIndex + 1}`;
-                const text = match ? match[2] : item;
-                return (
-                  <li key={iIndex} className="flex items-start gap-2.5">
-                    {/* 数字角标高度与行高精准锁定 */}
-                    <span className="inline-flex items-center justify-center w-5 h-[1.85em] flex-shrink-0">
-                      <span
-                        className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded"
-                        style={{
-                          backgroundColor: `${accentColor}18`,
-                          color: accentColor,
-                        }}
-                      >
-                        {num.padStart(2, '0')}
+          // 6. 有序列表 (1. item)
+          case 'ol': {
+            const items = block.lines;
+            return (
+              <ol key={bIndex} className="space-y-2 pl-1 my-3">
+                {items.map((item, iIndex) => {
+                  const match = item.match(/^(\d+)\.\s+(.*)/);
+                  const num = match ? match[1] : `${iIndex + 1}`;
+                  const text = match ? match[2] : item;
+                  return (
+                    <li key={iIndex} className="flex items-start gap-2.5">
+                      {/* 数字角标高度与行高精准锁定 */}
+                      <span className="inline-flex items-center justify-center w-5 h-[1.85em] flex-shrink-0">
+                        <span
+                          className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded"
+                          style={{
+                            backgroundColor: `${accentColor}18`,
+                            color: accentColor,
+                          }}
+                        >
+                          {num.padStart(2, '0')}
+                        </span>
                       </span>
-                    </span>
-                    <span className="flex-1 opacity-90 leading-relaxed">
-                      {renderInlineStyles(text)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          );
-        }
+                      <span className="flex-1 opacity-90 leading-relaxed">
+                        {renderInlineStyles(text)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            );
+          }
 
-        // 7. 无序列表 (- item 或 * item 或 • item)
-        if (/^[-*•]\s+/.test(trimmed)) {
-          const items = trimmed.split('\n').filter((l) => l.trim().length > 0);
-          return (
-            <ul key={bIndex} className="space-y-2.5 pl-1 my-3">
-              {items.map((item, iIndex) => {
-                const cleanText = item.replace(/^[-*•]\s+/, '');
-                return (
-                  <li key={iIndex} className="flex items-start gap-2.5">
-                    {/* 符号容器高度等于首行文字行高 (1.85em)，子元素水平垂直绝对居中 */}
-                    <span className="inline-flex items-center justify-center w-4 h-[1.85em] flex-shrink-0">
-                      <span
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{ backgroundColor: accentColor }}
-                      />
-                    </span>
-                    <span className="flex-1 opacity-90 leading-relaxed">
-                      {renderInlineStyles(cleanText)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          );
-        }
+          // 7. 无序列表 (- item 或 * item 或 • item)
+          case 'ul': {
+            const items = block.lines;
+            return (
+              <ul key={bIndex} className="space-y-2.5 pl-1 my-3">
+                {items.map((item, iIndex) => {
+                  const cleanText = item.replace(/^[-*•]\s+/, '');
+                  return (
+                    <li key={iIndex} className="flex items-start gap-2.5">
+                      {/* 符号容器高度等于首行文字行高 (1.85em)，子元素水平垂直绝对居中 */}
+                      <span className="inline-flex items-center justify-center w-4 h-[1.85em] flex-shrink-0">
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: accentColor }}
+                        />
+                      </span>
+                      <span className="flex-1 opacity-90 leading-relaxed">
+                        {renderInlineStyles(cleanText)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            );
+          }
 
-        // 8. 普通段落 (支持段落内部单行换行)
-        const lines = trimmed.split('\n');
-        return (
-          <p
-            key={bIndex}
-            className="tracking-normal text-inherit opacity-90 break-words leading-relaxed"
-          >
-            {lines.map((line, lIndex) => (
-              <React.Fragment key={lIndex}>
-                {renderInlineStyles(line)}
-                {lIndex < lines.length - 1 && <br />}
-              </React.Fragment>
-            ))}
-          </p>
-        );
+          // 8. 普通段落 (支持段落内部单行换行)
+          default: {
+            const lines = block.lines;
+            return (
+              <p
+                key={bIndex}
+                className="tracking-normal text-inherit opacity-90 break-words leading-relaxed"
+              >
+                {lines.map((line, lIndex) => (
+                  <React.Fragment key={lIndex}>
+                    {renderInlineStyles(line)}
+                    {lIndex < lines.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </p>
+            );
+          }
+        }
       });
     }, [content, accentColor, themeStyle]);
 

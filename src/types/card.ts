@@ -1,12 +1,16 @@
 export type AspectRatioType = '3:4' | '1:1' | '9:16' | '2.35:1' | '4:3';
 
-export type TemplateId = 
-  | 'minimal-magazine' 
-  | 'dark-glass' 
-  | 'vintage-news' 
-  | 'warm-memo' 
-  | 'zen-quote' 
-  | 'acid-bold';
+export type TemplateId =
+  | 'minimal-magazine'
+  | 'dark-glass'
+  | 'vintage-news'
+  | 'warm-memo'
+  | 'zen-quote'
+  | 'acid-bold'
+  | 'ink-wash'
+  | 'terminal-code'
+  | 'editorial-bold'
+  | 'neon-cyber';
 
 export type FontSizeType = 'sm' | 'base' | 'lg' | 'xl';
 export type AlignType = 'left' | 'center' | 'justify';

@@ -58,7 +58,7 @@ export const TerminalCode: React.FC<TemplateProps> = ({ data }) => {
       <footer className="relative z-10 pt-4 border-t border-[#1f2630] flex items-center justify-between text-[11px] text-[#6e7681]">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-[#27c93f] flex-shrink-0">{'>'}</span>
-          <span className="text-[#c9d1d9] font-semibold flex-shrink-0">{data.author || 'dev@wepost'}</span>
+          <span className="text-[#c9d1d9] font-semibold flex-shrink-0">{data.author || '野生宝藏箱'}</span>
           <span className="text-[#3b424d] flex-shrink-0">·</span>
           <span className="line-clamp-1">{data.footerText || 'ship · learn · repeat'}</span>
         </div>

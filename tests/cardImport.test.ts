@@ -23,7 +23,7 @@ describe('decodeCardDataFromHash', () => {
     const data: Partial<CardData> = {
       title: '在喧嚣的时代，重塑深度思考的秩序',
       content: '真正的专注，是在干扰中守住内心的秩序。\n\n> 所谓卓越，就是把平凡的事雕琢到发光。',
-      author: 'WePost 研习社',
+      author: '野生宝藏箱',
     };
     const decoded = decodeCardDataFromHash(`#card=${encode(data)}`);
     expect(decoded).not.toBeNull();

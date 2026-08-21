@@ -68,7 +68,7 @@ export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
             <Zap className="w-3.5 h-3.5 text-white" />
           </div>
           <div>
-            <div className="font-semibold text-slate-200">{data.author || 'WePost 探索者'}</div>
+            <div className="font-semibold text-slate-200">{data.author || '野生宝藏箱'}</div>
             <div className="text-[11px] text-slate-500 line-clamp-1">{data.footerText || '探索未知 · 链接前沿思考'}</div>
           </div>
         </div>

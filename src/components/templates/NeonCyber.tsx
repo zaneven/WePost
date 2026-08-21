@@ -92,7 +92,7 @@ export const NeonCyber: React.FC<TemplateProps> = ({ data }) => {
             style={{ background: cyan, boxShadow: `0 0 8px ${cyan}` }}
           />
           <span className="text-slate-200 font-semibold flex-shrink-0">
-            {data.author || 'NEON.OPERATOR'}
+            {data.author || '野生宝藏箱'}
           </span>
           <span className="text-slate-600 flex-shrink-0">·</span>
           <span className="line-clamp-1">{data.footerText || 'jack in · ride the signal'}</span>

@@ -50,7 +50,7 @@ export const EditorialBold: React.FC<TemplateProps> = ({ data }) => {
 
       <footer className="relative z-10 pt-5 border-t-2 border-black flex items-end justify-between text-xs">
         <div className="min-w-0">
-          <div className="font-black text-black tracking-wide">{data.author || '特约评论员'}</div>
+          <div className="font-black text-black tracking-wide">{data.author || '野生宝藏箱'}</div>
           <div className="text-[11px] text-neutral-500 line-clamp-1">
             {data.footerText || '以文字，重塑算法的世界'}
           </div>

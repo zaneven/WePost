@@ -58,7 +58,7 @@ export const InkWash: React.FC<TemplateProps> = ({ data }) => {
       <footer className="relative z-10 pt-6 border-t border-stone-400/40 flex items-end justify-between text-xs text-stone-700">
         <div className="space-y-1">
           <div className="text-sm font-serif tracking-widest text-stone-800">
-            {data.author || '山人'}
+            {data.author || '野生宝藏箱'}
           </div>
           <div className="text-[11px] text-stone-500 tracking-wider">
             {data.footerText || '虚室生白 · 吉祥止止'}

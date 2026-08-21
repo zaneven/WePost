@@ -55,7 +55,7 @@ export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
         <div className="space-y-1.5 max-w-[70%]">
           <div className="flex items-center gap-2 font-medium text-neutral-900">
             <Feather className="w-3.5 h-3.5 text-neutral-800" />
-            <span className="font-serif text-sm tracking-wide">{data.author || 'WePost 创作者'}</span>
+            <span className="font-serif text-sm tracking-wide">{data.author || '野生宝藏箱'}</span>
           </div>
           <p className="text-[11px] text-neutral-500 font-sans tracking-normal line-clamp-1">
             {data.footerText || '记录每一次深度思考 · Keep Thinking'}

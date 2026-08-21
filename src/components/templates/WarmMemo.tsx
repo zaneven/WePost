@@ -62,7 +62,7 @@ export const WarmMemo: React.FC<TemplateProps> = ({ data }) => {
             <Heart className="w-3.5 h-3.5 text-amber-700" />
           </div>
           <div>
-            <div className="font-bold text-[#352c23]">{data.author || '温暖生活家'}</div>
+            <div className="font-bold text-[#352c23]">{data.author || '野生宝藏箱'}</div>
             <div className="text-[11px] text-amber-800/60 line-clamp-1">{data.footerText || '温和对待世界，安静做好自己'}</div>
           </div>
         </div>

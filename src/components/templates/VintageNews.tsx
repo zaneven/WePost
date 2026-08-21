@@ -62,7 +62,7 @@ export const VintageNews: React.FC<TemplateProps> = ({ data }) => {
             <Award className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-bold text-[#2c2416] tracking-wide">{data.author || '特约专栏作家'}</div>
+            <div className="font-bold text-[#2c2416] tracking-wide">{data.author || '野生宝藏箱'}</div>
             <div className="text-[10px] text-[#78614a] line-clamp-1">{data.footerText || '晨起读好文 · 见微知著'}</div>
           </div>
         </div>

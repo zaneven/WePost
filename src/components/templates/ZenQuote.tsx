@@ -54,7 +54,7 @@ export const ZenQuote: React.FC<TemplateProps> = ({ data }) => {
       <footer className="relative z-10 pt-6 flex items-end justify-between text-xs text-stone-600">
         <div className="space-y-1">
           <div className="text-sm font-serif tracking-widest text-stone-800">
-            {data.author || '山间客'}
+            {data.author || '野生宝藏箱'}
           </div>
           <div className="text-[11px] text-stone-400 tracking-wider">
             {data.footerText || '静水流深 · 虚室生白'}

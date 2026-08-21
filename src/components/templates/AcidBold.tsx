@@ -59,7 +59,7 @@ export const AcidBold: React.FC<TemplateProps> = ({ data }) => {
             <Zap className="w-4 h-4 text-[#facc15]" />
           </div>
           <div>
-            <div className="font-black text-black">{data.author || '酸性先锋'}</div>
+            <div className="font-black text-black">{data.author || '野生宝藏箱'}</div>
             <div className="text-[10px] text-black/70 line-clamp-1">{data.footerText || '拒绝平庸 · 勇敢发声'}</div>
           </div>
         </div>

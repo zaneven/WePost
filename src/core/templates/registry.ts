@@ -186,7 +186,7 @@ export const INITIAL_CARD_DATA: CardData = {
   subtitle: 'THINKING IN DEPTH / 思考碎片',
   tag: '深度阅读',
   content: `真正的专注，不是在安静的环境里做简单的事，而是在充满干扰的世界中守住内心的秩序。\n\n我们每天接收海量的信息碎片，却越来越少体验到思维深潜的愉悦。阅读长文、推演逻辑、写下真实感悟，是抵抗思维退化的终极武器。\n\n> 所谓卓越，就是将平凡的事反复雕琢，直到它泛出理性的光芒。\n\n放慢脚步，给大脑留出留白的时间，让灵感在沉淀中自然生长。`,
-  author: 'WePost 研习社',
+  author: '野生宝藏箱',
   date: '2026.08.19 · ISSUE 042',
   footerText: '保持专注 · 持续创造 · 记录真实的世界',
   templateId: 'minimal-magazine',

@@ -10,6 +10,13 @@ vi.mock('@/lib/highlighter', () => ({
   isSupportedLang: () => true,
 }));
 
+// 屏蔽 KaTeX 真实加载，仅测试解析与同步回退路径（公式源码回退）。
+vi.mock('@/lib/math', () => ({
+  getKatex: () => new Promise(() => {}), // 永不 resolve → 保持同步回退
+  renderMathSync: () => null,
+  ensureKaTeXReady: () => Promise.resolve(),
+}));
+
 const renderContent = (content: string) =>
   render(
     <MarkdownRenderer content={content} themeStyle="minimal" accentColor="#000000" />
@@ -155,5 +162,34 @@ describe('MarkdownRenderer 嵌套引用', () => {
     const c = renderContent('> 第一句\n> 第二句');
     expect(c.querySelectorAll('br')).toHaveLength(1);
     expect(c.innerHTML).not.toContain('border-l-2');
+  });
+});
+
+describe('MarkdownRenderer 数学公式', () => {
+  it('块级 $$expr$$ 渲染为公式块（与紧邻正文各自成块）', () => {
+    const c = renderContent('前文\n$$E=mc^2$$\n后文');
+    expect(c.textContent).toContain('E=mc^2');
+    expect(c.querySelectorAll('p')).toHaveLength(2);
+    // 公式块居中（回退时仍居中显示 latex 源码）
+    expect(c.innerHTML).toContain('text-center');
+  });
+
+  it('多行 $$ ... $$ 块级公式收集到闭合行为止', () => {
+    const c = renderContent('$$\n\\int_0^1 x^2 dx\n$$');
+    expect(c.textContent).toContain('\\int_0^1 x^2 dx');
+    expect(c.innerHTML).toContain('text-center');
+  });
+
+  it('行内 $expr$ 渲染为公式（回退显示 latex 源码）', () => {
+    const c = renderContent('当 $a^2 + b^2 = c^2$ 时');
+    expect(c.textContent).toContain('a^2 + b^2 = c^2');
+    expect(c.querySelector('code')?.textContent).toContain('a^2 + b^2 = c^2');
+  });
+
+  it('单个 $（货币）不误判为数学公式', () => {
+    const c = renderContent('价格 $5 与 $10');
+    expect(c.textContent).toContain('$5');
+    expect(c.textContent).toContain('$10');
+    expect(c.querySelector('code')).toBeNull();
   });
 });

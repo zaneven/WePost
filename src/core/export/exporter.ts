@@ -18,12 +18,19 @@ async function ensureFontsReady(): Promise<void> {
 }
 
 /**
- * 等待 Shiki 代码高亮就绪：仅当卡片含代码块（已触发 highlighter 初始化）时才等待，
- * 无代码块时立即返回，避免导出前白白加载 WASM。
+ * 导出前渲染就绪闸门：等待字体、Shiki 代码高亮、KaTeX 数学公式全部就绪，
+ * 保证捕获到的 DOM 含完整渲染结果。
+ * - 字体：始终等待（系统衬线 / 楷体就绪）。
+ * - Shiki：仅当卡片含代码块（已触发初始化）时等待，否则跳过。
+ * - KaTeX：仅当卡片含数学（已触发初始化）时等待，否则跳过。
  */
-async function ensureHighlighterReady(): Promise<void> {
-  const { ensureHighlighterReady } = await import('@/lib/highlighter');
-  await ensureHighlighterReady();
+async function ensureRenderReady(): Promise<void> {
+  await ensureFontsReady();
+  const [{ ensureHighlighterReady }, { ensureKaTeXReady }] = await Promise.all([
+    import('@/lib/highlighter'),
+    import('@/lib/math'),
+  ]);
+  await Promise.all([ensureHighlighterReady(), ensureKaTeXReady()]);
 }
 
 /**
@@ -34,8 +41,7 @@ export async function exportCardImage(
   filename: string = 'wepost-card',
   config: ExportConfig = { scale: 2, format: 'png', quality: 0.95 }
 ): Promise<void> {
-  await ensureFontsReady();
-  await ensureHighlighterReady();
+  await ensureRenderReady();
 
   const pixelRatio = config.scale || 2;
 
@@ -72,8 +78,7 @@ export async function exportCardImage(
  * 将卡片复制到系统剪贴板 (PNG Blob)
  */
 export async function copyCardToClipboard(element: HTMLElement): Promise<boolean> {
-  await ensureFontsReady();
-  await ensureHighlighterReady();
+  await ensureRenderReady();
 
   try {
     const blob = await toBlob(element, {

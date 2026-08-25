@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import 'katex/dist/katex.min.css';
 import { ToastProvider } from '@/components/ui/Toast';
 
 export const metadata: Metadata = {

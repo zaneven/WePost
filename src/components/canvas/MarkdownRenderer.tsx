@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { AlignType, FontSizeType } from '@/types/card';
 import { getHighlighter, normalizeLang, isSupportedLang } from '@/lib/highlighter';
+import { getKatex, renderMathSync } from '@/lib/math';
 
 interface MarkdownRendererProps {
   content: string;
@@ -21,11 +22,12 @@ type BlockType =
   | 'ul'
   | 'code'
   | 'table'
+  | 'math'
   | 'paragraph';
 
 interface ParsedBlock {
   type: BlockType;
-  /** 已逐行 trim 的有效行（code / table 块保留原始行） */
+  /** 已逐行 trim 的有效行（code / table / math 块保留原始行） */
   lines: string[];
   /** 仅 code 块使用：围栏语言标识（如 js / ts / bash） */
   lang?: string;
@@ -82,8 +84,8 @@ const alignToClass = (a?: 'left' | 'center' | 'right'): string =>
  * 例如「## 标题」紧跟一行「正文」即可分别渲染为标题块与段落块，无需中间再空一行。
  * 列表 / 引用的连续同类行仍会合并为同一块，段落内部的单行换行也仍按软换行处理。
  *
- * 围栏代码块（```lang ... ```）与表格（| a | b |\n| --- | --- |）跨越多行，
- * 遇到开栏 / 表头时进入收集态，直到结构结束为止。
+ * 围栏代码块（```lang）、表格（| a | b |）与块级公式（$$...$$）跨越多行，
+ * 遇到结构起始时进入收集态，直到结构结束为止。
  */
 function parseBlocks(content: string): ParsedBlock[] {
   const lines = content.split('\n');
@@ -114,6 +116,34 @@ function parseBlocks(content: string): ParsedBlock[] {
       }
       // i 指向闭合 ``` 或越界；for 的 i++ 会越过闭合行
       blocks.push({ type: 'code', lines: codeLines, lang });
+      continue;
+    }
+
+    // 块级公式 $$...$$
+    const mathOpen = raw.match(/^\$\$(.*)$/);
+    if (mathOpen) {
+      flush();
+      const after = mathOpen[1];
+      // 单行 $$expr$$
+      if (after.endsWith('$$')) {
+        blocks.push({ type: 'math', lines: [after.slice(0, -2)] });
+        continue;
+      }
+      // 多行：收集到结束 $$
+      const mathLines: string[] = [];
+      if (after.trim() !== '') mathLines.push(after);
+      i++;
+      while (i < lines.length) {
+        const cm = lines[i].match(/^(.*)\$\$\s*$/);
+        if (cm) {
+          if (cm[1].trim() !== '') mathLines.push(cm[1]);
+          break;
+        }
+        if (lines[i].trim() === '$$') break;
+        mathLines.push(lines[i]);
+        i++;
+      }
+      blocks.push({ type: 'math', lines: mathLines });
       continue;
     }
 
@@ -249,6 +279,57 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, lang, themeStyle }) => {
   );
 };
 
+interface FormulaProps {
+  expr: string;
+  display: boolean;
+}
+
+/**
+ * 数学公式：KaTeX 异步渲染 + latex 源码回退。
+ *
+ * 首次渲染返回 latex 源码回退（同步可用，不阻塞首屏与导出），KaTeX 就绪后异步替换为渲染 HTML。
+ * 导出管线 (exporter) 会在捕获前 await ensureKaTeXReady()，保证导出图含渲染版本。
+ * 卡片无数学时 getKatex 从不调用，KaTeX chunk 不进入首屏。
+ */
+const Formula: React.FC<FormulaProps> = ({ expr, display }) => {
+  const [html, setHtml] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getKatex()
+      .then(() => {
+        if (cancelled) return;
+        const out = renderMathSync(expr, display);
+        if (!cancelled && out) setHtml(out);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [expr, display]);
+
+  if (html) {
+    return display ? (
+      <div
+        className="my-4 overflow-x-auto text-center"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    ) : (
+      <span dangerouslySetInnerHTML={{ __html: html }} />
+    );
+  }
+  // KaTeX 未就绪回退：原样显示 latex 源码
+  return display ? (
+    <div className="my-4 text-center font-mono text-[0.9em] opacity-80 break-words">
+      {expr}
+    </div>
+  ) : (
+    <code className="mx-0.5 rounded font-mono text-[0.88em] opacity-80 bg-black/5 px-1">
+      {expr}
+    </code>
+  );
+};
+
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
   ({
     content,
@@ -257,13 +338,14 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
     accentColor = '#2563eb',
     themeStyle = 'minimal',
   }) => {
-    // 缓存解析结果：仅在 content / accentColor / themeStyle 变化时重新解析，
-    // 避免每次按键都对全文做 split + 正则匹配。
+    // 缓存解析结果：仅在 content / accentColor / themeStyle 变化时重新解析。
     const renderedBlocks = useMemo(() => {
       // 解析行内样式 (定义在 useMemo 内部，避免成为外部依赖)
       const renderInlineStyles = (text: string): React.ReactNode => {
         const parts: React.ReactNode[] = [];
-        const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|==.*?==)/g;
+        // 行内数学：$expr$（首尾非空格，避免货币误判）
+        const regex =
+          /(\*\*.*?\*\*|\*.*?\*|`.*?`|==.*?==|\$(?!\s)[^$\n]+?(?<!\s)\$)/g;
         const tokens = text.split(regex);
 
         tokens.forEach((token, index) => {
@@ -304,6 +386,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
                 {token.slice(2, -2)}
               </mark>
             );
+          } else if (token.startsWith('$') && token.endsWith('$') && token.length >= 2) {
+            parts.push(<Formula key={index} expr={token.slice(1, -1)} display={false} />);
           } else {
             parts.push(token);
           }
@@ -607,7 +691,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
               themeStyle === 'dark' ? 'text-slate-300' : 'text-neutral-700';
             return (
               <div key={bIndex} className="my-4 overflow-x-auto">
-                <table className={`w-full border-collapse text-[0.92em]`}>
+                <table className="w-full border-collapse text-[0.92em]">
                   <thead>
                     <tr>
                       {headerCells.map((cell, ci) => (
@@ -639,7 +723,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
             );
           }
 
-          // 10. 普通段落 (支持段落内部单行换行)
+          // 10. 块级公式 ($$...$$)
+          case 'math':
+            return <Formula key={bIndex} expr={block.lines.join('\n')} display={true} />;
+
+          // 11. 普通段落 (支持段落内部单行换行)
           default: {
             const lines = block.lines;
             return (

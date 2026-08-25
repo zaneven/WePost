@@ -21,10 +21,43 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "-apple-system", "sans-serif"],
-        serif: ["var(--font-serif)", "Songti SC", "SimSun", "serif"],
-        mono: ["var(--font-mono)", "Menlo", "Monaco", "monospace"],
-        kaiti: ["STKaiti", "KaiTi", "楷体", "serif"],
+        // 跨平台 CJK 兜底：macOS（PingFang/Songti/STKaiti）、Windows（Microsoft YaHei/SimSun/KaiTi）、
+        // Linux（Noto Serif SC / Source Han Serif SC），无需打包 web 字体即可在导出图获得合理字形。
+        sans: [
+          "var(--font-sans)",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "PingFang SC",
+          "Microsoft YaHei",
+          "Hiragino Sans GB",
+          "sans-serif",
+        ],
+        serif: [
+          "var(--font-serif)",
+          "Songti SC",
+          "Noto Serif SC",
+          "Source Han Serif SC",
+          "SimSun",
+          "宋体",
+          "serif",
+        ],
+        mono: [
+          "var(--font-mono)",
+          "Menlo",
+          "Monaco",
+          "Consolas",
+          "Courier New",
+          "monospace",
+        ],
+        kaiti: [
+          "STKaiti",
+          "KaiTi",
+          "楷体",
+          "Noto Serif SC",
+          "Songti SC",
+          "serif",
+        ],
       },
       boxShadow: {
         card: "0 20px 40px -15px rgba(0, 0, 0, 0.08)",

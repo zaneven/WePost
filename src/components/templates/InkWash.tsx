@@ -68,10 +68,12 @@ export const InkWash: React.FC<TemplateProps> = ({ data }) => {
           )}
         </div>
 
-        {/* 朱砂方印（取水印前 2 字） */}
-        <div className="w-11 h-11 border-2 border-[#9b2222] rounded-sm flex items-center justify-center p-1 text-[#9b2222] font-serif text-[13px] font-bold tracking-tighter leading-none select-none rotate-2">
-          {(data.watermarkText || '清心').slice(0, 2)}
-        </div>
+        {/* 朱砂方印（取水印前 2 字，由 showWatermark 统一控制） */}
+        {data.showWatermark && (
+          <div className="w-11 h-11 border-2 border-[#9b2222] rounded-sm flex items-center justify-center p-1 text-[#9b2222] font-serif text-[13px] font-bold tracking-tighter leading-none select-none rotate-2">
+            {(data.watermarkText || '清心').slice(0, 2)}
+          </div>
+        )}
       </footer>
     </CardLayout>
   );

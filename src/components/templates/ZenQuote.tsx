@@ -61,10 +61,12 @@ export const ZenQuote: React.FC<TemplateProps> = ({ data }) => {
           </div>
         </div>
 
-        {/* 朱砂红印章 */}
-        <div className="w-10 h-10 border-2 border-red-700/80 rounded flex items-center justify-center p-1 text-red-700 font-serif text-[11px] font-bold tracking-tighter leading-none select-none">
-          {data.watermarkText?.slice(0, 4) || '清心'}
-        </div>
+        {/* 朱砂红印章（由 showWatermark 统一控制，与其余模板开关语义一致） */}
+        {data.showWatermark && (
+          <div className="w-10 h-10 border-2 border-red-700/80 rounded flex items-center justify-center p-1 text-red-700 font-serif text-[11px] font-bold tracking-tighter leading-none select-none">
+            {data.watermarkText?.slice(0, 4) || '清心'}
+          </div>
+        )}
       </footer>
     </CardLayout>
   );

@@ -110,3 +110,50 @@ describe('MarkdownRenderer 任务列表', () => {
     expect(c.querySelectorAll('ul')).toHaveLength(1);
   });
 });
+
+describe('MarkdownRenderer 表格', () => {
+  it('标准表格渲染 thead + tbody，保留全部单元格文本', () => {
+    const c = renderContent('| 名称 | 类型 |\n| --- | --- |\n| 卡片 | 渲染 |\n| 导出 | 图片 |');
+    expect(c.querySelectorAll('table')).toHaveLength(1);
+    expect(c.querySelectorAll('thead tr')).toHaveLength(1);
+    expect(c.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(c.querySelectorAll('th')).toHaveLength(2);
+    expect(c.querySelectorAll('td')).toHaveLength(4);
+    expect(c.textContent).toContain('名称');
+    expect(c.textContent).toContain('渲染');
+    expect(c.textContent).toContain('图片');
+  });
+
+  it('表格与紧邻正文各自成块（单换行分块仍成立）', () => {
+    const c = renderContent('前文\n| A | B |\n| --- | --- |\n| 1 | 2 |\n后文');
+    expect(c.querySelectorAll('p')).toHaveLength(2);
+    expect(c.querySelectorAll('table')).toHaveLength(1);
+    expect(c.textContent).toContain('前文');
+    expect(c.textContent).toContain('后文');
+  });
+
+  it('分隔行冒号决定列对齐 class（左 / 中 / 右）', () => {
+    const c = renderContent('| L | C | R |\n| :--- | :---: | ---: |');
+    const ths = c.querySelectorAll('th');
+    expect(ths[0].className).toContain('text-left');
+    expect(ths[1].className).toContain('text-center');
+    expect(ths[2].className).toContain('text-right');
+  });
+});
+
+describe('MarkdownRenderer 嵌套引用', () => {
+  it('>> 渲染为嵌套子引用，外层与内层文本均保留', () => {
+    const c = renderContent('> 外层\n>> 内层\n> 外层2');
+    expect(c.textContent).toContain('外层');
+    expect(c.textContent).toContain('内层');
+    expect(c.textContent).toContain('外层2');
+    // 嵌套子引用含左边线 border-l-2（外层为 border-l-4，互不混淆）
+    expect(c.innerHTML).toContain('border-l-2');
+  });
+
+  it('单层引用仍是单块、内部软换行（不误判为嵌套）', () => {
+    const c = renderContent('> 第一句\n> 第二句');
+    expect(c.querySelectorAll('br')).toHaveLength(1);
+    expect(c.innerHTML).not.toContain('border-l-2');
+  });
+});

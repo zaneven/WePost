@@ -20,11 +20,12 @@ type BlockType =
   | 'ol'
   | 'ul'
   | 'code'
+  | 'table'
   | 'paragraph';
 
 interface ParsedBlock {
   type: BlockType;
-  /** 已逐行 trim 的有效行（code 块保留原始行，不 trim） */
+  /** 已逐行 trim 的有效行（code / table 块保留原始行） */
   lines: string[];
   /** 仅 code 块使用：围栏语言标识（如 js / ts / bash） */
   lang?: string;
@@ -47,6 +48,33 @@ function detectLineType(line: string): BlockType | 'blank' {
 // 同类相邻行可合并为同一块的类型（列表 / 引用）
 const MERGEABLE_BLOCKS = new Set<BlockType>(['ul', 'ol', 'quote']);
 
+// ---- 表格行 / 列对齐解析 ----
+function parseTableRow(line: string): string[] {
+  let t = line.trim();
+  if (t.startsWith('|')) t = t.slice(1);
+  if (t.endsWith('|')) t = t.slice(0, -1);
+  return t.split('|').map((c) => c.trim());
+}
+
+function parseAlign(sepCell: string): 'left' | 'center' | 'right' {
+  const s = sepCell.trim();
+  const left = s.startsWith(':');
+  const right = s.endsWith(':');
+  if (left && right) return 'center';
+  if (right) return 'right';
+  return 'left';
+}
+
+function isTableSeparator(line: string): boolean {
+  const t = line.trim();
+  if (!t.includes('-') || !t.includes('|')) return false;
+  const cells = parseTableRow(t);
+  return cells.length > 0 && cells.every((c) => /^\s*:?-+:?\s*$/.test(c));
+}
+
+const alignToClass = (a?: 'left' | 'center' | 'right'): string =>
+  a === 'center' ? 'text-center' : a === 'right' ? 'text-right' : 'text-left';
+
 /**
  * 将 Markdown 文本逐行扫描并按块类型聚合。
  *
@@ -54,7 +82,8 @@ const MERGEABLE_BLOCKS = new Set<BlockType>(['ul', 'ol', 'quote']);
  * 例如「## 标题」紧跟一行「正文」即可分别渲染为标题块与段落块，无需中间再空一行。
  * 列表 / 引用的连续同类行仍会合并为同一块，段落内部的单行换行也仍按软换行处理。
  *
- * 围栏代码块（```lang ... ```）跨越多行，遇到开栏时进入收集态，直到闭栏为止。
+ * 围栏代码块（```lang ... ```）与表格（| a | b |\n| --- | --- |）跨越多行，
+ * 遇到开栏 / 表头时进入收集态，直到结构结束为止。
  */
 function parseBlocks(content: string): ParsedBlock[] {
   const lines = content.split('\n');
@@ -85,6 +114,27 @@ function parseBlocks(content: string): ParsedBlock[] {
       }
       // i 指向闭合 ``` 或越界；for 的 i++ 会越过闭合行
       blocks.push({ type: 'code', lines: codeLines, lang });
+      continue;
+    }
+
+    // 表格：当前行含 | 且下一行是分隔行
+    if (
+      trimmedLine.includes('|') &&
+      i + 1 < lines.length &&
+      isTableSeparator(lines[i + 1])
+    ) {
+      flush();
+      const tableLines: string[] = [];
+      while (
+        i < lines.length &&
+        lines[i].trim() !== '' &&
+        lines[i].includes('|')
+      ) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      i--; // 抵消 for 的 i++，下一轮从表后行开始
+      blocks.push({ type: 'table', lines: tableLines });
       continue;
     }
 
@@ -262,6 +312,57 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
         return parts;
       };
 
+      /**
+       * 渲染引用块（支持任意层嵌套）。
+       * 每行先去掉一层 > 前缀；去掉后仍以 > 开头的行归为「嵌套段」递归处理，
+       * 其余为「同级内容段」。连续同类行合并，内容段内部单行换行按软换行 <br>。
+       */
+      function renderQuoteLines(rawLines: string[]): React.ReactNode {
+        const stripped = rawLines.map((l) => l.replace(/^>\s?/, ''));
+        const segments: Array<{ kind: 'content' | 'nested'; lines: string[] }> = [];
+        for (const line of stripped) {
+          const isNested = /^>/.test(line);
+          const last = segments[segments.length - 1];
+          if (last && (last.kind === 'nested') === isNested) {
+            last.lines.push(line);
+          } else {
+            segments.push({ kind: isNested ? 'nested' : 'content', lines: [line] });
+          }
+        }
+        return segments.map((seg, sIndex) => {
+          if (seg.kind === 'content') {
+            return (
+              <div
+                key={sIndex}
+                className="tracking-wide font-medium leading-relaxed opacity-95"
+              >
+                {seg.lines.map((line, lIndex) => (
+                  <React.Fragment key={lIndex}>
+                    {renderInlineStyles(line)}
+                    {lIndex < seg.lines.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+            );
+          }
+          // 嵌套引用：递归渲染为内嵌子引用（缩进 + 左边线）
+          return (
+            <div
+              key={sIndex}
+              className={`my-2 pl-3 border-l-2 ${
+                themeStyle === 'dark'
+                  ? 'border-slate-600'
+                  : themeStyle === 'acid'
+                  ? 'border-black'
+                  : 'border-neutral-300'
+              }`}
+            >
+              {renderQuoteLines(seg.lines)}
+            </div>
+          );
+        });
+      }
+
       const blocks = parseBlocks(content);
 
       return blocks.map((block, bIndex) => {
@@ -353,10 +454,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
             );
           }
 
-          // 5. 引用块 (> Quote)
-          case 'quote': {
-            // 去除每行的 > 前缀，保留多行换行
-            const quoteLines = block.lines.map((l) => l.replace(/^>\s*/, ''));
+          // 5. 引用块 (> Quote，支持 >> 嵌套)
+          case 'quote':
             return (
               <div
                 key={bIndex}
@@ -377,17 +476,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
                   borderColor: themeStyle === 'acid' ? '#000000' : accentColor,
                 }}
               >
-                <div className="tracking-wide font-medium leading-relaxed opacity-95">
-                  {quoteLines.map((line, lIndex) => (
-                    <React.Fragment key={lIndex}>
-                      {renderInlineStyles(line)}
-                      {lIndex < quoteLines.length - 1 && <br />}
-                    </React.Fragment>
-                  ))}
-                </div>
+                {renderQuoteLines(block.lines)}
               </div>
             );
-          }
 
           // 6. 有序列表 (1. item)
           case 'ol': {
@@ -502,7 +593,53 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
               />
             );
 
-          // 9. 普通段落 (支持段落内部单行换行)
+          // 9. 表格 (| a | b |\n| --- | --- |)
+          case 'table': {
+            const rows = block.lines;
+            const headerCells = parseTableRow(rows[0]);
+            const aligns = parseTableRow(rows[1] || '').map(parseAlign);
+            const bodyRows = rows.slice(2).map(parseTableRow);
+            const borderClass =
+              themeStyle === 'dark' ? 'border-slate-700' : 'border-neutral-200';
+            const headerTextClass =
+              themeStyle === 'dark' ? 'text-slate-100' : 'text-neutral-900';
+            const cellTextClass =
+              themeStyle === 'dark' ? 'text-slate-300' : 'text-neutral-700';
+            return (
+              <div key={bIndex} className="my-4 overflow-x-auto">
+                <table className={`w-full border-collapse text-[0.92em]`}>
+                  <thead>
+                    <tr>
+                      {headerCells.map((cell, ci) => (
+                        <th
+                          key={ci}
+                          className={`px-3 py-2 font-semibold border-b-2 ${headerTextClass} ${borderClass} ${alignToClass(aligns[ci])}`}
+                        >
+                          {renderInlineStyles(cell)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bodyRows.map((row, ri) => (
+                      <tr key={ri}>
+                        {row.map((cell, ci) => (
+                          <td
+                            key={ci}
+                            className={`px-3 py-2 border-b ${cellTextClass} ${borderClass} ${alignToClass(aligns[ci])}`}
+                          >
+                            {renderInlineStyles(cell)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          }
+
+          // 10. 普通段落 (支持段落内部单行换行)
           default: {
             const lines = block.lines;
             return (

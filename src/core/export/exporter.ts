@@ -1,4 +1,4 @@
-import { toPng, toJpeg, toBlob } from 'html-to-image';
+import { toPng, toJpeg, toBlob, getFontEmbedCSS } from 'html-to-image';
 import { saveAs } from 'file-saver';
 import { ExportConfig } from '@/types/card';
 
@@ -34,6 +34,25 @@ async function ensureRenderReady(): Promise<void> {
 }
 
 /**
+ * 计算需嵌入导出图的 web 字体 CSS（@font-face 规则，字体文件转 data URL）。
+ *
+ * 仅收集节点实际用到的 @font-face 字体（如 KaTeX 的 KaTeX_Main 等），
+ * 系统字体（Songti SC / STKaiti / PingFang SC）并非 @font-face 声明，不在收集范围。
+ * 传入 html-to-image 的 fontEmbedCSS 后，embedWebFonts 优先使用它、不再自动收集，
+ * 从而在「跳过系统字体 fetch」的同时「嵌入 KaTeX 字体」，修复公式导出字形缺失。
+ * 无数学时返回 undefined，回退到 skipFonts 纯系统字体路径，不增加开销。
+ * 计算失败也回退，绝不阻断导出。
+ */
+async function computeFontEmbedCSS(element: HTMLElement): Promise<string | undefined> {
+  try {
+    const css = await getFontEmbedCSS(element);
+    return css || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * 导出单张卡片图片并触发本地下载
  */
 export async function exportCardImage(
@@ -53,15 +72,20 @@ export async function exportCardImage(
     return true;
   };
 
+  // 计算需嵌入的 web 字体 CSS（KaTeX 等）。无数学时为 undefined，回退纯系统字体路径。
+  // fontEmbedCSS 优先级高于 skipFonts：传入后 html-to-image 直接嵌入该 CSS，
+  // 既跳过系统字体的自动 fetch，又保证公式字形正确嵌入导出图。
+  const fontEmbedCSS = await computeFontEmbedCSS(element);
+
   const options = {
     pixelRatio,
     quality: config.quality,
     cacheBust: true,
     filter,
-    // 卡片大量使用系统字体（Songti SC / STKaiti / PingFang SC），
-    // 这些字体无法被 html-to-image 通过 fetch 内联（受同源策略限制），
-    // 关闭字体嵌入以避免导出报错或长时间挂起，渲染时由浏览器原生字体栈保证。
+    // 系统字体（Songti SC / STKaiti / PingFang SC）非 @font-face、由浏览器原生字体栈保证；
+    // skipFonts 仅在 fontEmbedCSS 缺失时生效（兜底），避免任何系统字体 fetch 报错 / 挂起。
     skipFonts: true,
+    ...(fontEmbedCSS ? { fontEmbedCSS } : {}),
   };
 
   let dataUrl = '';
@@ -81,10 +105,12 @@ export async function copyCardToClipboard(element: HTMLElement): Promise<boolean
   await ensureRenderReady();
 
   try {
+    const fontEmbedCSS = await computeFontEmbedCSS(element);
     const blob = await toBlob(element, {
       pixelRatio: 2,
       cacheBust: true,
       skipFonts: true,
+      ...(fontEmbedCSS ? { fontEmbedCSS } : {}),
     });
 
     if (!blob) {

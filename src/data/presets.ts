@@ -127,7 +127,7 @@ export const PRESETS: PresetMeta[] = [
       title: '少写代码，多读代码',
       subtitle: '~/dev-notes — zsh',
       tag: 'dev.note',
-      content: `好代码不是写出来的，是读出来的。\n\n- 先读三遍，再动一行\n- 删除，是最好的重构\n- 命名即设计\n\n> 提交信息要写给六个月后的自己看。`,
+      content: `好代码不是写出来的，是读出来的。\n\n- 先读三遍，再动一行\n- 删除，是最好的重构\n- 命名即设计\n\n> 提交信息要写给六个月后的自己看。\n\n\`\`\`js\n// 好的命名即设计\nfunction loadCards(userId) {\n  const url = "/api/users/" + userId + "/cards";\n  return fetch(url).then((r) => r.json());\n}\n\`\`\``,
       author: '野生宝藏箱',
       date: 'commit 4f9a2c1',
       footerText: 'ship · learn · repeat',

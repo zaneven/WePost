@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { AlignType, FontSizeType } from '@/types/card';
+import { getHighlighter, normalizeLang, isSupportedLang } from '@/lib/highlighter';
 
 interface MarkdownRendererProps {
   content: string;
@@ -10,12 +11,23 @@ interface MarkdownRendererProps {
 }
 
 // 块类型：每一行会被归类为下列之一
-type BlockType = 'hr' | 'h1' | 'h2' | 'h3' | 'quote' | 'ol' | 'ul' | 'paragraph';
+type BlockType =
+  | 'hr'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'quote'
+  | 'ol'
+  | 'ul'
+  | 'code'
+  | 'paragraph';
 
 interface ParsedBlock {
   type: BlockType;
-  /** 已逐行 trim 的有效行 */
+  /** 已逐行 trim 的有效行（code 块保留原始行，不 trim） */
   lines: string[];
+  /** 仅 code 块使用：围栏语言标识（如 js / ts / bash） */
+  lang?: string;
 }
 
 // 识别单行所属的块类型
@@ -41,6 +53,8 @@ const MERGEABLE_BLOCKS = new Set<BlockType>(['ul', 'ol', 'quote']);
  * 与原先的 `content.split('\n\n')` 不同，本解析器在「不同格式之间只需单换行即可正确分块」——
  * 例如「## 标题」紧跟一行「正文」即可分别渲染为标题块与段落块，无需中间再空一行。
  * 列表 / 引用的连续同类行仍会合并为同一块，段落内部的单行换行也仍按软换行处理。
+ *
+ * 围栏代码块（```lang ... ```）跨越多行，遇到开栏时进入收集态，直到闭栏为止。
  */
 function parseBlocks(content: string): ParsedBlock[] {
   const lines = content.split('\n');
@@ -54,9 +68,27 @@ function parseBlocks(content: string): ParsedBlock[] {
     }
   };
 
-  for (const raw of lines) {
-    const type = detectLineType(raw);
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
     const trimmedLine = raw.trim();
+
+    // 围栏代码块：```lang ... ```（整行仅为围栏时触发）
+    const fenceMatch = raw.match(/^```([\w-]*)\s*$/);
+    if (fenceMatch) {
+      flush();
+      const lang = fenceMatch[1] || '';
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].match(/^```\s*$/)) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      // i 指向闭合 ``` 或越界；for 的 i++ 会越过闭合行
+      blocks.push({ type: 'code', lines: codeLines, lang });
+      continue;
+    }
+
+    const type = detectLineType(raw);
 
     // 空行：结束当前块
     if (type === 'blank') {
@@ -104,6 +136,67 @@ const ALIGN_CLASSES: Record<AlignType, string> = {
   left: 'text-left',
   center: 'text-center',
   justify: 'text-justify',
+};
+
+interface CodeBlockProps {
+  code: string;
+  lang: string;
+  themeStyle: 'minimal' | 'dark' | 'vintage' | 'warm' | 'zen' | 'acid';
+}
+
+/**
+ * 围栏代码块：Shiki 异步高亮 + 纯文本回退。
+ *
+ * 首次渲染返回纯文本 <pre>（同步可用，不阻塞首屏与导出），Shiki 就绪后异步替换为高亮 HTML。
+ * 导出管线 (exporter) 会在捕获前 await ensureHighlighterReady()，保证导出图含高亮版本。
+ * Shiki 输出为内联 style 的 <span>，html-to-image 可正常捕获；此处覆盖其背景为透明，
+ * 由模板容器提供底色，仅取其 token 配色。
+ */
+const CodeBlock: React.FC<CodeBlockProps> = ({ code, lang, themeStyle }) => {
+  const [html, setHtml] = useState<string | null>(null);
+  const isDark = themeStyle === 'dark';
+
+  useEffect(() => {
+    let cancelled = false;
+    const normalized = normalizeLang(lang);
+    if (!isSupportedLang(normalized)) {
+      // 不在受控语言集合：直接保持纯文本回退，不触发 Shiki 加载
+      return;
+    }
+    (async () => {
+      try {
+        const hl = await getHighlighter();
+        if (cancelled) return;
+        const out = hl.codeToHtml(code, {
+          lang: normalized,
+          theme: isDark ? 'github-dark' : 'github-light',
+        });
+        if (!cancelled) setHtml(out);
+      } catch {
+        // 高亮失败：保持纯文本回退
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [code, lang, isDark]);
+
+  const wrapperClass = `my-4 rounded-lg overflow-hidden ${
+    isDark
+      ? 'bg-[#0d1117] border border-[#1f2630]'
+      : 'bg-neutral-50 border border-neutral-200'
+  } [&_.shiki]:!bg-transparent [&_.shiki]:!m-0 [&_.shiki]:!p-4 [&_.shiki]:overflow-x-auto [&_.shiki]:text-[13px] [&_.shiki]:leading-[1.6] [&_.shiki]:font-mono`;
+
+  if (html) {
+    return <div className={wrapperClass} dangerouslySetInnerHTML={{ __html: html }} />;
+  }
+  return (
+    <div className={wrapperClass}>
+      <pre className="!m-0 !p-4 overflow-x-auto text-[13px] leading-[1.6] font-mono">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
 };
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
@@ -329,13 +422,56 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
             );
           }
 
-          // 7. 无序列表 (- item 或 * item 或 • item)
+          // 7. 无序列表 (- item 或 * item 或 • item)，支持任务列表 (- [ ] / - [x])
           case 'ul': {
             const items = block.lines;
+            // 首项去符号后是否为任务标记，决定整列表是否按任务列表渲染
+            const strippedFirst = items[0].replace(/^[-*•]\s+/, '');
+            const isTaskList = /^\[[ xX]\]\s+/.test(strippedFirst);
             return (
               <ul key={bIndex} className="space-y-2.5 pl-1 my-3">
                 {items.map((item, iIndex) => {
-                  const cleanText = item.replace(/^[-*•]\s+/, '');
+                  const stripped = item.replace(/^[-*•]\s+/, '');
+                  const taskMatch = isTaskList
+                    ? stripped.match(/^\[([ xX])\]\s+(.*)/)
+                    : null;
+                  if (taskMatch) {
+                    const checked = taskMatch[1].toLowerCase() === 'x';
+                    const text = taskMatch[2];
+                    return (
+                      <li key={iIndex} className="flex items-start gap-2.5">
+                        <span className="inline-flex items-center justify-center w-4 h-[1.85em] flex-shrink-0">
+                          <span
+                            className={`w-3.5 h-3.5 rounded-[3px] border-2 flex items-center justify-center flex-shrink-0 ${
+                              checked ? '' : 'bg-transparent'
+                            }`}
+                            style={{
+                              backgroundColor: checked ? accentColor : 'transparent',
+                              borderColor: accentColor,
+                            }}
+                          >
+                            {checked && (
+                              <svg
+                                viewBox="0 0 16 16"
+                                className="w-2.5 h-2.5 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M3 8.5l3.5 3.5L13 4.5" />
+                              </svg>
+                            )}
+                          </span>
+                        </span>
+                        <span className="flex-1 opacity-90 leading-relaxed">
+                          {renderInlineStyles(text)}
+                        </span>
+                      </li>
+                    );
+                  }
+                  // 普通无序列表项（含任务列表中混入的非任务行）
                   return (
                     <li key={iIndex} className="flex items-start gap-2.5">
                       {/* 符号容器高度等于首行文字行高 (1.85em)，子元素水平垂直绝对居中 */}
@@ -346,7 +482,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
                         />
                       </span>
                       <span className="flex-1 opacity-90 leading-relaxed">
-                        {renderInlineStyles(cleanText)}
+                        {renderInlineStyles(stripped)}
                       </span>
                     </li>
                   );
@@ -355,7 +491,18 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
             );
           }
 
-          // 8. 普通段落 (支持段落内部单行换行)
+          // 8. 围栏代码块 (```lang ... ```)
+          case 'code':
+            return (
+              <CodeBlock
+                key={bIndex}
+                code={block.lines.join('\n')}
+                lang={block.lang || ''}
+                themeStyle={themeStyle}
+              />
+            );
+
+          // 9. 普通段落 (支持段落内部单行换行)
           default: {
             const lines = block.lines;
             return (

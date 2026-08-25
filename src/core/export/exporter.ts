@@ -18,6 +18,15 @@ async function ensureFontsReady(): Promise<void> {
 }
 
 /**
+ * 等待 Shiki 代码高亮就绪：仅当卡片含代码块（已触发 highlighter 初始化）时才等待，
+ * 无代码块时立即返回，避免导出前白白加载 WASM。
+ */
+async function ensureHighlighterReady(): Promise<void> {
+  const { ensureHighlighterReady } = await import('@/lib/highlighter');
+  await ensureHighlighterReady();
+}
+
+/**
  * 导出单张卡片图片并触发本地下载
  */
 export async function exportCardImage(
@@ -26,6 +35,7 @@ export async function exportCardImage(
   config: ExportConfig = { scale: 2, format: 'png', quality: 0.95 }
 ): Promise<void> {
   await ensureFontsReady();
+  await ensureHighlighterReady();
 
   const pixelRatio = config.scale || 2;
 
@@ -63,6 +73,7 @@ export async function exportCardImage(
  */
 export async function copyCardToClipboard(element: HTMLElement): Promise<boolean> {
   await ensureFontsReady();
+  await ensureHighlighterReady();
 
   try {
     const blob = await toBlob(element, {

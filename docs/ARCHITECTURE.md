@@ -1,49 +1,41 @@
 # WePost 系统架构与设计文档 (ARCHITECTURE.md)
 
-本文档详细描述 **WePost** 系统的核心架构设计、模块边界划分、数据流转以及扩展点设计。
+本文档描述 **WePost** 的核心架构设计、模块边界划分、数据流转以及扩展点设计。
+
+> **产品形态**：纯前端静态应用。`next build` 产物静态导出至 `out/`，部署于 Cloudflare Pages 边缘节点。无服务端运行时、无数据库、无外部 API 依赖；用户编辑状态持久化于浏览器 `localStorage`。
 
 ---
 
 ## 1. 系统总体架构
 
-WePost 采用分层与插件化驱动架构，整体划分为展现层、服务网关层、核心业务引擎层以及基础支撑与数据层。
+WePost 采用纯前端的分层与数据驱动架构，整体划分为展现层、卡片渲染引擎、导出管线与部署层。
 
 ```
 +-------------------------------------------------------------+
-|                      1. 展现层 (Web UI)                      |
-|  - 创作工作台 (Editor)     - 主题工坊 (Themes)                |
-|  - 分发管理台 (Publish)    - 素材中心 (Media Library)         |
-|  - 系统管理后台 (Admin Console)                              |
+|                       1. 展现层 (Web UI)                     |
+|  - 卡片工作台 (Canvas)   - 内容编辑器 (Editor)              |
+|  - 导出面板 (Export)      - 预填充注入 (Hash Import)         |
 +-------------------------------------------------------------+
-                              | (HTTP / SSE / WebSocket)
+                              | (React state / hooks)
 +-------------------------------------------------------------+
-|                   2. 业务编排与 API 路由层                  |
-|  - 鉴权中间件 (Auth)       - 限流与审计 (RateLimit & Audit)    |
-|  - 微信 Token 管理器       - 任务调度中枢 (Task Dispatcher)   |
-+-------------------------------------------------------------+
-                              |
-+-------------------------------------------------------------+
-|                     3. 核心领域引擎层                       |
-|                                                             |
-|  +---------------------+   +-----------------------------+  |
-|  | 排版与渲染引擎       |   | 多平台分发调度器 (Publisher) |  |
-|  | - Markdown Parser   |   | - Wechat Draft/Article Push |  |
-|  | - Theme Styler      |   | - Zhihu Publisher           |  |
-|  | - Juice CSS Inliner |   | - Xiaohongshu Publisher     |  |
-|  +---------------------+   +-----------------------------+  |
-|                                                             |
-|  +---------------------+   +-----------------------------+  |
-|  | AI 创作辅助套件     |   | 媒体处理流水线              |  |
-|  | - LLM Prompt Router |   | - Image Compressor          |  |
-|  | - Outline/Polish Gen|   | - Hotlink Image Mirror      |  |
-|  +---------------------+   +-----------------------------+  |
+|                 2. 卡片渲染引擎 (Card Engine)                |
+|  - 模板注册表 (templates/registry)  —— 模板与画幅元数据     |
+|  - 画板舞台 (CardStage)             —— 统一逻辑尺寸数据源   |
+|  - 渲染器 (CardRenderer)            —— 按 templateId 分发   |
+|  - Markdown 渲染 (MarkdownRenderer) —— 卡片内富文本          |
 +-------------------------------------------------------------+
                               |
 +-------------------------------------------------------------+
-|                     4. 基础数据与存储层                     |
-|  - 关系型数据库 (PostgreSQL / SQLite via Prisma ORM)        |
-|  - 缓存与异步任务队列 (Redis / BullMQ)                       |
-|  - 对象存储适配器 (Local File / TOS / S3 / OSS)             |
+|                   3. 导出与自动化管线                       |
+|  - 浏览器内导出 (html-to-image)     —— 2x/3x PNG/JPEG      |
+|  - 无头自动化 (Puppeteer scripts)    —— 批量 / 日更出图      |
+|  - 预填充编码 (gen-card-url)         —— CardData → URL      |
++-------------------------------------------------------------+
+                              |
++-------------------------------------------------------------+
+|                     4. 部署与分发层                         |
+|  - Cloudflare Pages (wrangler)      —— 静态托管 / 边缘分发   |
+|  - localStorage                     —— 编辑态浏览器持久化   |
 +-------------------------------------------------------------+
 ```
 
@@ -51,50 +43,62 @@ WePost 采用分层与插件化驱动架构，整体划分为展现层、服务�
 
 ## 2. 核心模块设计
 
-### 2.1 排版与渲染引擎 (`src/core/parser` & `src/core/theme`)
-1. **Markdown AST 构建**：基于 `unified` / `remark` 将源 Markdown 文本转化为结构化语法树。
-2. **主题样式注入**：根据选定主题（如商务经典、青葱雅致、科技极简），将预置 CSS 与排版规则应用至 AST。
-3. **微信兼容 CSS 内联**：微信公众平台富文本对外链样式表及部分选择器存在限制，引擎通过 `juice` 将 CSS 属性精准内联到 HTML 标签的 `style` 属性中，并完成 HTML 实体清洗与闭合检查。
+### 2.1 卡片渲染引擎 (`src/core/templates` & `src/components/canvas`)
 
-### 2.2 多平台发布适配器 (`src/core/publisher`)
-所有发布渠道均实现标准的 `IPublisher` 接口：
+1. **模板与画幅注册表**：`registry.ts` 是模板元数据（`TemplateMeta`）与画幅元数据（`AspectRatioMeta`）的**唯一数据源**。所有尺寸（导出物理像素宽高、画板逻辑渲染宽高）均从此处派生，杜绝多处硬编码导致的比例失真。
+2. **统一尺寸派生**：`getCanvasDimensions(ratio)` 返回画板逻辑尺寸，供 `CardStage` / `CardRenderer` 统一引用；`getMobileStageHeightVh(ratio)` 按比例智能分配移动端画板占位高度。
+3. **渲染分发**：`CardRenderer` 依据 `CardData.templateId` 选择对应模板组件渲染，`CardStage` 负责画板容器与缩略图预览。
+4. **卡片内 Markdown**：`MarkdownRenderer` 为自研轻量渲染器，支持标题、段落、引用、列表、代码块等卡片场景所需子集。
 
-```typescript
-export interface PublishOptions {
-  draftOnly?: boolean;
-  coverMediaId?: string;
-  autoFormatImages?: boolean;
-}
+### 2.2 内容编辑与状态管理 (`src/components/editor` & `src/lib`)
 
-export interface PublishResult {
-  success: boolean;
-  platform: string;
-  externalArticleId?: string;
-  publishUrl?: string;
-  errorMessage?: string;
-  rawResponse?: unknown;
-}
+- **编辑器组件**：`ContentForm`（内容输入）、`StyleToolbar`（字号 / 对齐 / 字体 / 配色）、`ExportPanel`（导出参数）、`Header`、`BottomActionBar`。
+- **历史与持久化**：`useCardHistory` 实现撤销 / 重做栈，配合 `localStorage` 持久化最新编辑，支持键盘快捷键。
+- **溢出预警**：`useCardOverflow` 实时检测正文是否超出画板可容纳区域，导出前提示裁切风险。
+- **导出**：`useCardExport` 封装 `html-to-image` 调用，`src/core/export/exporter.ts` 统一导出参数与文件名生成（`filename.ts`）。
+- **内容预设**：`src/data/presets.ts` 集中维护灵感速选预设，`buildPresetData` 将预设字段合并到当前 `CardData`（保留用户既有的非覆盖字段）。
 
-export interface IPublisher {
-  readonly platformId: string;
-  readonly platformName: string;
+### 2.3 预填充注入协议 (`src/lib/cardImport.ts`)
 
-  validateCredentials(): Promise<boolean>;
-  uploadMedia(fileBuffer: Buffer, filename: string): Promise<string>;
-  publishArticle(article: ArticleEntity, options?: PublishOptions): Promise<PublishResult>;
-  queryStatus(taskId: string): Promise<TaskStatus>;
-}
-```
+为支持外部（如 `wepost-card-gen` skill、分享链接）一键把结构化内容注入画板，应用接受 URL hash 形式的卡片数据预填充：
 
-### 2.3 媒体资源与防盗链处理
-- **远程图片转存**：自动识别 Markdown 中的外链图片，经服务端并发下载、格式优化后上传至微信素材库或私有对象存储，替换原链接，规避第三方图床防盗链拦截。
-- **智能压缩**：对超大图片自动进行无损/微损压缩，符合微信 10MB 限制。
+- **协议**：`http://localhost:3000/#card=<base64url-json>`，JSON 为合法的 `Partial<CardData>`。
+- **实现**：`decodeCardDataFromHash`（纯函数，可单测）+ `loadCardDataFromHash`（读取并消费 hash）。
+- **优先级**：URL hash 注入 > `localStorage` 上次编辑 > `INITIAL_CARD_DATA` 默认示例。
+- **向后兼容**：无 `#card=` 时行为与此前完全一致；hash 消费后清除，刷新读取 `localStorage` 中的最新编辑。
+- **编码工具**：`scripts/gen-card-url.mjs`（读 CardData JSON 文件 → 输出预填充 URL）。
+- **约束**：注入的 `templateId` / `aspectRatio` 必须为合法枚举值；其余字段缺失时与默认值合并兜底。修改注入逻辑须同步更新 `tests/cardImport.test.ts`。
+
+### 2.4 自动化导出管线 (`scripts/`)
+
+- `export-card*.mjs`：基于 Puppeteer 的批量出图脚本，针对不同画幅 / 模板组合导出高清图。
+- `export-daily.mjs`：日更 / 早报流水线脚本，可扩展为可配置任务。
+- `gen-card-url.mjs`：`CardData` JSON 文件 → 预填充 URL 编码工具。
 
 ---
 
-## 3. 安全与架构原则
+## 3. 数据模型
 
-1. **凭证隔离**：微信 `AppSecret`、各类 API Key 均以环境变量或加密持久化存储，严禁在前端打包暴露。
-2. **幂等性与重试**：网络请求与平台发布任务具备幂等性 Key，防止由于网络抖动引发重复发布。
-3. **无 Emoji 约束**：前端界面全面使用 `Lucide` 矢量图标库，保障企业级视觉一致性。
-4. **Admin 部署约束**：后台管理模块的变更必须执行自动化验证与生产部署发布流程。
+核心数据模型定义于 `src/types/card.ts`：
+
+- **`CardData`**：卡片的完整状态，含正文、标题、副标题、标签、作者、日期、页脚、模板 ID、画幅、字号、对齐、字体族、自定义配色与水印等字段。
+- **`TemplateId` / `AspectRatioType` / `FontFamilyType` 等**：受控枚举，确保注入与编辑均落合法值域。
+- **`ExportConfig`**：导出参数（scale 2|3、format png|jpeg、quality）。
+
+---
+
+## 4. 安全与架构原则
+
+1. **无服务端凭证面**：当前为纯静态前端，无后端、无数据库，不存在服务端密钥泄露面。未来若引入 AI API Key 或平台发布凭证，须以环境变量或加密持久化存储，严禁前端打包暴露。
+2. **无 Emoji 约束**：前端界面全面使用 `Lucide` 矢量图标库，保障视觉一致性。
+3. **唯一数据源**：模板、画幅与尺寸元数据集中于 `registry.ts`，新增模板或画幅只在此处登记，避免散落硬编码。
+4. **纯函数可测**：尺寸派生、预填充解码、文件名生成、预设合并等核心逻辑均为纯函数并配单测。
+
+---
+
+## 5. 扩展点
+
+1. **新增模板**：在 `registry.ts` 登记 `TemplateMeta` → 在 `src/components/templates/` 新增模板组件 → 在 `CardRenderer` 注册分发 → （可选）在 `presets.ts` 配套预设。
+2. **新增画幅**：在 `registry.ts` 的 `ASPECT_RATIOS` 登记元数据（含导出像素与画板逻辑尺寸），尺寸派生函数自动生效。
+3. **新增导出后端**：`exporter.ts` 抽象导出调用，可在 `html-to-image` 之外增加 Puppeteer / SVG 等导出实现。
+4. **远期：多平台分发**：若启动 [Phase 5](ROADMAP.md)，引入 `IPublisher` 契约与对应适配器，届时补充发布调度与凭证管理架构。

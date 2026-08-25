@@ -8,7 +8,7 @@
 
 1. **中文沟通**：所有 Issue、PR 描述、代码注释与任务讨论统一使用中文。
 2. **矢量图标规范**：前端开发严禁使用任何 Emoji 字符，一律使用矢量图标（推荐 `lucide-react`）。
-3. **Admin 部署约束**：任何涉及 admin（后台管理）的代码改动，必须确保构建与测试无误，并在合并后部署至生产环境。
+3. **构建与部署闭环**：任何代码改动必须确保 `npm run lint`、`npm run test`、`npm run build` 全部通过；涉及 `src/core` 或部署配置（`next.config.mjs` / `wrangler.toml`）的变更，须确认 `out/` 静态产物可正常部署至 Cloudflare Pages。
 
 ---
 
@@ -52,7 +52,7 @@ npm test
 
 ## 3. Pull Request 规范
 
-1. PR 标题清晰表达变动内容（如 `feat(parser): add code block highlight themes`）。
+1. PR 标题清晰表达变动内容（如 `feat(templates): add new card template`）。
 2. PR 描述请列出：
    - 本次修改的目的与背景
    - 主要变动点

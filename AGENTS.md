@@ -6,13 +6,15 @@
 
 ## 1. 项目概览与定位
 
-**WePost** 是一站式现代内容创作、多主题智能排版与多平台发布平台（支持微信公众号、知乎、头条、小红书等社交媒体生态）。
+**WePost** 是一站式**社交媒体卡片生成器**：把任意文字内容（金句、早报、随笔、开发笔记、态度观点等）结构化为 `CardData`，自动匹配模板与画幅，渲染为精美卡片并可导出高清图片，用于小红书、朋友圈、公众号封面等社交场景。
 
 ### 核心能力矩阵
-- **智能排版引擎**：Markdown / 富文本双向转换、多主题样式渲染、代码块高亮与公式排版。
-- **多平台分发通道**：微信公众平台草稿箱/群发、社交平台 API 适配与一键发布调度。
-- **AI 辅助创作**：文章大纲生成、文案润色、AI 配图与摘要提炼。
-- **媒体资源库**：图片管理、格式转换、智能压缩与对象存储（TOS / S3 / 本地）。
+- **卡片渲染引擎**：Markdown / 富文本渲染、10 套卡片模板、5 种画幅比例、统一尺寸数据源。
+- **内容编辑工作台**：内容表单、样式工具栏、导出面板、撤销 / 重做历史、正文溢出预警、内容预设。
+- **导出与自动化**：浏览器内 `html-to-image` 导出、Puppeteer 批量 / 日更出图脚本、URL hash 预填充注入。
+- **静态部署**：`next build` 静态导出至 `out/`，部署于 Cloudflare Pages。
+
+> 多平台分发（公众号 / 知乎 / 头条 / 小红书）、AI 辅助创作、媒体对象存储为**远期可选**能力（见 [ROADMAP](docs/ROADMAP.md) Phase 3 / Phase 5），当前静态卡片生成器架构不依赖。
 
 ---
 
@@ -23,7 +25,7 @@
 > [!IMPORTANT]
 > 1. **语言规范**：所有的规划、思考、沟通、文档与回复必须**统一使用中文**。
 > 2. **前端图标规范**：编写前端 UI 时，**严禁使用 Emoji**，必须使用专业矢量图标库（如 `Lucide React`、`Radix Icons` 或标准 SVG 矢量组件）。
-> 3. **Admin 部署约束**：若修改了与 **admin（后台管理系统）** 相关的任何代码，在修改完成并验证通过后，**必须将其推送/部署到生产环境**并提示运维状态。
+> 3. **构建与部署闭环**：修改完成后必须保证 `npm run build` 静态导出通过、`npm run test` 全绿；涉及 `src/core` 或部署配置的变更，须确认 `out/` 产物可正常部署至 Cloudflare Pages。
 
 ---
 
@@ -33,10 +35,10 @@
 
 | 角色 | 配置文件 | 职责范畴 |
 | :--- | :--- | :--- |
-| **Architect** | [.claude/agents/architect.md](file:///.claude/agents/architect.md) | **系统架构与技术选型**：负责领域模型设计、API 协议演进、多平台发布调度器架构设计、存储与扩展性把控。 |
-| **Developer** | [.claude/agents/developer.md](file:///.claude/agents/developer.md) | **核心业务功能实现**：高标准完成排版引擎、发布管道、用户鉴权、媒体处理等功能编码与单元测试。 |
-| **Reviewer** | [.claude/agents/reviewer.md](file:///.claude/agents/reviewer.md) | **代码审查与规范合规**：审查 Diff 安全性、性能瓶颈、类型完备性，重点检查 Emoji 违规与 Admin 部署检查点。 |
-| **Debugger** | [.claude/agents/debugger.md](file:///.claude/agents/debugger.md) | **故障诊断与性能调优**：排查 API 请求失败、发布超时、排版样式污染、内存泄漏等异常。 |
+| **Architect** | [.claude/agents/architect.md](file:///.claude/agents/architect.md) | **系统架构与技术选型**：负责卡片渲染引擎、模板注册表、导出管线与扩展点设计；远期分发架构预留把控。 |
+| **Developer** | [.claude/agents/developer.md](file:///.claude/agents/developer.md) | **核心业务功能实现**：高标准完成卡片模板、渲染器、编辑器、导出、历史与预填充等功能编码与单元测试。 |
+| **Reviewer** | [.claude/agents/reviewer.md](file:///.claude/agents/reviewer.md) | **代码审查与规范合规**：审查 Diff 安全性、性能瓶颈、类型完备性，重点检查 Emoji 违规与构建 / 测试闭环检查点。 |
+| **Debugger** | [.claude/agents/debugger.md](file:///.claude/agents/debugger.md) | **故障诊断与性能调优**：排查导出渲染偏差、模板尺寸失真、溢出误报、Puppeteer 出图失败等异常。 |
 
 ---
 
@@ -44,20 +46,25 @@
 
 ```mermaid
 graph TD
-    Client[Web 客户端 / Next.js] -->|API 请求| Gateway[API 网关 / 服务路由]
-    Gateway --> Auth[认证与权限模块]
-    Gateway --> Editor[排版与渲染引擎]
-    Gateway --> Publisher[多平台分发调度器]
-    Gateway --> Media[媒体资源管理器]
-    Publisher -->|微信 API| WechatPlatform[微信公众平台]
-    Publisher -->|其他渠道| MultiPlatform[多平台开放接口]
-    Editor --> AI[AI 辅助服务 / 火山方舟]
+    Editor[卡片工作台 / Next.js] -->|CardData 状态| Engine[卡片渲染引擎]
+    Engine --> Templates[模板注册表 / 10 模板 × 5 画幅]
+    Engine --> Markdown[卡片内 Markdown 渲染]
+    Engine --> Export[导出管线]
+    Export -->|html-to-image| Img[高清图片 PNG/JPEG]
+    Export -->|Puppeteer| Auto[批量 / 日更自动化]
+    Hash[URL hash 预填充] --> Editor
+    Skill[wepost-card-gen skill] --> Hash
+    Editor -.->|localStorage| Persist[编辑态持久化]
 ```
 
-### 推荐技术栈
+### 当前技术栈
 - **前端核心**：Next.js (App Router) / React / TypeScript
 - **前端样式与组件**：Tailwind CSS / CSS Modules + Radix UI / shadcn/ui，矢量图标使用 `Lucide React`（禁止 Emoji）
-- **后端服务**：Node.js (TypeScript) / Next.js API Routes 或独立 Express/Fastify 服务
+- **卡片渲染**：自研渲染引擎（画板舞台 + 模板组件 + 统一尺寸数据源）
+- **图片导出**：`html-to-image`（浏览器内）+ Puppeteer（无头自动化）
+- **部署**：Cloudflare Pages（`wrangler` 静态托管 / 边缘分发）
+
+### 远期可选技术栈（Phase 5 启动前不落地）
 - **数据层与 ORM**：PostgreSQL / SQLite + Prisma ORM
 - **缓存与队列**：Redis / BullMQ（用于长耗时发布任务与 AI 生成队列）
 - **对象存储**：火山引擎 TOS / AWS S3 / 本地存储适配器
@@ -68,34 +75,41 @@ graph TD
 
 ```
 WePost/
-├── .claude/                # Claude / Agent 角色与提示词配置
-│   └── agents/
-│       ├── architect.md    # 架构师角色
-│       ├── developer.md    # 开发者角色
-│       ├── reviewer.md     # 代码审查员角色
-│       └── debugger.md     # 调试诊断角色
-├── docs/                   # 项目深度设计文档
-│   ├── ARCHITECTURE.md     # 架构设计与领域模型
-│   ├── CONTRIBUTING.md     # 贡献与协作规范
-│   └── ROADMAP.md          # 里程碑与迭代计划
-├── src/                    # 源码核心目录
-│   ├── app/                # 前端页面路由 / API 端点
-│   ├── components/         # 可复用 UI 组件 (图标统一使用 Lucide)
-│   ├── core/               # 核心业务逻辑与排版渲染引擎
-│   │   ├── parser/         # Markdown / HTML 解析器
-│   │   ├── theme/          # 排版主题与样式生成器
-│   │   └── publisher/      # 平台发布适配器 (微信、知乎等)
-│   ├── lib/                # 通用工具库与第三方客户端
-│   ├── types/              # 全局 TypeScript 类型定义
-│   └── server/             # 后端服务、数据库模型与存储适配
-├── tests/                  # 自动化测试用例
-├── .editorconfig           # 代码格式化规范
-├── .env.example            # 环境变量模版
-├── .gitignore              # Git 忽略文件配置
-├── AGENTS.md               # Agent 行为指南 (本文件)
-├── LICENSE                 # 开源许可证 (MIT)
-├── README.md               # 中文主项目说明
-└── README.en.md            # 英文项目说明
+├── .claude/
+│   ├── agents/                # Claude / Agent 角色配置
+│   │   ├── architect.md
+│   │   ├── developer.md
+│   │   ├── reviewer.md
+│   │   └── debugger.md
+│   └── skills/wepost-card-gen # 把文字一键做成卡片的 Claude skill
+├── docs/                      # 项目深度设计文档
+│   ├── ARCHITECTURE.md        # 架构设计与领域模型
+│   ├── CONTRIBUTING.md        # 贡献与协作规范
+│   └── ROADMAP.md             # 里程碑与迭代计划
+├── scripts/                  # 自动化脚本
+│   ├── export-card*.mjs       # Puppeteer 批量出图
+│   ├── export-daily.mjs       # 日更流水线
+│   └── gen-card-url.mjs       # CardData → 预填充 URL 编码工具
+├── src/                       # 源码核心目录
+│   ├── app/                   # 前端页面路由
+│   ├── components/
+│   │   ├── canvas/            # 画板舞台、渲染器、缩略图
+│   │   ├── templates/          # 卡片模板实现
+│   │   ├── editor/             # 内容表单、样式工具栏、导出面板
+│   │   └── ui/                 # 基础 UI 组件
+│   ├── core/
+│   │   ├── templates/          # 模板与画幅注册表（唯一尺寸数据源）
+│   │   └── export/             # 图片导出管线
+│   ├── data/presets.ts         # 内容预设
+│   ├── lib/                    # hooks 与工具（导出、历史、溢出、注入、文件名）
+│   └── types/card.ts           # 核心类型定义
+├── tests/                     # 自动化测试用例（vitest）
+├── .env.example               # 环境变量模版
+├── .gitignore                 # Git 忽略文件配置
+├── AGENTS.md                  # Agent 行为指南 (本文件)
+├── LICENSE                    # 开源许可证 (MIT)
+├── README.md / README.en.md   # 中英主项目说明
+└── wrangler.toml              # Cloudflare Pages 部署配置
 ```
 
 ---
@@ -103,8 +117,9 @@ WePost/
 ## 6. 编码规范与设计原则
 
 ### 1. 严格类型与模块化
-- 严禁滥用 `any`，所有业务实体必须在 `src/types/` 或对应模块中定义明确的 TypeScript `interface` / `type`。
-- 遵循单一职责原则（SRP），发布适配器、排版解析器与存储驱动必须高内聚、低耦合。
+- 严禁滥用 `any`，所有业务实体必须在 `src/types/card.ts` 或对应模块中定义明确的 TypeScript `interface` / `type`。
+- 遵循单一职责原则（SRP），模板组件、渲染器与导出管线必须高内聚、低耦合。
+- `src/core/templates/registry.ts` 是模板与画幅元数据的**唯一数据源**，新增模板或画幅只在此处登记，避免散落硬编码。
 
 ### 2. 前端设计与无 Emoji 原则
 - 页面必须保持现代、精致且专业的视觉体验，严禁在 UI 界面或按钮中使用 Emoji 字符作为图标。
@@ -112,18 +127,20 @@ WePost/
   ```tsx
   // 正确示例:
   import { FileText, Send, Settings, CheckCircle2 } from "lucide-react";
-  <button className="flex items-center gap-2"><Send className="w-4 h-4" /> 发布</button>
+  <button className="flex items-center gap-2"><Send className="w-4 h-4" /> 导出</button>
 
   // 错误示例 (严格禁止):
-  <button>🚀 发布</button>
+  <button>🚀 导出</button>
   ```
 
-### 3. Admin 修改与部署闭环
-- 修改 `admin` 涉及的后台页面、权限策略或 API 时，必须执行测试闭环。
-- 确认修改后，触发部署流程并输出部署报告。
+### 3. 构建与部署闭环
+- 任何代码修改完成后，必须执行 `npm run test` 与 `npm run build`，确认测试全绿且静态导出产物正常。
+- 涉及 `src/core`、`next.config.mjs` 或 `wrangler.toml` 的变更，须确认 `out/` 产物结构与 Cloudflare Pages 部署不受影响。
 
-### 4. 平台发布适配器设计
-- 每一个发布渠道（如微信公众平台 `WechatPublisher`）必须实现统一的 `IPublisher` 接口契约：
+### 4. 平台发布适配器设计（远期 · Phase 5）
+> 当前产品为纯前端卡片生成器，**不含发布能力**。以下契约为多平台分发阶段（见 [ROADMAP](docs/ROADMAP.md) Phase 5）的预留设计，尚未落地，当前不实现。
+
+若启动远期分发阶段，每个发布渠道（如微信公众平台 `WechatPublisher`）须实现统一的 `IPublisher` 契约：
   - `validateConfig(): Promise<boolean>`
   - `uploadMedia(file: MediaFile): Promise<UploadResult>`
   - `publish(article: ArticlePayload): Promise<PublishResult>`
@@ -161,3 +178,9 @@ WePost/
 | `perf` | 性能优化 |
 | `test` | 新增或修正测试 |
 | `chore` | 构建流程、依赖或辅助工具变动 |
+
+---
+
+## 8. 变更说明
+
+本指南于 **2026-08-25** 对齐卡片生成器定位。早期版本设想的「微信多平台发布引擎」相关内容（Admin 部署闭环、`IPublisher` 即时实现、Prisma + PostgreSQL / Redis + BullMQ 作为当前技术栈、`src/core/parser` / `theme` / `publisher` 目录）在当前静态前端架构中不适用：空壳目录已删除，`IPublisher` 降级为远期 Phase 5 预留契约，原 Admin 闭环改为「构建与部署闭环」。多平台分发保留为远期可选阶段。

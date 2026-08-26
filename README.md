@@ -231,6 +231,34 @@ WePost/
 
 项目内置 [`wepost-card-gen`](.claude/skills/wepost-card-gen/SKILL.md) Claude Code skill：给一段文字，它智能结构化为 `CardData`、自动匹配模板 / 画幅 / 排版，生成一个「打开浏览器即见渲染好的卡片」的预填充 URL，可立即复制到剪贴板或下载高清图。**无需手动逐字段粘贴。**
 
+### 安装
+
+skill 需要一个运行中的 WePost 实例来渲染卡片。
+
+**A. 克隆 WePost（skill 随仓库自带，推荐）**
+
+```bash
+git clone https://github.com/zaneven/WePost.git
+cd WePost && npm install && npm run dev   # → http://localhost:3000
+```
+
+在 Claude Code 中打开本项目即可，skill 位于 `.claude/skills/wepost-card-gen/`，自动发现，无需额外安装。
+
+**B. 独立安装 skill 目录**
+
+只拿到 skill 目录（从本仓库 `.claude/skills/wepost-card-gen/` 拷出）时，把它放进 Claude Code 的 skills 目录：
+
+```bash
+# 用户级（所有项目可用）
+cp -r wepost-card-gen ~/.claude/skills/
+# 或项目级
+cp -r wepost-card-gen <你的项目>/.claude/skills/
+```
+
+或更省事：把 `wepost-card-gen` 目录直接发给 Claude Code，说「帮我安装这个 skill」，agent 会自动放到 `.claude/skills/` 下。
+
+> ⚠️ skill 仍需本地跑着 WePost dev server（方式 A 的 `npm run dev`）才能渲染——`gen-card-url.mjs` 默认指向 `http://localhost:3000`。
+
 ### 工作原理
 
 - **注入通道**：应用挂载时读取 URL hash `#card=<base64url-json>`（纯客户端，静态导出兼容）。优先级：URL hash 注入 > localStorage 上次编辑 > 默认示例。

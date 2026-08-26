@@ -231,6 +231,34 @@ Externally, the `wepost-card-gen` Claude skill structures arbitrary text into a 
 
 The repo ships a built-in [`wepost-card-gen`](.claude/skills/wepost-card-gen/SKILL.md) Claude Code skill: give it some text and it structures it into `CardData`, auto-matches a template / aspect ratio / layout, and produces a prefill URL that opens the browser straight to the rendered card — ready to copy to clipboard or download as a high-res image. **No manual field-by-field pasting.**
 
+### Installation
+
+The skill needs a running WePost instance to render cards.
+
+**A. Clone WePost (skill included, recommended)**
+
+```bash
+git clone https://github.com/zaneven/WePost.git
+cd WePost && npm install && npm run dev   # → http://localhost:3000
+```
+
+Open the project in Claude Code — the skill lives at `.claude/skills/wepost-card-gen/` and is auto-discovered, no extra install.
+
+**B. Install the skill directory standalone**
+
+If you only have the skill directory (copied from this repo's `.claude/skills/wepost-card-gen/`), drop it into Claude Code's skills folder:
+
+```bash
+# user-level (available in all projects)
+cp -r wepost-card-gen ~/.claude/skills/
+# or project-level
+cp -r wepost-card-gen <your-project>/.claude/skills/
+```
+
+Or simply hand the `wepost-card-gen` directory to Claude Code and say "install this skill for me" — the agent places it under `.claude/skills/` for you.
+
+> ⚠️ The skill still needs a local WePost dev server running (method A's `npm run dev`) to render — `gen-card-url.mjs` targets `http://localhost:3000` by default.
+
 ### How it works
 
 - **Injection channel**: on mount the app reads the URL hash `#card=<base64url-json>` (pure client-side, static-export compatible). Priority: URL hash > last edit in localStorage > default sample.

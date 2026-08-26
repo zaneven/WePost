@@ -17,8 +17,19 @@ import {
   BookOpen,
   AlertTriangle,
   Eraser,
-  Clipboard
+  Clipboard,
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+  Images,
+  X,
+  Loader2,
 } from 'lucide-react';
+
+interface DeckState {
+  chunks: string[];
+  index: number;
+}
 
 interface ContentFormProps {
   data: CardData;
@@ -26,6 +37,13 @@ interface ContentFormProps {
   onApplyPresetSample: (type: PresetType) => void;
   /** 卡片内容是否已溢出画板（被裁切） */
   isOverflowing?: boolean;
+  /** 长文拆分卡组状态（null = 单卡模式） */
+  deckState?: DeckState | null;
+  onSplit?: () => void;
+  onDeckNav?: (index: number) => void;
+  onExitDeck?: () => void;
+  onExportAll?: () => void;
+  isBatchExporting?: boolean;
 }
 
 export const ContentForm: React.FC<ContentFormProps> = ({
@@ -33,6 +51,12 @@ export const ContentForm: React.FC<ContentFormProps> = ({
   onChange,
   onApplyPresetSample,
   isOverflowing = false,
+  deckState = null,
+  onSplit,
+  onDeckNav,
+  onExitDeck,
+  onExportAll,
+  isBatchExporting = false,
 }) => {
   const toast = useToast();
 
@@ -177,7 +201,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         </div>
       </div>
 
-      {/* 文案快捷操作：清空 / 复制全文 */}
+      {/* 文案快捷操作：复制全文 / 清空 / 拆分多卡 */}
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -197,7 +221,67 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           <Eraser className="w-3.5 h-3.5" aria-hidden="true" />
           清空全部
         </button>
+        {!deckState && (
+          <button
+            type="button"
+            onClick={onSplit}
+            title="把长文按画幅容量拆分为多张卡片"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-400 bg-neutral-900 text-white hover:bg-neutral-700 transition-colors"
+          >
+            <Layers className="w-3.5 h-3.5" aria-hidden="true" />
+            拆分多卡
+          </button>
+        )}
       </div>
+
+      {/* 卡组导航（拆分模式） */}
+      {deckState && deckState.chunks.length > 0 && (
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-100 border border-neutral-200">
+          <button
+            type="button"
+            onClick={() => onDeckNav?.(deckState.index - 1)}
+            disabled={deckState.index <= 0}
+            title="上一张"
+            className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+          </button>
+          <span className="flex-1 text-center text-xs font-semibold text-neutral-700">
+            第 {deckState.index + 1} / {deckState.chunks.length} 张
+          </span>
+          <button
+            type="button"
+            onClick={() => onDeckNav?.(deckState.index + 1)}
+            disabled={deckState.index >= deckState.chunks.length - 1}
+            title="下一张"
+            className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={onExportAll}
+            disabled={isBatchExporting}
+            title="批量导出全部卡片为编号图片"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-neutral-900 text-white hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+          >
+            {isBatchExporting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Images className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+            导出全部
+          </button>
+          <button
+            type="button"
+            onClick={onExitDeck}
+            title="退出拆分模式"
+            className="inline-flex items-center justify-center w-7 h-7 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200 transition-colors"
+          >
+            <X className="w-4 h-4" aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {/* 标题区 */}
       <div className="space-y-3">

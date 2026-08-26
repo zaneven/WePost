@@ -7,6 +7,9 @@ import { buildPresetData, type PresetType } from '@/data/presets';
 import { useCardHistory } from '@/lib/useCardHistory';
 import { useCardOverflow } from '@/lib/useCardOverflow';
 import { loadCardDataFromHash } from '@/lib/cardImport';
+import { splitContentIntoCards } from '@/core/split/splitContent';
+import { buildCardFilename } from '@/lib/filename';
+import { useToast } from '@/components/ui/Toast';
 import { Header } from '@/components/editor/Header';
 import { ContentForm } from '@/components/editor/ContentForm';
 import { StyleToolbar } from '@/components/editor/StyleToolbar';
@@ -43,12 +46,91 @@ export default function HomePage() {
   // 检测卡片内容是否溢出画板（被裁切），用于编辑区预警
   const isOverflowing = useCardOverflow('wepost-card-export-target', cardData);
 
+  // 长文拆分：deck 为内容块数组（null = 单卡模式）；deckIndex 为当前活动块。
+  // 模板 / 样式 / 标题等字段由单卡 cardData 共享，每张卡只换 content。
+  const [deckChunks, setDeckChunks] = useState<string[] | null>(null);
+  const [deckIndex, setDeckIndex] = useState(0);
+  const [isBatchExporting, setIsBatchExporting] = useState(false);
+  const toast = useToast();
+
   const handleUpdateCard = useCallback(
     (updates: Partial<CardData>) => {
+      // 拆分模式下编辑正文：同步回写当前块，切走再切回不丢失编辑
+      if (deckChunks && updates.content !== undefined) {
+        const idx = deckIndex;
+        setDeckChunks((prev) => {
+          if (!prev) return prev;
+          const next = [...prev];
+          next[idx] = updates.content as string;
+          return next;
+        });
+      }
       history.set((prev) => ({ ...prev, ...updates }));
     },
-    [history]
+    [history, deckChunks, deckIndex]
   );
+
+  // 拆分当前长文为多卡（按画幅 + 字号估算单卡容量，块为原子单位不跨卡）
+  const handleSplit = useCallback(() => {
+    const chunks = splitContentIntoCards(cardData.content, {
+      aspectRatio: cardData.aspectRatio,
+      fontSize: cardData.fontSize,
+    });
+    if (chunks.length <= 1) {
+      toast.show('内容较短，无需拆分', 'info');
+      return;
+    }
+    setDeckChunks(chunks);
+    setDeckIndex(0);
+    history.set({ ...cardData, content: chunks[0] }, { immediate: true });
+    toast.show(`已拆分为 ${chunks.length} 张卡片`, 'success');
+  }, [cardData, history, toast]);
+
+  // 切换活动卡（同步 content 到 cardData）
+  const handleDeckNav = useCallback(
+    (index: number) => {
+      if (!deckChunks) return;
+      const i = Math.max(0, Math.min(index, deckChunks.length - 1));
+      setDeckIndex(i);
+      history.set({ ...cardData, content: deckChunks[i] }, { immediate: true });
+    },
+    [deckChunks, cardData, history]
+  );
+
+  // 退出拆分模式（保留当前块为单卡）
+  const handleExitDeck = useCallback(() => {
+    setDeckChunks(null);
+    setDeckIndex(0);
+  }, []);
+
+  // 批量导出全部卡片（每张编号文件名）
+  const handleExportAll = useCallback(async () => {
+    if (!deckChunks || isBatchExporting) return;
+    const el = exportTargetRef.current;
+    if (!el) return;
+    setIsBatchExporting(true);
+    const startIdx = deckIndex;
+    const base = buildCardFilename(cardData.templateId, cardData.title);
+    try {
+      const { exportCardImage } = await import('@/core/export/exporter');
+      for (let i = 0; i < deckChunks.length; i++) {
+        setDeckIndex(i);
+        history.set({ ...cardData, content: deckChunks[i] }, { immediate: true });
+        // 等下一帧渲染落定，再由 exportCardImage 内部的 ensureRenderReady 闸门兜底
+        await new Promise<void>((r) => requestAnimationFrame(() => r()));
+        await new Promise<void>((r) => setTimeout(() => r(), 60));
+        await exportCardImage(el, `${base}-${i + 1}`, cardExport.config);
+      }
+      toast.show(`已导出 ${deckChunks.length} 张图片`, 'success');
+    } catch (err) {
+      console.error('批量导出失败:', err);
+      toast.show('批量导出失败，请重试', 'error');
+    } finally {
+      history.set({ ...cardData, content: deckChunks[startIdx] }, { immediate: true });
+      setDeckIndex(startIdx);
+      setIsBatchExporting(false);
+    }
+  }, [deckChunks, deckIndex, isBatchExporting, cardData, history, cardExport, toast]);
 
   const handleResetExample = useCallback(() => {
     history.set(INITIAL_CARD_DATA, { immediate: true });
@@ -200,6 +282,14 @@ export default function HomePage() {
                 onChange={handleUpdateCard}
                 onApplyPresetSample={handleApplyPresetSample}
                 isOverflowing={isOverflowing}
+                deckState={
+                  deckChunks ? { chunks: deckChunks, index: deckIndex } : null
+                }
+                onSplit={handleSplit}
+                onDeckNav={handleDeckNav}
+                onExitDeck={handleExitDeck}
+                onExportAll={handleExportAll}
+                isBatchExporting={isBatchExporting}
               />
             )}
 

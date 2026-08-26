@@ -227,6 +227,54 @@ WePost/
 
 ---
 
+## 🧩 wepost-card-gen Skill
+
+项目内置 [`wepost-card-gen`](.claude/skills/wepost-card-gen/SKILL.md) Claude Code skill：给一段文字，它智能结构化为 `CardData`、自动匹配模板 / 画幅 / 排版，生成一个「打开浏览器即见渲染好的卡片」的预填充 URL，可立即复制到剪贴板或下载高清图。**无需手动逐字段粘贴。**
+
+### 工作原理
+
+- **注入通道**：应用挂载时读取 URL hash `#card=<base64url-json>`（纯客户端，静态导出兼容）。优先级：URL hash 注入 > localStorage 上次编辑 > 默认示例。
+- **编码工具**：`scripts/gen-card-url.mjs` 读 CardData JSON → 输出预填充 URL。
+- **渲染目标**：本地 `npm run dev`（默认 `http://localhost:3000`）。`#card=` 协议同样作用于线上 Demo，可直接分享卡片链接。
+
+### 触发方式
+
+在 Claude Code 中打开本项目后（skill 随仓库自带，无需额外安装），直接说「把这段做成卡片」「生成一张小红书图」「给这段话配一张图」「做成早报图」等即可自动触发；也可显式 `/wepost-card-gen` 调用。
+
+### 两种产出模式
+
+- **单张卡片**：给一段文字 → 产出一张卡片 + 预填充 URL。
+- **多卡系列**：给长文或多个要点 → 拆成 N 张同模板卡片（首张可做封面），逐一生成 URL，默认只打开第一张，其余编号列出。
+
+### 智能匹配（用户未指定模板时）
+
+| 内容类型 | 模板 | 画幅 |
+|:---|:---|:---|
+| 深度长文 / 思考 / 书摘 | 极简杂志 | 3:4 |
+| 金句 / 格言 / 诗歌 / 禅意 | 东方留白 | 3:4 / 1:1 |
+| 早报资讯 / 行业观察 / 晨读 | 复古报刊 | 3:4 |
+| 生活便签 / 治愈 / 碎碎念 | 温暖便签 | 1:1 |
+| 科技 / 极客 / 商业洞察 | 暗黑毛玻璃 | 9:16 / 3:4 |
+| 态度 / 潮流 / 青年观点 | 酸性潮流 | 3:4 |
+| 公众号推文封面 | 任一 | 2.35:1 |
+
+### 快速示例
+
+```bash
+# 1. 把 CardData JSON 写到临时文件（由 skill 自动生成）
+# 2. 生成预填充 URL
+node scripts/gen-card-url.mjs /tmp/wepost-card.json
+# → http://localhost:3000/#card=eyJ0aXRsZ...
+
+# 3. 确保开发服务器在跑（未跑则 npm run dev）
+# 4. 打开浏览器（macOS）
+open "http://localhost:3000/#card=..."
+```
+
+字段定义、正文 Markdown 语法、画幅容量与多卡拆分细节详见 [skill 文档](.claude/skills/wepost-card-gen/SKILL.md)。
+
+---
+
 ## 🗺️ 路线图 (Roadmap)
 
 - [x] **阶段一：卡片生成核心** —— 渲染引擎、10 模板、5 画幅、编辑器、图片导出、撤销 / 重做、URL hash 预填充、Cloudflare Pages 部署、测试基线

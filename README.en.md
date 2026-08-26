@@ -26,6 +26,24 @@ A pure-frontend architecture with no backend dependency, deployable as a static 
 
 ---
 
+## 🎯 Use Cases
+
+WePost turns any text into ready-to-publish social images across high-frequency creation scenarios:
+
+- **Xiaohongshu (XHS) posts & covers**: note covers, collection covers, quote stickers—3:4 portrait and 1:1 square with Minimal Magazine, Acid Bold, and more
+- **WeChat Moments / 9-grid**: daily check-ins, casual notes, greetings—comfortable 1:1 layout
+- **WeChat Official Account covers**: 2.35:1 banner headers, paired with Vintage Press / Editorial Bold for news and opinion
+- **WeChat Video Account (Channels) covers**: 9:16 full-screen portrait, Neon Cyber / Dark Glass for tech and trends
+- **Quote / saying images**: Zen Aesthetic / Ink Wash templates for zen quotes and poetry
+- **Daily briefing / news images**: Vintage Press with tables / quotes / lists for high information density
+- **Dev notes / code screenshots**: Terminal Code template + Shiki syntax highlighting—turn snippets into shareable images
+- **Long-text / multi-image series**: smart splitting into card decks with batch-numbered export, ideal for Official Account long posts and XHS collections
+- **Article / blog illustrations**: render Markdown paragraphs, quotes, and formulas (KaTeX) into polished images
+
+> Whether posting to Xiaohongshu, Moments, making an Official Account cover, or turning text / code / quotes into shareable images, WePost generates them in a sentence.
+
+---
+
 ## 🌟 Key Features
 
 - 🎨 **Card Rendering Engine**
@@ -218,3 +236,21 @@ Issues and Pull Requests are welcome! Please read the [Contributing Guide](docs/
 ## 📄 License
 
 Licensed under the [MIT License](LICENSE) © 2026 WePost Contributors.
+
+---
+
+## 🔍 Keywords
+
+> Common search keywords to help discover this project (xiaohongshu image generator / wechat image generator / text-to-image, etc.).
+
+**Xiaohongshu**: xiaohongshu image generator · xiaohongshu cover maker · xhs image tool · xiaohongshu note cover · xhs collection cover · redbook image generator
+
+**WeChat**: wechat moments image · wechat 9-grid image · moments caption image · wechat official account cover · official account header maker · wechat channels cover · video account cover · wechat article image · wechat sticker image
+
+**Text to image**: text to image · text to picture · text-to-image tool · text illustration · sentence to image · text-to-image generator
+
+**Content types**: quote image generator · saying image · quote card · poetry image · daily briefing image · news image maker · morning brief image · code screenshot · dev note image · code snippet to image · code to image
+
+**Image forms**: long image generator · multi-image generator · card image generator · image card · markdown to image · markdown illustration
+
+**General**: social media image tool · content image tool · blog image · article illustration · online image maker · card generator

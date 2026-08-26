@@ -44,6 +44,22 @@ WePost 把任意文字内容快速变成可直接发布的社交配图，覆盖�
 
 ---
 
+## 🎨 模板预览
+
+10 套精心设计的卡片模板，覆盖深色 / 浅色、东方 / 现代、复古 / 潮流等多种风格。以下样例均由 WePost 的 `/export` 路由真实渲染导出（3:4 画幅，含 Shiki 代码高亮、表格、水印等渲染能力）：
+
+|  |  |
+|:---:|:---:|
+| **极简杂志**<br><sub>Minimalist Magazine</sub><br><img src="docs/samples/minimal-magazine.png" width="300" alt="极简杂志样例"> | **暗黑毛玻璃**<br><sub>Modern Dark Glass</sub><br><img src="docs/samples/dark-glass.png" width="300" alt="暗黑毛玻璃样例"> |
+| **复古报刊**<br><sub>Vintage Press</sub><br><img src="docs/samples/vintage-news.png" width="300" alt="复古报刊样例"> | **温暖便签**<br><sub>Warm Healing Note</sub><br><img src="docs/samples/warm-memo.png" width="300" alt="温暖便签样例"> |
+| **东方留白**<br><sub>Zen Aesthetic</sub><br><img src="docs/samples/zen-quote.png" width="300" alt="东方留白样例"> | **酸性潮流**<br><sub>Acid & Neo-Brutalism</sub><br><img src="docs/samples/acid-bold.png" width="300" alt="酸性潮流样例"> |
+| **水墨留白**<br><sub>Ink Wash Aesthetic</sub><br><img src="docs/samples/ink-wash.png" width="300" alt="水墨留白样例"> | **终端代码**<br><sub>Terminal / Dev Note</sub><br><img src="docs/samples/terminal-code.png" width="300" alt="终端代码样例"> |
+| **先锋杂志**<br><sub>Editorial Bold</sub><br><img src="docs/samples/editorial-bold.png" width="300" alt="先锋杂志样例"> | **霓虹赛博**<br><sub>Neon Cyberpunk</sub><br><img src="docs/samples/neon-cyber.png" width="300" alt="霓虹赛博样例"> |
+
+> 👉 在线体验所有模板：<https://zaneven.github.io/WePost/>
+
+---
+
 ## 🌟 核心特性
 
 - 🎨 **卡片渲染引擎**

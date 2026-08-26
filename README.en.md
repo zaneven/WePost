@@ -44,6 +44,22 @@ WePost turns any text into ready-to-publish social images across high-frequency 
 
 ---
 
+## 🎨 Template Gallery
+
+10 hand-crafted card templates spanning dark/light, Eastern/modern, vintage/trendy styles. The samples below are real exports rendered via WePost's `/export` route (3:4 aspect, with Shiki syntax highlighting, tables, watermark, etc.):
+
+|  |  |
+|:---:|:---:|
+| **Minimalist Magazine**<br><sub>极简杂志</sub><br><img src="docs/samples/minimal-magazine.png" width="300" alt="Minimalist Magazine sample"> | **Modern Dark Glass**<br><sub>暗黑毛玻璃</sub><br><img src="docs/samples/dark-glass.png" width="300" alt="Dark Glass sample"> |
+| **Vintage Press**<br><sub>复古报刊</sub><br><img src="docs/samples/vintage-news.png" width="300" alt="Vintage Press sample"> | **Warm Healing Note**<br><sub>温暖便签</sub><br><img src="docs/samples/warm-memo.png" width="300" alt="Warm Memo sample"> |
+| **Zen Aesthetic**<br><sub>东方留白</sub><br><img src="docs/samples/zen-quote.png" width="300" alt="Zen Quote sample"> | **Acid & Neo-Brutalism**<br><sub>酸性潮流</sub><br><img src="docs/samples/acid-bold.png" width="300" alt="Acid Bold sample"> |
+| **Ink Wash Aesthetic**<br><sub>水墨留白</sub><br><img src="docs/samples/ink-wash.png" width="300" alt="Ink Wash sample"> | **Terminal / Dev Note**<br><sub>终端代码</sub><br><img src="docs/samples/terminal-code.png" width="300" alt="Terminal Code sample"> |
+| **Editorial Bold**<br><sub>先锋杂志</sub><br><img src="docs/samples/editorial-bold.png" width="300" alt="Editorial Bold sample"> | **Neon Cyberpunk**<br><sub>霓虹赛博</sub><br><img src="docs/samples/neon-cyber.png" width="300" alt="Neon Cyber sample"> |
+
+> 👉 Try all templates live: <https://zaneven.github.io/WePost/>
+
+---
+
 ## 🌟 Key Features
 
 - 🎨 **Card Rendering Engine**

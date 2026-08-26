@@ -15,17 +15,47 @@ import {
   AlignLeft,
   AlignCenter,
   AlignJustify,
-  Check
+  Check,
+  Wand2,
 } from 'lucide-react';
 
 interface StyleToolbarProps {
   data: CardData;
   onChange: (updates: Partial<CardData>) => void;
+  /** 智能匹配回调（按内容推荐模板/画幅/字体） */
+  onSmartMatch?: () => void;
+  /** 当前推荐理由（供按钮旁提示） */
+  matchHint?: string | null;
 }
 
-export const StyleToolbar: React.FC<StyleToolbarProps> = ({ data, onChange }) => {
+export const StyleToolbar: React.FC<StyleToolbarProps> = ({
+  data,
+  onChange,
+  onSmartMatch,
+  matchHint,
+}) => {
   return (
     <div className="space-y-6">
+      {/* 智能匹配：按内容一键推荐模板 / 画幅 / 字体 */}
+      {onSmartMatch && (
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-neutral-900 to-neutral-700 text-white shadow-sm">
+          <button
+            type="button"
+            onClick={onSmartMatch}
+            title="按当前内容智能推荐模板 / 画幅 / 字体"
+            className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-bold rounded-lg bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0"
+          >
+            <Wand2 className="w-3.5 h-3.5" aria-hidden="true" />
+            智能匹配
+          </button>
+          {matchHint && (
+            <span className="text-[11px] text-neutral-300 flex-1 min-w-0 truncate">
+              {matchHint}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* 模版风格选择 */}
       <div>
         <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CardData } from '@/types/card';
 import { INITIAL_CARD_DATA, getMobileStageHeightVh } from '@/core/templates/registry';
 import { buildPresetData, type PresetType } from '@/data/presets';
@@ -8,6 +8,7 @@ import { useCardHistory } from '@/lib/useCardHistory';
 import { useCardOverflow } from '@/lib/useCardOverflow';
 import { loadCardDataFromHash } from '@/lib/cardImport';
 import { splitContentIntoCards } from '@/core/split/splitContent';
+import { recommendStyle } from '@/core/match/recommendStyle';
 import { buildCardFilename } from '@/lib/filename';
 import { useToast } from '@/components/ui/Toast';
 import { Header } from '@/components/editor/Header';
@@ -52,6 +53,11 @@ export default function HomePage() {
   const [deckIndex, setDeckIndex] = useState(0);
   const [isBatchExporting, setIsBatchExporting] = useState(false);
   const toast = useToast();
+  // 基于当前内容的风格推荐（纯启发式，无 AI / 后端）
+  const recommendation = useMemo(
+    () => recommendStyle(cardData.content),
+    [cardData.content]
+  );
 
   const handleUpdateCard = useCallback(
     (updates: Partial<CardData>) => {
@@ -102,6 +108,20 @@ export default function HomePage() {
     setDeckChunks(null);
     setDeckIndex(0);
   }, []);
+
+  // 一键应用智能匹配推荐（模板 / 画幅 / 字体）
+  const handleSmartMatch = useCallback(() => {
+    history.set(
+      {
+        ...cardData,
+        templateId: recommendation.templateId,
+        aspectRatio: recommendation.aspectRatio,
+        fontFamily: recommendation.fontFamily,
+      },
+      { immediate: true }
+    );
+    toast.show(`已应用：${recommendation.reason}`, 'success');
+  }, [cardData, recommendation, history, toast]);
 
   // 批量导出全部卡片（每张编号文件名）
   const handleExportAll = useCallback(async () => {
@@ -294,7 +314,12 @@ export default function HomePage() {
             )}
 
             {activeTab === 'style' && (
-              <StyleToolbar data={cardData} onChange={handleUpdateCard} />
+              <StyleToolbar
+                data={cardData}
+                onChange={handleUpdateCard}
+                onSmartMatch={handleSmartMatch}
+                matchHint={recommendation.reason}
+              />
             )}
 
             {activeTab === 'export' && (

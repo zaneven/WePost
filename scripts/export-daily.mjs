@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer-core';
 import { readFileSync } from 'node:fs';
 
-const card = JSON.parse(readFileSync('/tmp/wepost-daily-2026-08-26.json', 'utf8'));
+const card = JSON.parse(readFileSync('/tmp/wepost-daily-2026-08-27.json', 'utf8'));
 const b64 = Buffer.from(JSON.stringify(card), 'utf8').toString('base64url');
 
 const browser = await puppeteer.launch({
@@ -25,6 +25,6 @@ await page.evaluate(() => document.fonts?.ready);
 await new Promise((r) => setTimeout(r, 800));
 
 const el = await page.$('#wepost-card-export-target');
-await el.screenshot({ path: '/Users/a1/Develop/wepost-cards/2026-08-26-ai-daily.png', type: 'png' });
+await el.screenshot({ path: '/Users/a1/Develop/wepost-cards/2026-08-27-ai-daily.png', type: 'png' });
 await browser.close();
 console.log('DONE');

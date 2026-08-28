@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, RefreshCw, Undo2, Redo2 } from 'lucide-react';
+import { Layers, RefreshCw, Undo2, Redo2, Bot } from 'lucide-react';
 
 interface HeaderProps {
   onResetExample: () => void;
@@ -63,6 +63,15 @@ export const Header: React.FC<HeaderProps> = React.memo(
           </div>
 
           <div className="h-4 w-[1px] bg-neutral-800 mx-0.5 hidden sm:block" />
+
+          <a
+            href="/agent"
+            title="Agent 接入说明"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-300 bg-neutral-900 hover:bg-neutral-800 hover:text-white border border-neutral-800 rounded-lg transition-all"
+          >
+            <Bot className="w-3.5 h-3.5 text-neutral-400" />
+            <span className="hidden sm:inline">Agent 接入</span>
+          </a>
 
           <button
             type="button"

@@ -64,7 +64,7 @@ description: 基于 WePost 接口服务把文字内容做成社交媒体卡片�
 | `4:3` | 640 × 480 | ≤ ~180 字 |
 | `2.35:1` | 705 × 300 | 仅封面信息，≤ 1–2 句 |
 
-> 超长时优先：精简文案 > 降 `fontSize` 到 `sm` > 换更大画幅。
+> 超长时优先：`"split": "auto"` 让服务端拆成多卡 > 精简文案 > 降 `fontSize` 到 `sm` > 换更大画幅。
 
 ### 正文 Markdown 语法（精确，源自 MarkdownRenderer）
 
@@ -104,6 +104,13 @@ description: 基于 WePost 接口服务把文字内容做成社交媒体卡片�
    { "id":"...", "url":"https://wepost.zaneven.com/cards/<id>.png",
      "width":1200, "height":1200, "templateId":"zen-quote", "aspectRatio":"1:1", "cached":false }
    ```
+   **长文 / 多卡**：请求体可加 `"split": "auto"`（服务端按画幅容量自动把长文切成多张卡，段落/列表/代码/表格等块为原子单位不跨卡）或 `"split": "divider"`（按用户写的 `---` 分割线切分）。此时响应为：
+   ```json
+   { "mode":"multi", "total":3,
+     "cards":[{ "index":1, "id":"...", "url":".../cards/<id>.png", "width":1080, "height":1440,
+                "templateId":"...", "aspectRatio":"3:4", "cached":false }, ...] }
+   ```
+   把 `total` 张 `cards[].url` 按序全部给用户；配额按实际渲染的张数计，命中缓存的卡不重复计数。
 4. 把 `url` 给用户；如需本地文件，可下载：
    ```bash
    curl -sS -o ~/Desktop/卡片.png "${url}"
@@ -122,10 +129,9 @@ description: 基于 WePost 接口服务把文字内容做成社交媒体卡片�
 按上述完整流程出一张，返回链接。
 
 ### B. 多张卡片系列（小红书 / 视频号图文）
-用户给较长文章或多个要点时，拆成 N 张，建议：
-- 同系列用**同一模板**保持视觉统一；首张可做封面（`2.35:1` 或带期数的 `3:4`）。
-- 每张一个 `CardData`，写到 `/tmp/wepost-card-1.json` … 逐一调接口，把 N 个 `url` 按编号列出。
-- 正文按画幅容量拆分，每张讲清一个要点。
+用户给较长文章或多个要点时，优先让服务端拆分：一次请求带 `"split": "auto"`（长文按容量自动切）或 `"split": "divider"`（用户内容里已用 `---` 分段时），同系列自动共用同一模板 / 文案，续卡标题自动带页码。建议：
+- 超长单段想手动控制节奏时，仍可在正文里用 `---` 分割线再配 `"split": "divider"`，切几张学几张。
+- 服务端拆分不合适（如首张要做 `2.35:1` 封面）时，才退回手动模式：每张一个 `CardData`，写到 `/tmp/wepost-card-1.json` … 逐一调接口，把 N 个 `url` 按编号列出。
 
 ## 规则与约束
 

@@ -21,6 +21,7 @@ export type BlockType =
   | 'code'
   | 'table'
   | 'math'
+  | 'image'
   | 'paragraph';
 
 export interface BlockSegment {
@@ -42,6 +43,8 @@ function detectLineType(line: string): BlockType | 'blank' {
   if (t.startsWith('>')) return 'quote';
   if (/^\d+\.\s+/.test(t)) return 'ol';
   if (/^[-*•]\s+/.test(t)) return 'ul';
+  // 独立成行的图片 ![alt](url)（url 不含空白）
+  if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(t)) return 'image';
   return 'paragraph';
 }
 
@@ -154,6 +157,13 @@ export function segmentBlocks(content: string): BlockSegment[] {
     if (type === 'hr' || type === 'h1' || type === 'h2' || type === 'h3') {
       flush();
       blocks.push({ type, rawLines: [raw] });
+      continue;
+    }
+
+    // 图片行独立成块（不并入段落，拆分时不跨卡截断）
+    if (type === 'image') {
+      flush();
+      blocks.push({ type: 'image', rawLines: [raw] });
       continue;
     }
 

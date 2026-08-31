@@ -193,3 +193,31 @@ describe('MarkdownRenderer 数学公式', () => {
     expect(c.querySelector('code')).toBeNull();
   });
 });
+
+describe('MarkdownRenderer 图片语法', () => {
+  it('独立成行的 ![alt](url) 渲染为块级图片（与紧邻正文各自成块）', () => {
+    const c = renderContent('正文一\n![配图](https://example.com/a.png)\n正文二');
+    const imgs = c.querySelectorAll('figure img');
+    expect(imgs).toHaveLength(1);
+    expect(imgs[0].getAttribute('src')).toBe('https://example.com/a.png');
+    expect(imgs[0].getAttribute('alt')).toBe('配图');
+    expect(c.querySelectorAll('p')).toHaveLength(2);
+  });
+
+  it('行内图片随文字渲染为 inline img', () => {
+    const c = renderContent('开头 ![小图](https://example.com/s.png) 结尾');
+    expect(c.querySelectorAll('img')).toHaveLength(1);
+    expect(c.querySelector('p')?.textContent).toContain('开头');
+  });
+
+  it('data: 与 javascript: 协议的图片 src 被拒绝（回退纯文本）', () => {
+    const c = renderContent('![x](data:image/png;base64,AAAA)\n![y](javascript:alert(1))');
+    expect(c.querySelector('img')).toBeNull();
+    expect(c.textContent).toContain('data:image/png');
+  });
+
+  it('无图片语法的文本不受影响', () => {
+    const c = renderContent('普通段落，含感叹号! 与方括号 [x] 但不是图片');
+    expect(c.querySelector('img')).toBeNull();
+  });
+});

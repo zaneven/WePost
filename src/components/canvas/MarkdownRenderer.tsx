@@ -23,6 +23,7 @@ type BlockType =
   | 'code'
   | 'table'
   | 'math'
+  | 'image'
   | 'paragraph';
 
 interface ParsedBlock {
@@ -44,7 +45,14 @@ function detectLineType(line: string): BlockType | 'blank' {
   if (t.startsWith('>')) return 'quote';
   if (/^\d+\.\s+/.test(t)) return 'ol';
   if (/^[-*•]\s+/.test(t)) return 'ul';
+  // 独立成行的图片 ![alt](url)（url 不含空白）
+  if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(t)) return 'image';
   return 'paragraph';
+}
+
+/** 图片 src 白名单：仅允许 http(s) 远端地址与同源绝对路径（拒绝 data:/javascript: 等） */
+function isSafeImageSrc(src: string): boolean {
+  return /^https?:\/\//i.test(src) || /^\/[^/]/.test(src);
 }
 
 // 同类相邻行可合并为同一块的类型（列表 / 引用）
@@ -180,6 +188,13 @@ function parseBlocks(content: string): ParsedBlock[] {
     if (type === 'hr' || type === 'h1' || type === 'h2' || type === 'h3') {
       flush();
       blocks.push({ type, lines: [trimmedLine] });
+      continue;
+    }
+
+    // 图片行独立成块（不并入段落，长文拆分时保持原子性）
+    if (type === 'image') {
+      flush();
+      blocks.push({ type: 'image', lines: [trimmedLine] });
       continue;
     }
 
@@ -343,14 +358,24 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
       // 解析行内样式 (定义在 useMemo 内部，避免成为外部依赖)
       const renderInlineStyles = (text: string): React.ReactNode => {
         const parts: React.ReactNode[] = [];
-        // 行内数学：$expr$（首尾非空格，避免货币误判）
+        // 行内图片 ![alt](url) 置于首位优先匹配；行内数学：$expr$（首尾非空格，避免货币误判）
         const regex =
-          /(\*\*.*?\*\*|\*.*?\*|`.*?`|==.*?==|\$(?!\s)[^$\n]+?(?<!\s)\$)/g;
+          /(!\[[^\]]*\]\([^)\s]+\)|\*\*.*?\*\*|\*.*?\*|`.*?`|==.*?==|\$(?!\s)[^$\n]+?(?<!\s)\$)/g;
         const tokens = text.split(regex);
 
         tokens.forEach((token, index) => {
           if (!token) return;
-          if (token.startsWith('**') && token.endsWith('**')) {
+          const imgMatch = token.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+          if (imgMatch && isSafeImageSrc(imgMatch[2])) {
+            parts.push(
+              <img
+                key={index}
+                src={imgMatch[2]}
+                alt={imgMatch[1]}
+                className="inline-block max-w-full h-auto rounded align-middle my-1"
+              />
+            );
+          } else if (token.startsWith('**') && token.endsWith('**')) {
             parts.push(
               <strong key={index} className="font-bold tracking-tight opacity-100 text-inherit">
                 {token.slice(2, -2)}
@@ -727,7 +752,37 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
           case 'math':
             return <Formula key={bIndex} expr={block.lines.join('\n')} display={true} />;
 
-          // 11. 普通段落 (支持段落内部单行换行)
+          // 11. 独立图片行 ![alt](url)（居中，宽度不超出正文区）
+          case 'image': {
+            const m = block.lines[0].match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+            if (m && isSafeImageSrc(m[2])) {
+              return (
+                <figure key={bIndex} className="my-4 flex justify-center">
+                  <img
+                    src={m[2]}
+                    alt={m[1]}
+                    className="max-w-full h-auto rounded-md"
+                  />
+                </figure>
+              );
+            }
+            // 不安全 / 无法解析的图片语法：回退为普通段落文本，避免静默丢失
+            return (
+              <p
+                key={bIndex}
+                className="tracking-normal text-inherit opacity-90 break-words leading-relaxed"
+              >
+                {block.lines.map((line, lIndex) => (
+                  <React.Fragment key={lIndex}>
+                    {renderInlineStyles(line)}
+                    {lIndex < block.lines.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </p>
+            );
+          }
+
+          // 12. 普通段落 (支持段落内部单行换行)
           default: {
             const lines = block.lines;
             return (

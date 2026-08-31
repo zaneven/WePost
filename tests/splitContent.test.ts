@@ -54,6 +54,15 @@ describe('splitContentIntoCards', () => {
     expect(joined).toContain('E = mc^2');
   });
 
+  it('图片行独立成块：拆分时保持原子性，不与段落合并或截断', () => {
+    const img = '![配图](https://example.com/a.png)';
+    const content = `段落一。\n\n${img}\n\n段落二。`;
+    const cards = splitContentIntoCards(content, WIDE);
+    const joined = cards.join('\n\n');
+    // 图片语法整行保留（不被拆断、不丢前缀）
+    expect(joined).toContain(img);
+  });
+
   it('超大单段按字符子拆为多卡且无丢失', () => {
     const long = '字'.repeat(600); // 远超 2.35:1 base 单卡字符容量
     const cards = splitContentIntoCards(long, WIDE);

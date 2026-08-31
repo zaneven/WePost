@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CardData } from '@/types/card';
 import type { PresetType } from '@/data/presets';
 import { useToast } from '@/components/ui/Toast';
+import { uploadImageFile, isValidImageUrl, UPLOAD_ACCEPT } from '@/lib/uploadImage';
 import {
   Type,
   Tag,
@@ -24,6 +25,9 @@ import {
   Images,
   X,
   Loader2,
+  ImagePlus,
+  Link2,
+  Upload,
 } from 'lucide-react';
 
 interface DeckState {
@@ -121,6 +125,83 @@ export const ContentForm: React.FC<ContentFormProps> = ({
       );
     }, 50);
   };
+
+  // ---- 插入图片：URL 粘贴 / 本地上传（存 R2）----
+  const [imageMenuOpen, setImageMenuOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 点击浮层外部自动收起
+  useEffect(() => {
+    if (!imageMenuOpen) return;
+    const onDocDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest('[data-image-menu]')) setImageMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDocDown);
+    return () => document.removeEventListener('mousedown', onDocDown);
+  }, [imageMenuOpen]);
+
+  // 在光标处插入完整文本（区别于 insertMarkdown 的前后缀包裹）
+  const insertRaw = useCallback(
+    (text: string) => {
+      const textarea = document.getElementById(
+        'card-content-textarea'
+      ) as HTMLTextAreaElement | null;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const currentText = data.content;
+      const newText =
+        currentText.substring(0, start) + text + currentText.substring(end);
+      onChange({ content: newText });
+      const cursor = start + text.length;
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(cursor, cursor);
+      }, 50);
+    },
+    [data.content, onChange]
+  );
+
+  const insertImageMarkdown = useCallback(
+    (url: string) => {
+      insertRaw(`\n![image](${url})\n`);
+      setImageMenuOpen(false);
+      setImageUrl('');
+      setUploadError(null);
+      toast.show('图片已插入正文', 'success');
+    },
+    [insertRaw, toast]
+  );
+
+  const handleInsertImageUrl = () => {
+    const url = imageUrl.trim();
+    if (!isValidImageUrl(url)) {
+      setUploadError('请输入 http/https 开头的图片链接');
+      return;
+    }
+    insertImageMarkdown(url);
+  };
+
+  const handleUploadFile = useCallback(
+    async (file: File) => {
+      setIsUploading(true);
+      setUploadError(null);
+      try {
+        const url = await uploadImageFile(file);
+        insertImageMarkdown(url);
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : '上传失败，请重试');
+      } finally {
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    },
+    [insertImageMarkdown]
+  );
 
   return (
     <div className="space-y-6 text-neutral-900">
@@ -346,7 +427,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
 
       {/* 正文编辑区 */}
       <div>
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center justify-between mb-1.5 relative">
           <label
             htmlFor="card-content-textarea"
             className="text-xs font-bold text-neutral-800 flex items-center gap-1.5"
@@ -440,7 +521,94 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             >
               —
             </button>
+            <button
+              type="button"
+              onClick={() => setImageMenuOpen((v) => !v)}
+              title="插入图片（上传或粘贴链接）"
+              aria-label="插入图片"
+              aria-expanded={imageMenuOpen}
+              data-image-menu
+              className={`p-1 rounded ${
+                imageMenuOpen
+                  ? 'text-neutral-950 bg-neutral-200/80'
+                  : 'text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80'
+              }`}
+            >
+              <ImagePlus className="w-3.5 h-3.5" aria-hidden="true" />
+            </button>
           </div>
+
+          {/* 插入图片浮层：URL 粘贴 / 本地上传 */}
+          {imageMenuOpen && (
+            <div
+              data-image-menu
+              className="absolute right-0 top-full mt-1 z-30 w-64 rounded-lg border border-neutral-200 bg-white shadow-xl p-3 space-y-2.5 text-left"
+            >
+              <div className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
+                <ImagePlus className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+                <span>插入图片</span>
+              </div>
+              <div className="flex gap-1.5">
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    setUploadError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleInsertImageUrl();
+                    }
+                  }}
+                  placeholder="粘贴图片链接 https://…"
+                  className="flex-1 min-w-0 text-xs rounded-md border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2 py-1.5 focus:outline-none focus:border-neutral-900"
+                />
+                <button
+                  type="button"
+                  onClick={handleInsertImageUrl}
+                  title="插入图片链接"
+                  aria-label="插入图片链接"
+                  className="p-1.5 rounded-md bg-neutral-900 hover:bg-neutral-800 text-white flex-shrink-0 cursor-pointer"
+                >
+                  <Link2 className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="w-full py-1.5 rounded-md border border-neutral-300 hover:border-neutral-900 text-xs font-medium text-neutral-800 flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
+              >
+                {isUploading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+                )}
+                <span>{isUploading ? '上传中…' : '上传本地图片（存入 R2）'}</span>
+              </button>
+              {uploadError && (
+                <div className="text-[11px] text-red-600 flex items-start gap-1">
+                  <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+              <div className="text-[10px] text-neutral-400 leading-snug">
+                上传支持 PNG / JPG / WebP / GIF，单张 ≤10MB；外部链接图片导出时需对方站点允许跨域，建议优先使用上传
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={UPLOAD_ACCEPT}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleUploadFile(file);
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <textarea

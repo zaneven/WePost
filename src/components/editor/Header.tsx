@@ -82,11 +82,6 @@ export const Header: React.FC<HeaderProps> = React.memo(
             <RefreshCw className="w-3.5 h-3.5 text-neutral-400" />
             <span className="hidden sm:inline">示范文案</span>
           </button>
-
-          <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-3 py-1.5 rounded-lg shadow-inner">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Retina 2x/3x 超清已就绪</span>
-          </div>
         </div>
       </header>
     );

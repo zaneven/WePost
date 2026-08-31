@@ -1,5 +1,5 @@
 import React from 'react';
-import { CardData } from '@/types/card';
+import { CardData, FontFamilyType } from '@/types/card';
 import { getCanvasDimensions } from '@/core/templates/registry';
 import { MinimalMagazine } from '../templates/MinimalMagazine';
 import { DarkGlass } from '../templates/DarkGlass';
@@ -16,6 +16,14 @@ interface CardRendererProps {
   data: CardData;
   renderRef?: React.RefObject<HTMLDivElement>;
 }
+
+/** 所选字体 → CSS 字体栈（与 tailwind.config.ts / globals.css 的字体变量保持一致） */
+const CARD_FONT_STACKS: Record<FontFamilyType, string> = {
+  sans: 'var(--font-sans, system-ui), -apple-system, "PingFang SC", sans-serif',
+  serif: 'var(--font-serif, "Songti SC"), SimSun, serif',
+  mono: 'var(--font-mono, Menlo), Monaco, Consolas, monospace',
+  kaiti: '"STKaiti", "KaiTi", "楷体", "Noto Serif SC", "Songti SC", serif',
+};
 
 export const CardRenderer: React.FC<CardRendererProps> = ({ data, renderRef }) => {
   // 根据比例获取容器基础尺寸 (逻辑像素，统一数据源: registry)
@@ -52,11 +60,13 @@ export const CardRenderer: React.FC<CardRendererProps> = ({ data, renderRef }) =
     <div
       ref={renderRef}
       id="wepost-card-export-target"
+      className="wepost-card-font relative flex-shrink-0 transition-all duration-300 overflow-hidden"
       style={{
         width: `${width}px`,
         height: `${height}px`,
-      }}
-      className="relative flex-shrink-0 transition-all duration-300 overflow-hidden"
+        // 字体选择：经 .wepost-card-font 覆盖模板内硬编码字体（globals.css）
+        '--card-font-family': CARD_FONT_STACKS[data.fontFamily],
+      } as React.CSSProperties}
     >
       {renderTemplate()}
     </div>

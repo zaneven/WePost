@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CardData } from '@/types/card';
 import { CardRenderer } from './CardRenderer';
-import { TEMPLATES, getCanvasDimensions } from '@/core/templates/registry';
+import { getCanvasDimensions } from '@/core/templates/registry';
 import type { useCardExport } from '@/lib/useCardExport';
-import { ZoomIn, ZoomOut, Maximize2, Eye } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 type ExportState = ReturnType<typeof useCardExport>;
 
@@ -13,12 +13,23 @@ interface CardStageProps {
   exportState?: ExportState;
 }
 
+/** 画板平移偏移（屏幕像素，相对居中位置） */
+interface Offset {
+  x: number;
+  y: number;
+}
+
+const ZOOM_MIN = 0.35;
+const ZOOM_MAX = 2.0;
+
 export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState<number>(0.85);
   const [isAutoFit, setIsAutoFit] = useState<boolean>(true);
-
-  const currentTemplate = TEMPLATES.find((t) => t.id === data.templateId);
+  const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState<boolean>(false);
+  const [canPan, setCanPan] = useState<boolean>(false);
+  const panRef = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(null);
 
   // 获取卡片逻辑宽高 (统一数据源: registry)
   const getCardDimensions = useCallback(() => {
@@ -44,7 +55,7 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
     // 自适应以宽度和高度中较小的一边为基准，允许大屏下自适应放大（最高 1.5 倍）
     const fitScale = Math.min(scaleX, scaleY);
 
-    return Math.max(0.35, Math.min(fitScale, 1.5));
+    return Math.max(ZOOM_MIN, Math.min(fitScale, 1.5));
   }, [getCardDimensions]);
 
   // 监听容器大小变化和卡片比例变化，自动适应一屏并放大
@@ -71,14 +82,96 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
     return () => resizeObserver.disconnect();
   }, [calculateFitZoom, isAutoFit, data.aspectRatio]);
 
+  // 将偏移限制在画板缩放后的溢出范围内（内容未溢出时归零居中）
+  const clampOffset = useCallback(
+    (o: Offset): Offset => {
+      const el = containerRef.current;
+      if (!el) return { x: 0, y: 0 };
+      const { width, height } = getCardDimensions();
+      const maxX = Math.max(0, (width * zoom - el.clientWidth) / 2);
+      const maxY = Math.max(0, (height * zoom - el.clientHeight) / 2);
+      return {
+        x: Math.min(maxX, Math.max(-maxX, o.x)),
+        y: Math.min(maxY, Math.max(-maxY, o.y)),
+      };
+    },
+    [zoom, getCardDimensions]
+  );
+
+  // 缩放 / 画幅变化时收敛偏移（自适应一屏下必然归零）
+  useEffect(() => {
+    setOffset((prev) => clampOffset(prev));
+  }, [clampOffset]);
+
+  // 是否处于可平移状态（决定抓取光标）
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const { width, height } = getCardDimensions();
+    setCanPan(width * zoom > el.clientWidth + 1 || height * zoom > el.clientHeight + 1);
+  }, [zoom, getCardDimensions, data.aspectRatio]);
+
+  // 滚轮交互：Ctrl/Cmd+滚轮缩放（含触控板捏合），普通滚轮平移画板
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        setIsAutoFit(false);
+        setZoom((prev) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, prev - e.deltaY * 0.002)));
+      } else {
+        e.preventDefault();
+        setOffset((prev) => clampOffset({ x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
+      }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [clampOffset]);
+
+  // 拖拽平移（指针事件，鼠标 / 触控通用）
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    panRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: offset.x,
+      baseY: offset.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsPanning(true);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const p = panRef.current;
+    if (!p) return;
+    setOffset(
+      clampOffset({
+        x: p.baseX + (e.clientX - p.startX),
+        y: p.baseY + (e.clientY - p.startY),
+      })
+    );
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!panRef.current) return;
+    panRef.current = null;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // 指针捕获已释放（如 pointercancel 后），忽略
+    }
+    setIsPanning(false);
+  };
+
   const handleZoomIn = () => {
     setIsAutoFit(false);
-    setZoom((prev) => Math.min(prev + 0.08, 2.0));
+    setZoom((prev) => Math.min(prev + 0.08, ZOOM_MAX));
   };
 
   const handleZoomOut = () => {
     setIsAutoFit(false);
-    setZoom((prev) => Math.max(prev - 0.08, 0.35));
+    setZoom((prev) => Math.max(prev - 0.08, ZOOM_MIN));
   };
 
   const handleResetZoom = () => {
@@ -90,29 +183,36 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
     setIsAutoFit(true);
     const fit = calculateFitZoom();
     setZoom(fit);
+    setOffset({ x: 0, y: 0 });
   };
 
   const { width: rawW, height: rawH } = getCardDimensions();
 
   return (
     <div className="flex-1 flex flex-col h-full w-full min-h-0 bg-[#090d16] relative overflow-hidden select-none">
-      {/* 顶部画板控制条 */}
-      <div className="h-12 border-b border-neutral-800/80 bg-neutral-950/70 backdrop-blur-md px-4 sm:px-5 flex items-center justify-between z-20 flex-shrink-0">
-        <div className="flex items-center gap-2 sm:gap-2.5 text-xs text-neutral-400">
-          <div className="flex items-center gap-1.5 font-semibold text-neutral-200">
-            <Eye className="w-3.5 h-3.5 text-emerald-400" />
-            <span>实时画板</span>
-          </div>
-          <span className="text-neutral-700">/</span>
-          <span className="font-medium text-neutral-300 truncate">{currentTemplate?.name}</span>
-          <span className="text-neutral-700">/</span>
-          <span className="font-mono text-[11px] bg-neutral-900 border border-neutral-800 text-neutral-300 px-2 py-0.5 rounded">
-            {data.aspectRatio}
-          </span>
-        </div>
-
-        {/* 缩放控制器 */}
-        <div className="flex items-center gap-1 bg-neutral-900/90 border border-neutral-800 rounded-lg p-1">
+      {/* 中间画板网格展示区 (占据全部可用空间，自适应放大并居中，放大后可拖拽 / 滚轮平移) */}
+      <div
+        ref={containerRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        className={`flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center p-3 sm:p-4 md:p-6 relative ${
+          isPanning ? 'cursor-grabbing' : canPan ? 'cursor-grab' : 'cursor-default'
+        }`}
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0)
+          `,
+          backgroundSize: '20px 20px',
+          touchAction: 'none',
+        }}
+      >
+        {/* 悬浮缩放控制器（右上角） */}
+        <div
+          className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-neutral-900/90 border border-neutral-800 rounded-lg p-1 backdrop-blur-md"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <button
             type="button"
             onClick={handleZoomOut}
@@ -163,24 +263,14 @@ export const CardStage: React.FC<CardStageProps> = ({ data, renderRef }) => {
             <span className="hidden sm:inline">自适应一屏</span>
           </button>
         </div>
-      </div>
 
-      {/* 中间画板网格展示区 (占据全部可用空间，自适应放大并居中) */}
-      <div 
-        ref={containerRef}
-        className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center p-3 sm:p-4 md:p-6 relative"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0)
-          `,
-          backgroundSize: '20px 20px',
-        }}
-      >
-        {/* 卡片容器 */}
+        {/* 卡片容器（translate 为屏幕空间平移，scale 后应用；拖拽中关闭过渡保证跟手） */}
         <div
-          className="transition-transform duration-200 ease-out origin-center flex items-center justify-center flex-shrink-0"
+          className={`origin-center flex items-center justify-center flex-shrink-0 ${
+            isPanning ? '' : 'transition-transform duration-200 ease-out'
+          }`}
           style={{
-            transform: `scale(${zoom})`,
+            transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
             width: `${rawW}px`,
             height: `${rawH}px`,
           }}

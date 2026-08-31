@@ -6,6 +6,12 @@
   :root {
     --background: #f8fafc;
     --foreground: #0f172a;
+    /* 字体栈变量：tailwind.config.ts 的 fontFamily 以这些变量开头，必须在此定义，
+       否则 var() 落空导致 font-serif / font-mono 等工具类整体失效 */
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --font-serif: "Songti SC", "Noto Serif SC", "Source Han Serif SC", SimSun, "宋体", serif;
+    --font-mono: Menlo, Monaco, Consolas, "Courier New", monospace;
   }
 
   html, body {
@@ -49,6 +55,13 @@
 #wepost-card-export-target {
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
+}
+
+/* 卡片字体选择（CardData.fontFamily）：覆盖模板内硬编码的 font-* 类。
+   代码块 / 行内代码保持等宽，KaTeX 公式保持其专用字体，均排除在外 */
+.wepost-card-font,
+.wepost-card-font *:not(pre):not(code):not(.katex):not(.katex *) {
+  font-family: var(--card-font-family) !important;
 }
 
 /* Markdown 工具栏横向滚动（隐藏滚动条，可滚动时悬停温和显现） */

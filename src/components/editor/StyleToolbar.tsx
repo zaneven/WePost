@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   CardData,
+  FontFamilyType,
   FontSizeType
 } from '@/types/card';
 import { TEMPLATES, ASPECT_RATIOS } from '@/core/templates/registry';
@@ -11,13 +12,26 @@ import {
 import {
   Layout,
   Palette,
-  Sliders,
+  Type,
   AlignLeft,
   AlignCenter,
   AlignJustify,
   Check,
   Wand2,
 } from 'lucide-react';
+
+/** UI 仅开放常用画幅（公众号封面 2.35:1 与 4:3 画幅暂不开放选择，registry 保留以兼容历史数据） */
+const VISIBLE_RATIOS = ASPECT_RATIOS.filter(
+  (item) => item.ratio !== '2.35:1' && item.ratio !== '4:3'
+);
+
+/** 可选字体（与 tailwind fontFamily 配置一一对应） */
+const FONT_OPTIONS: { value: FontFamilyType; label: string }[] = [
+  { value: 'sans', label: '无衬线' },
+  { value: 'serif', label: '衬线' },
+  { value: 'mono', label: '等宽' },
+  { value: 'kaiti', label: '楷体' },
+];
 
 interface StyleToolbarProps {
   data: CardData;
@@ -26,6 +40,8 @@ interface StyleToolbarProps {
   onSmartMatch?: () => void;
   /** 当前推荐理由（供按钮旁提示） */
   matchHint?: string | null;
+  /** 所在表面主题：light=浅色面板（移动端 Tab），dark=暗色参数栏（桌面端右栏） */
+  surface?: 'light' | 'dark';
 }
 
 export const StyleToolbar: React.FC<StyleToolbarProps> = ({
@@ -33,7 +49,33 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
   onChange,
   onSmartMatch,
   matchHint,
+  surface = 'light',
 }) => {
+  const dark = surface === 'dark';
+
+  // 分区标签：与 ExportPanel 保持全局统一
+  const labelClass = `block text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 ${
+    dark ? 'text-neutral-400' : 'text-neutral-500'
+  }`;
+  const labelIconClass = dark ? 'text-neutral-500' : 'text-neutral-700';
+  const subLabelClass = `block text-xs font-medium mb-1.5 ${
+    dark ? 'text-neutral-400' : 'text-neutral-600'
+  }`;
+
+  // 分段控件（全局统一风格）：容器 + 选中/未选中态
+  const segContainer = `flex p-0.5 rounded-lg ${dark ? 'bg-neutral-900' : 'bg-neutral-100'}`;
+  const segGridContainer = `grid grid-cols-2 gap-0.5 p-0.5 rounded-lg ${dark ? 'bg-neutral-900' : 'bg-neutral-100'}`;
+  const segBtn = (active: boolean) =>
+    `text-xs rounded-md font-medium transition-all ${
+      active
+        ? dark
+          ? 'bg-neutral-700 text-white shadow-sm'
+          : 'bg-white text-neutral-900 shadow-sm'
+        : dark
+          ? 'text-neutral-400 hover:text-neutral-200'
+          : 'text-neutral-500 hover:text-neutral-800'
+    }`;
+
   return (
     <div className="space-y-6">
       {/* 智能匹配：按内容一键推荐模板 / 画幅 / 字体 */}
@@ -56,14 +98,14 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
         </div>
       )}
 
-      {/* 模版风格选择 */}
+      {/* 贴图风格选择（固定两列，缩略图等比适配固定高度，不随画幅变化） */}
       <div>
-        <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <Palette className="w-3.5 h-3.5 text-neutral-700" />
+        <label className={`${labelClass} mb-2.5`}>
+          <Palette className={`w-3.5 h-3.5 ${labelIconClass}`} />
           <span>贴图风格模版 ({TEMPLATES.length} 款设计感预设)</span>
         </label>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5">
           {TEMPLATES.map((tmpl) => {
             const isSelected = data.templateId === tmpl.id;
             return (
@@ -74,22 +116,21 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
                 aria-pressed={isSelected}
                 className={`relative rounded-xl border text-left transition-all group overflow-hidden ${
                   isSelected
-                    ? 'border-neutral-900 ring-2 ring-neutral-900/10 shadow-sm'
-                    : 'border-neutral-200 hover:border-neutral-400'
+                    ? dark
+                      ? 'border-neutral-300 ring-2 ring-white/20 shadow-sm shadow-white/10'
+                      : 'border-neutral-900 ring-2 ring-neutral-900/10 shadow-sm'
+                    : dark
+                      ? 'border-neutral-700 hover:border-neutral-500'
+                      : 'border-neutral-200 hover:border-neutral-400'
                 }`}
               >
-                {/* 真实模板缩略图预览 */}
-                <div className="relative">
+                {/* 固定高度缩略图区（真实渲染预览，等比缩放居中） */}
+                <div className="h-28 flex items-center justify-center overflow-hidden px-2 pt-2 bg-neutral-100">
                   <TemplateThumbnail
                     templateId={tmpl.id}
                     aspectRatio={data.aspectRatio}
-                    width={160}
-                  />
-                  {/* 选中态遮罩 + 角标 */}
-                  <div
-                    className={`absolute inset-0 transition-opacity ${
-                      isSelected ? 'bg-neutral-900/10' : 'bg-transparent'
-                    }`}
+                    width={150}
+                    height={96}
                   />
                   {isSelected && (
                     <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-neutral-900 flex items-center justify-center shadow-md">
@@ -110,15 +151,15 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
         </div>
       </div>
 
-      {/* 画面比例 */}
+      {/* 画板尺寸与比例（统一分段控件选中风格，无勾选图标） */}
       <div>
-        <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-          <Layout className="w-3.5 h-3.5 text-neutral-700" />
+        <label className={`${labelClass} mb-2.5`}>
+          <Layout className={`w-3.5 h-3.5 ${labelIconClass}`} />
           <span>画板尺寸与比例</span>
         </label>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {ASPECT_RATIOS.map((item) => {
+        <div className={segGridContainer}>
+          {VISIBLE_RATIOS.map((item) => {
             const isSelected = data.aspectRatio === item.ratio;
             return (
               <button
@@ -126,111 +167,91 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
                 type="button"
                 onClick={() => onChange({ aspectRatio: item.ratio })}
                 aria-pressed={isSelected}
-                className={`p-2.5 rounded-lg border text-left flex items-center gap-2.5 transition-all ${
-                  isSelected
-                    ? 'border-neutral-900 bg-neutral-900 text-white font-medium shadow-sm'
-                    : 'border-neutral-200 hover:border-neutral-300 bg-white text-neutral-800'
-                }`}
+                title={`${item.width} × ${item.height}`}
+                className={`p-2 rounded-md text-left flex items-center gap-2 ${segBtn(isSelected)}`}
               >
-                {/* 真实比例可视化矩形 */}
                 <AspectRatioThumbnail ratio={item.ratio} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold">{item.label}</div>
-                  <div
-                    className={`text-[10px] ${
-                      isSelected ? 'text-neutral-300' : 'text-neutral-400'
-                    }`}
-                  >
+                  <div className="text-xs font-semibold truncate">{item.label}</div>
+                  <div className="text-[10px] font-mono opacity-60">
                     {item.width} × {item.height}
                   </div>
                 </div>
-                {isSelected && <Check className="w-4 h-4 text-white flex-shrink-0" aria-hidden="true" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 排版精细调节 */}
-      <div className="space-y-4 pt-2 border-t border-neutral-200">
-        <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-          <Sliders className="w-3.5 h-3.5 text-neutral-700" />
-          <span>排版细节微调</span>
+      {/* 文字与对齐（字体 / 字号 / 对齐 上下排列） */}
+      <div className={`space-y-4 pt-2 border-t ${dark ? 'border-neutral-700/60' : 'border-neutral-200'}`}>
+        <label className={labelClass}>
+          <Type className={`w-3.5 h-3.5 ${labelIconClass}`} />
+          <span>文字与对齐</span>
         </label>
 
-        {/* 字号与对齐 */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-              正文字号
-            </label>
-            <div className="flex bg-neutral-100 p-0.5 rounded-lg">
-              {([
-                { value: 'sm', label: '小', px: '14' },
-                { value: 'base', label: '中', px: '16' },
-                { value: 'lg', label: '大', px: '18' },
-                { value: 'xl', label: '特大', px: '20' },
-              ] as { value: FontSizeType; label: string; px: string }[]).map((size) => (
-                <button
-                  key={size.value}
-                  type="button"
-                  onClick={() => onChange({ fontSize: size.value })}
-                  title={`${size.label}号 · ${size.px}px`}
-                  className={`flex-1 py-1 text-xs rounded-md font-medium transition-all flex flex-col items-center leading-none ${
-                    data.fontSize === size.value
-                      ? 'bg-white text-neutral-900 shadow-sm'
-                      : 'text-neutral-500 hover:text-neutral-800'
-                  }`}
-                >
-                  <span>{size.label}</span>
-                  <span className="text-[9px] font-mono opacity-60 mt-0.5">{size.px}</span>
-                </button>
-              ))}
-            </div>
+        {/* 字体 */}
+        <div>
+          <label className={subLabelClass}>字体</label>
+          <div className={segContainer}>
+            {FONT_OPTIONS.map((font) => (
+              <button
+                key={font.value}
+                type="button"
+                onClick={() => onChange({ fontFamily: font.value })}
+                aria-pressed={data.fontFamily === font.value}
+                className={`py-1.5 px-2 ${segBtn(data.fontFamily === font.value)}`}
+              >
+                {font.label}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div>
-            <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-              对齐方式
-            </label>
-            <div className="flex bg-neutral-100 p-0.5 rounded-lg">
+        {/* 字号 */}
+        <div>
+          <label className={subLabelClass}>字号</label>
+          <div className={segContainer}>
+            {([
+              { value: 'sm', label: '小', px: '14' },
+              { value: 'base', label: '中', px: '16' },
+              { value: 'lg', label: '大', px: '18' },
+              { value: 'xl', label: '特大', px: '20' },
+            ] as { value: FontSizeType; label: string; px: string }[]).map((size) => (
               <button
+                key={size.value}
                 type="button"
-                onClick={() => onChange({ align: 'left' })}
-                title="左对齐"
-                className={`flex-1 py-1 flex items-center justify-center rounded-md transition-all ${
-                  data.align === 'left'
-                    ? 'bg-white text-neutral-900 shadow-sm'
-                    : 'text-neutral-500 hover:text-neutral-800'
-                }`}
+                onClick={() => onChange({ fontSize: size.value })}
+                title={`${size.label}号 · ${size.px}px`}
+                className={`py-1.5 px-2 ${segBtn(data.fontSize === size.value)}`}
               >
-                <AlignLeft className="w-3.5 h-3.5" />
+                <span>{size.label}</span>
+                <span className="opacity-60 ml-0.5 font-mono text-[10px]">{size.px}</span>
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 对齐方式 */}
+        <div>
+          <label className={subLabelClass}>对齐方式</label>
+          <div className={segContainer}>
+            {([
+              { value: 'left', label: '左对齐', Icon: AlignLeft },
+              { value: 'center', label: '居中对齐', Icon: AlignCenter },
+              { value: 'justify', label: '两端对齐', Icon: AlignJustify },
+            ] as const).map(({ value, label, Icon }) => (
               <button
+                key={value}
                 type="button"
-                onClick={() => onChange({ align: 'center' })}
-                title="居中对齐"
-                className={`flex-1 py-1 flex items-center justify-center rounded-md transition-all ${
-                  data.align === 'center'
-                    ? 'bg-white text-neutral-900 shadow-sm'
-                    : 'text-neutral-500 hover:text-neutral-800'
-                }`}
+                onClick={() => onChange({ align: value })}
+                title={label}
+                aria-label={label}
+                className={`py-1.5 px-2 flex items-center justify-center ${segBtn(data.align === value)}`}
               >
-                <AlignCenter className="w-3.5 h-3.5" />
+                <Icon className="w-3.5 h-3.5" />
               </button>
-              <button
-                type="button"
-                onClick={() => onChange({ align: 'justify' })}
-                title="两端对齐"
-                className={`flex-1 py-1 flex items-center justify-center rounded-md transition-all ${
-                  data.align === 'justify'
-                    ? 'bg-white text-neutral-900 shadow-sm'
-                    : 'text-neutral-500 hover:text-neutral-800'
-                }`}
-              >
-                <AlignJustify className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>

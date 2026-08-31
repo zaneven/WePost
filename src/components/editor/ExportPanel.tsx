@@ -15,9 +15,11 @@ type ExportState = ReturnType<typeof useCardExport>;
 interface ExportPanelProps {
   data: CardData;
   exportState: ExportState;
+  /** 所在表面主题：light=浅色面板（移动端 Tab），dark=暗色参数栏（桌面端右栏） */
+  surface?: 'light' | 'dark';
 }
 
-export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState }) => {
+export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState, surface = 'light' }) => {
   const {
     config,
     setConfig,
@@ -27,109 +29,104 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState }) =
     handleDownload,
     handleCopyClipboard,
   } = exportState;
+  const dark = surface === 'dark';
+
+  const labelClass = `block text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
+    dark ? 'text-neutral-400' : 'text-neutral-500'
+  }`;
+  const labelIconClass = dark ? 'text-neutral-500' : 'text-neutral-700';
 
   return (
     <div className="space-y-5">
-      {/* 导出配置 */}
-      <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200/80 space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-neutral-700 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-neutral-600" />
-            <span>导出分辨率与格式</span>
-          </label>
-          <span className="text-[10px] text-emerald-600 font-medium bg-emerald-100/60 px-2 py-0.5 rounded">
-            超高清无损
-          </span>
-        </div>
-
-        {/* 倍率切换 */}
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setConfig({ ...config, scale: 2 })}
-            className={`py-2 px-3 rounded-lg border text-left text-xs transition-all ${
-              config.scale === 2
-                ? 'border-neutral-900 bg-white ring-2 ring-neutral-900/10 font-bold text-neutral-900 shadow-sm'
-                : 'border-neutral-200 bg-white/60 text-neutral-600 hover:border-neutral-300'
-            }`}
-          >
-            <div className="font-semibold">2x 高清推荐</div>
-            <div className="text-[10px] text-neutral-400 font-normal">微信/社交平台最佳大小</div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setConfig({ ...config, scale: 3 })}
-            className={`py-2 px-3 rounded-lg border text-left text-xs transition-all ${
-              config.scale === 3
-                ? 'border-neutral-900 bg-white ring-2 ring-neutral-900/10 font-bold text-neutral-900 shadow-sm'
-                : 'border-neutral-200 bg-white/60 text-neutral-600 hover:border-neutral-300'
-            }`}
-          >
-            <div className="font-semibold">3x 极致超清</div>
-            <div className="text-[10px] text-neutral-400 font-normal">Retina 视网膜超清画质</div>
-          </button>
-        </div>
-
-        {/* 格式切换 */}
-        <div className="flex items-center gap-2 pt-1">
-          <span className="text-xs text-neutral-500">图片格式:</span>
-          <div className="flex gap-1.5 flex-1">
+      {/* 导出倍率 */}
+      <div>
+        <label className={labelClass}>
+          <Sparkles className={`w-3.5 h-3.5 ${labelIconClass}`} aria-hidden="true" />
+          <span>导出分辨率</span>
+        </label>
+        <div className={`flex p-0.5 rounded-lg ${dark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
+          {([
+            { value: 2, label: '2x', desc: '高清' },
+            { value: 3, label: '3x', desc: '超清' },
+          ] as { value: 2 | 3; label: string; desc: string }[]).map((item) => (
             <button
+              key={item.value}
               type="button"
-              onClick={() => setConfig({ ...config, format: 'png' })}
-              className={`flex-1 py-1 text-xs rounded border transition-all ${
-                config.format === 'png'
-                  ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
-                  : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
+              onClick={() => setConfig({ ...config, scale: item.value })}
+              title={`${item.label} ${item.desc}`}
+              aria-pressed={config.scale === item.value}
+              className={`flex-1 py-1.5 text-xs rounded-md font-medium transition-all ${
+                config.scale === item.value
+                  ? dark
+                    ? 'bg-neutral-700 text-white shadow-sm'
+                    : 'bg-white text-neutral-900 shadow-sm'
+                  : dark
+                    ? 'text-neutral-400 hover:text-neutral-200'
+                    : 'text-neutral-500 hover:text-neutral-800'
               }`}
             >
-              PNG (文字极度锐利)
+              <span>{item.label}</span>
+              <span className="opacity-60 ml-1">{item.desc}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setConfig({ ...config, format: 'jpeg' })}
-              className={`flex-1 py-1 text-xs rounded border transition-all ${
-                config.format === 'jpeg'
-                  ? 'border-neutral-900 bg-neutral-900 text-white font-medium'
-                  : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
-              }`}
-            >
-              JPG (体积更小)
-            </button>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* 核心操作按钮组 */}
-      <div className="space-y-2.5">
+      {/* 图片格式 */}
+      <div>
+        <label className={labelClass}>
+          <FileImage className={`w-3.5 h-3.5 ${labelIconClass}`} aria-hidden="true" />
+          <span>图片格式</span>
+        </label>
+        <div className={`flex p-0.5 rounded-lg ${dark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
+          {([
+            { value: 'png', label: 'PNG' },
+            { value: 'jpeg', label: 'JPG' },
+          ] as { value: 'png' | 'jpeg'; label: string }[]).map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => setConfig({ ...config, format: item.value })}
+              aria-pressed={config.format === item.value}
+              className={`flex-1 py-1.5 text-xs rounded-md font-medium transition-all ${
+                config.format === item.value
+                  ? dark
+                    ? 'bg-neutral-700 text-white shadow-sm'
+                    : 'bg-white text-neutral-900 shadow-sm'
+                  : dark
+                    ? 'text-neutral-400 hover:text-neutral-200'
+                    : 'text-neutral-500 hover:text-neutral-800'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 操作按钮组 */}
+      <div className="space-y-2.5 pt-1">
         {/* 一键复制到剪贴板 */}
         <button
           type="button"
           onClick={() => handleCopyClipboard()}
           disabled={isCopying}
-          className={`w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all shadow-md ${
+          className={`w-full py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-[0.98] ${
             copiedSuccess
-              ? 'bg-emerald-600 text-white'
-              : 'bg-neutral-900 hover:bg-neutral-800 text-white active:scale-[0.99]'
-          }`}
+              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+              : dark
+                ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border border-neutral-700/60'
+                : 'bg-neutral-900 hover:bg-neutral-800 text-white'
+          } ${isCopying ? 'opacity-70 cursor-wait' : ''}`}
         >
           {isCopying ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>正在生成并复制...</span>
-            </>
+            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
           ) : copiedSuccess ? (
-            <>
-              <Check className="w-4 h-4 text-white" />
-              <span>已复制到剪贴板！可直接粘贴至公众号</span>
-            </>
+            <Check className="w-3.5 h-3.5" aria-hidden="true" />
           ) : (
-            <>
-              <Copy className="w-4 h-4" />
-              <span>一键复制图片到剪贴板 (Cmd+V 粘贴)</span>
-            </>
+            <Copy className="w-3.5 h-3.5" aria-hidden="true" />
           )}
+          <span>{copiedSuccess ? '已复制' : isCopying ? '复制中…' : '复制图片'}</span>
         </button>
 
         {/* 下载高清图片 */}
@@ -137,25 +134,15 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState }) =
           type="button"
           onClick={() => handleDownload(data)}
           disabled={isExporting}
-          className="w-full py-3 px-4 rounded-xl border border-neutral-300 hover:border-neutral-900 hover:bg-neutral-50 text-neutral-900 font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+          className="w-full py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all active:scale-[0.98] bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-500 text-neutral-950 shadow-lg shadow-emerald-500/25"
         >
           {isExporting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin text-neutral-600" />
-              <span>正在导出高清贴图...</span>
-            </>
+            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
           ) : (
-            <>
-              <Download className="w-4 h-4 text-neutral-700" />
-              <span>下载 {config.scale}x 高清贴图 ({config.format.toUpperCase()})</span>
-            </>
+            <Download className="w-3.5 h-3.5" aria-hidden="true" />
           )}
+          <span>{isExporting ? '导出中…' : `下载 ${config.scale}x ${config.format === 'png' ? 'PNG' : 'JPG'}`}</span>
         </button>
-      </div>
-
-      <div className="text-[11px] text-neutral-400 text-center flex items-center justify-center gap-1">
-        <FileImage className="w-3.5 h-3.5" />
-        <span>支持一键粘贴到微信公众号后台图文编辑器</span>
       </div>
     </div>
   );

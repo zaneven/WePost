@@ -3,6 +3,7 @@ import { CardData } from '@/types/card';
 import type { PresetType } from '@/data/presets';
 import { useToast } from '@/components/ui/Toast';
 import { uploadImageFile, isValidImageUrl, UPLOAD_ACCEPT } from '@/lib/uploadImage';
+import { requestAiFill, AI_FILL_MAX_CHARS } from '@/lib/aiFill';
 import {
   Type,
   Tag,
@@ -26,6 +27,7 @@ import {
   Table,
   SquareCode,
   CornerDownLeft,
+  Sparkles,
 } from 'lucide-react';
 
 interface ContentFormProps {
@@ -78,6 +80,29 @@ export const ContentForm: React.FC<ContentFormProps> = ({
     });
     toast.show('已清空全部文案', 'info');
   }, [onChange, toast]);
+
+  // ---- AI 填写：粘贴原始文字，LLM 提取后直接覆盖填充（可撤销） ----
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiText, setAiText] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const handleAiFill = useCallback(async () => {
+    if (aiLoading) return;
+    setAiError(null);
+    setAiLoading(true);
+    try {
+      const card = await requestAiFill(aiText);
+      onChange(card);
+      setAiPanelOpen(false);
+      setAiText('');
+      toast.show(`AI 已填充 ${Object.keys(card).length} 项内容，可点击顶部撤销回退`, 'success');
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'AI 识别失败，请重试');
+    } finally {
+      setAiLoading(false);
+    }
+  }, [aiText, aiLoading, onChange, toast]);
 
   const insertMarkdown = (prefix: string, suffix: string = '') => {
     const textarea = document.getElementById('card-content-textarea') as HTMLTextAreaElement;
@@ -260,6 +285,92 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             赛博信号
           </button>
         </div>
+      </div>
+
+      {/* AI 填写：粘贴原始文字 → LLM 提取 → 自动填充各字段 */}
+      <div>
+        {!aiPanelOpen ? (
+          <button
+            type="button"
+            onClick={() => {
+              setAiPanelOpen(true);
+              setAiError(null);
+            }}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white transition-colors cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+            AI 填写：粘贴文字自动生成卡片
+          </button>
+        ) : (
+          <div className="rounded-lg border border-neutral-200 bg-white shadow-sm p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+                <span>AI 填写</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAiPanelOpen(false);
+                  setAiError(null);
+                }}
+                disabled={aiLoading}
+                title="收起"
+                aria-label="收起 AI 填写面板"
+                className="text-[11px] text-neutral-500 hover:text-neutral-900 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                收起
+              </button>
+            </div>
+            <textarea
+              rows={5}
+              value={aiText}
+              onChange={(e) => {
+                setAiText(e.target.value);
+                setAiError(null);
+              }}
+              disabled={aiLoading}
+              placeholder="粘贴文章、金句、早报、便签…AI 自动识别并填写标题、正文、署名与风格参数"
+              className="w-full text-xs font-normal rounded-md border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 p-2.5 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 disabled:opacity-60 resize-none"
+            />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-neutral-400 flex-shrink-0">
+                识别需数秒，完成后可撤销
+              </span>
+              <span
+                className={`text-[10px] font-mono flex-shrink-0 ${
+                  aiText.length > AI_FILL_MAX_CHARS ? 'text-red-600' : 'text-neutral-400'
+                }`}
+              >
+                {aiText.length}/{AI_FILL_MAX_CHARS}
+              </span>
+            </div>
+            {aiError && (
+              <div className="text-[11px] text-red-600 flex items-start gap-1">
+                <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+                <span>{aiError}</span>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleAiFill}
+              disabled={aiLoading || !aiText.trim() || aiText.length > AI_FILL_MAX_CHARS}
+              className="w-full py-2 rounded-md bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            >
+              {aiLoading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                  <span>识别中…</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>AI 识别并填充</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 文案快捷操作：复制全文 / 清空 */}

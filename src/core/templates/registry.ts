@@ -1,4 +1,4 @@
-import { TemplateMeta, AspectRatioMeta, AspectRatioType, CardData } from '@/types/card';
+import { TemplateMeta, AspectRatioMeta, AspectRatioType, CardData, TemplateId } from '@/types/card';
 
 export const ASPECT_RATIOS: AspectRatioMeta[] = [
   {
@@ -63,6 +63,18 @@ export function getCanvasDimensions(
   return { width: meta.canvasWidth, height: meta.canvasHeight };
 }
 
+/** 模板正文可用高度占比的缺省值（页眉 / 页脚 / 边距占其余部分）。 */
+export const DEFAULT_CONTENT_FRACTION = 0.6;
+
+/**
+ * 获取模板的正文可用高度占比（供长文拆分估算单卡容量）。
+ * 页眉页脚高的模板（水墨 / 禅意等大留白）占比更低，单卡容量更小、拆分更早。
+ */
+export function getTemplateContentFraction(templateId: TemplateId): number {
+  const meta = TEMPLATES.find((t) => t.id === templateId);
+  return meta?.contentFraction ?? DEFAULT_CONTENT_FRACTION;
+}
+
 /**
  * 移动端画板占位高度（vh）。
  * 按比例智能分配：竖屏（9:16 / 3:4）给更大空间，正方形适中，宽幅（2.35:1 / 4:3）较小，
@@ -88,6 +100,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'serif',
     accentColor: '#18181b',
     bgPreview: 'linear-gradient(135deg, #fbfbfb 0%, #f4f4f5 100%)',
+    contentFraction: 0.6,
   },
   {
     id: 'dark-glass',
@@ -98,6 +111,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'sans',
     accentColor: '#38bdf8',
     bgPreview: 'linear-gradient(135deg, #090d16 0%, #030712 100%)',
+    contentFraction: 0.55,
   },
   {
     id: 'vintage-news',
@@ -108,6 +122,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'serif',
     accentColor: '#854d0e',
     bgPreview: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+    contentFraction: 0.55,
   },
   {
     id: 'warm-memo',
@@ -118,6 +133,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'kaiti',
     accentColor: '#d97706',
     bgPreview: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+    contentFraction: 0.55,
   },
   {
     id: 'zen-quote',
@@ -128,6 +144,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'serif',
     accentColor: '#b91c1c',
     bgPreview: 'linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%)',
+    contentFraction: 0.5,
   },
   {
     id: 'acid-bold',
@@ -138,6 +155,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'sans',
     accentColor: '#84cc16',
     bgPreview: 'linear-gradient(135deg, #facc15 0%, #ec4899 100%)',
+    contentFraction: 0.58,
   },
   {
     id: 'ink-wash',
@@ -148,6 +166,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'serif',
     accentColor: '#9b2222',
     bgPreview: 'linear-gradient(135deg, #f5f1e6 0%, #ece4d0 100%)',
+    contentFraction: 0.5,
   },
   {
     id: 'terminal-code',
@@ -158,6 +177,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'mono',
     accentColor: '#27c93f',
     bgPreview: 'linear-gradient(135deg, #0a0e14 0%, #0d1117 100%)',
+    contentFraction: 0.62,
   },
   {
     id: 'editorial-bold',
@@ -168,6 +188,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'sans',
     accentColor: '#dc2626',
     bgPreview: 'linear-gradient(135deg, #ffffff 0%, #f4f4f5 100%)',
+    contentFraction: 0.58,
   },
   {
     id: 'neon-cyber',
@@ -178,6 +199,7 @@ export const TEMPLATES: TemplateMeta[] = [
     defaultFont: 'sans',
     accentColor: '#22d3ee',
     bgPreview: 'linear-gradient(135deg, #08080f 0%, #11112a 100%)',
+    contentFraction: 0.58,
   },
 ];
 

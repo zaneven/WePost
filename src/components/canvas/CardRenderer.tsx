@@ -15,6 +15,13 @@ import { NeonCyber } from '../templates/NeonCyber';
 interface CardRendererProps {
   data: CardData;
   renderRef?: React.RefObject<HTMLDivElement>;
+  /** 多卡堆叠时的卡序号（0 起）。决定导出目标 id 与 data-card-index。 */
+  index?: number;
+  /**
+   * 是否为可导出的主画板卡片（默认 true）。模板缩略图等装饰性复用传 false，
+   * 不挂 data-wepost-card / 导出 id，避免被导出遍历与溢出检测误伤。
+   */
+  exportable?: boolean;
 }
 
 /** 所选字体 → CSS 字体栈（与 tailwind.config.ts / globals.css 的字体变量保持一致） */
@@ -25,7 +32,12 @@ const CARD_FONT_STACKS: Record<FontFamilyType, string> = {
   kaiti: '"STKaiti", "KaiTi", "楷体", "Noto Serif SC", "Songti SC", serif',
 };
 
-export const CardRenderer: React.FC<CardRendererProps> = ({ data, renderRef }) => {
+export const CardRenderer: React.FC<CardRendererProps> = ({
+  data,
+  renderRef,
+  index = 0,
+  exportable = true,
+}) => {
   // 根据比例获取容器基础尺寸 (逻辑像素，统一数据源: registry)
   const { width, height } = getCanvasDimensions(data.aspectRatio);
 
@@ -59,8 +71,11 @@ export const CardRenderer: React.FC<CardRendererProps> = ({ data, renderRef }) =
   return (
     <div
       ref={renderRef}
-      id="wepost-card-export-target"
-      className="wepost-card-font relative flex-shrink-0 transition-all duration-300 overflow-hidden"
+      // 首卡保留旧 id（无头导出脚本 /export 页依赖），后续卡用带序号 id
+      id={exportable ? (index === 0 ? 'wepost-card-export-target' : `wepost-card-export-target-${index}`) : undefined}
+      data-wepost-card={exportable ? true : undefined}
+      data-card-index={exportable ? index : undefined}
+      className="wepost-card-font relative flex-shrink-0 overflow-hidden"
       style={{
         width: `${width}px`,
         height: `${height}px`,

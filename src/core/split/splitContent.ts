@@ -1,6 +1,10 @@
 import { segmentBlocks, type BlockSegment } from '@/core/markdown/blocks';
-import { getCanvasDimensions } from '@/core/templates/registry';
-import type { AspectRatioType, FontSizeType } from '@/types/card';
+import {
+  getCanvasDimensions,
+  getTemplateContentFraction,
+  DEFAULT_CONTENT_FRACTION,
+} from '@/core/templates/registry';
+import type { AspectRatioType, FontSizeType, TemplateId } from '@/types/card';
 
 /**
  * 长文 → 多卡拆分。
@@ -9,21 +13,25 @@ import type { AspectRatioType, FontSizeType } from '@/types/card';
  * 画板可容纳行数。块（段落 / 引用 / 列表 / 代码 / 表格 / 公式）作为原子单位不跨卡，
  * 仅当单个段落 / 引用超过一整卡容量时按字符子拆。
  *
- * 容量为启发式估算（画板尺寸 × 字号 × 行高 × 正文占比），无需 DOM 测量；
- * 精修可后续接入 useCardOverflow 做测量式回退，当前启发式保证「宁早拆不溢出」。
+ * 容量为启发式估算（画板尺寸 × 字号 × 行高 × 模板正文占比），无需 DOM 测量；
+ * 每个模板的页眉 / 页脚高度不同（contentFraction 见 registry），页脚等固定元素
+ * 不参与容量，正文一旦超出即拆分，保证署名 / 水印 / 标语不被内容顶出卡片。
  */
 
 const FONT_PX: Record<FontSizeType, number> = { sm: 14, base: 16, lg: 18, xl: 20 };
 const LINE_HEIGHT = 1.85;
-/** 画板高度中可用于正文的比例（其余给页眉 / 页脚 / 边距 / 块间距）。 */
-const CONTENT_FRACTION = 0.6;
 /** 每字宽度估计（CJK 偏多，0.55em 偏保守 → 宁少算每行字数、早拆）。 */
 const CHAR_WIDTH_FACTOR = 0.55;
 
 export interface SplitOptions {
   aspectRatio: AspectRatioType;
   fontSize: FontSizeType;
+  /** 当前模板：决定正文可用高度占比（页眉页脚越高容量越小）。缺省用默认占比。 */
+  templateId?: TemplateId;
 }
+
+/** 拆分模式：auto = 按画幅容量启发式切块；divider = 按 --- 分割线切分。 */
+export type SplitMode = 'auto' | 'divider';
 
 /** 估算一个块渲染占用的行数。 */
 function blockLines(b: BlockSegment, charsPerLine: number): number {
@@ -111,10 +119,13 @@ export function splitContentIntoCards(
 ): string[] {
   const { width, height } = getCanvasDimensions(opts.aspectRatio);
   const fontPx = FONT_PX[opts.fontSize];
+  const contentFraction = opts.templateId
+    ? getTemplateContentFraction(opts.templateId)
+    : DEFAULT_CONTENT_FRACTION;
   const charsPerLine = Math.max(8, Math.floor(width / (fontPx * CHAR_WIDTH_FACTOR)));
   const linesPerCard = Math.max(
     3,
-    (height * CONTENT_FRACTION) / (fontPx * LINE_HEIGHT)
+    (height * contentFraction) / (fontPx * LINE_HEIGHT)
   );
   const capacityChars = Math.max(40, Math.floor(linesPerCard * charsPerLine));
 
@@ -154,15 +165,30 @@ export function splitContentIntoCards(
 }
 
 /**
+ * 按分割线（--- / *** / ___，独占一行）把内容切分为多卡。
+ * 分割线本身不保留；切分后空片段（首尾 / 连续分割线产生的）被丢弃。
+ * @returns 字符串数组，每项为一张卡片的 content；无分割线时返回原内容单项数组。
+ */
+export function splitContentByDivider(content: string): string[] {
+  if (!content.trim()) return [content];
+  const segments = content.split(/^[\t ]*[-*_]{3,}[\t ]*$/gm);
+  const cards = segments.map((s) => s.trim()).filter((s) => s.length > 0);
+  return cards.length ? cards : [content];
+}
+
+/**
  * 估算给定画幅 + 字号下单卡可承载的字符容量（供 UI 预估 / 测试断言）。
  */
 export function estimateCardCapacity(opts: SplitOptions): number {
   const { width, height } = getCanvasDimensions(opts.aspectRatio);
   const fontPx = FONT_PX[opts.fontSize];
+  const contentFraction = opts.templateId
+    ? getTemplateContentFraction(opts.templateId)
+    : DEFAULT_CONTENT_FRACTION;
   const charsPerLine = Math.max(8, Math.floor(width / (fontPx * CHAR_WIDTH_FACTOR)));
   const linesPerCard = Math.max(
     3,
-    (height * CONTENT_FRACTION) / (fontPx * LINE_HEIGHT)
+    (height * contentFraction) / (fontPx * LINE_HEIGHT)
   );
   return Math.max(40, Math.floor(linesPerCard * charsPerLine));
 }

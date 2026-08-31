@@ -31,9 +31,11 @@ export const EditorialBold: React.FC<TemplateProps> = ({ data }) => {
           </div>
         )}
 
-        <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight text-black leading-[1.1] uppercase">
-          {data.title}
-        </h1>
+        {data.title && (
+          <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight text-black leading-[1.1] uppercase">
+            {data.title}
+          </h1>
+        )}
       </header>
 
       <main className="my-auto py-7 relative z-10">

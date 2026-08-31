@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CardData } from '@/types/card';
 import { INITIAL_CARD_DATA, getMobileStageHeightVh } from '@/core/templates/registry';
 import { buildPresetData, type PresetType } from '@/data/presets';
 import { useCardHistory } from '@/lib/useCardHistory';
-import { useCardOverflow } from '@/lib/useCardOverflow';
+import { useCardsOverflow } from '@/lib/useCardOverflow';
 import { loadCardDataFromHash } from '@/lib/cardImport';
-import { splitContentIntoCards } from '@/core/split/splitContent';
+import {
+  splitContentIntoCards,
+  splitContentByDivider,
+  type SplitMode,
+} from '@/core/split/splitContent';
 import { recommendStyle } from '@/core/match/recommendStyle';
-import { buildCardFilename } from '@/lib/filename';
 import { useToast } from '@/components/ui/Toast';
 import { Header } from '@/components/editor/Header';
 import { ContentForm } from '@/components/editor/ContentForm';
@@ -18,11 +21,13 @@ import { ExportPanel } from '@/components/editor/ExportPanel';
 import { CardStage } from '@/components/canvas/CardStage';
 import { BottomActionBar } from '@/components/editor/BottomActionBar';
 import { SettingsPanel } from '@/components/editor/SettingsPanel';
+import { SplitPanel } from '@/components/editor/SplitPanel';
 import { useCardExport, DEFAULT_EXPORT_CONFIG } from '@/lib/useCardExport';
 import { useIsDesktop } from '@/lib/useIsDesktop';
-import { Edit3, Palette, Download } from 'lucide-react';
+import { Edit3, Palette, Download, Scissors } from 'lucide-react';
 
 const STORAGE_KEY = 'wepost:card-data:v1';
+const SPLIT_MODE_KEY = 'wepost:split-mode:v1';
 
 /** 从 localStorage 读取上次编辑内容，与默认值合并以保证字段完整 */
 function loadPersistedCardData(): CardData {
@@ -37,134 +42,58 @@ function loadPersistedCardData(): CardData {
   }
 }
 
+/** 从 localStorage 读取上次拆分模式（非法值回退自动拆分） */
+function loadPersistedSplitMode(): SplitMode {
+  if (typeof window === 'undefined') return 'auto';
+  try {
+    const raw = window.localStorage.getItem(SPLIT_MODE_KEY);
+    return raw === 'divider' ? 'divider' : 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
 export default function HomePage() {
   const history = useCardHistory<CardData>(INITIAL_CARD_DATA);
   const cardData = history.present;
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'export'>('content');
   // 布局分流：大屏三栏（文案 | 画板 | Figma 式参数栏），小屏沿用三 Tab 布局
   const isDesktop = useIsDesktop();
-  const exportTargetRef = useRef<HTMLDivElement>(null);
-  // 导出配置在画板快捷操作与配置面板间共享（单一数据源）
+  // 导出配置在卡片 hover 操作与配置面板间共享（单一数据源）
   const cardExport = useCardExport(DEFAULT_EXPORT_CONFIG);
   // 移动端画板高度：按当前比例智能分配（竖屏更高、宽幅更小）
   const mobileStageHeightVh = getMobileStageHeightVh(cardData.aspectRatio);
-  // 检测卡片内容是否溢出画板（被裁切），用于编辑区预警
-  const isOverflowing = useCardOverflow('wepost-card-export-target', cardData);
-
-  // 长文拆分：deck 为内容块数组（null = 单卡模式）；deckIndex 为当前活动块。
-  // 模板 / 样式 / 标题等字段由单卡 cardData 共享，每张卡只换 content。
-  const [deckChunks, setDeckChunks] = useState<string[] | null>(null);
-  const [deckIndex, setDeckIndex] = useState(0);
-  const [isBatchExporting, setIsBatchExporting] = useState(false);
   const toast = useToast();
+
+  // 拆分模式为常驻必选项（默认自动拆分），选择持久化到 localStorage。
+  // 左侧编辑区始终编辑完整正文，拆分结果由 content + 模式 + 画幅 + 字号 + 模板实时推导。
+  const [splitMode, setSplitMode] = useState<SplitMode>('auto');
+  // 挂载恢复完成后才允许写回持久化，避免初始 'auto' 在恢复读取前覆盖已存的模式
+  const [splitModeHydrated, setSplitModeHydrated] = useState(false);
+
+  const chunks = useMemo(() => {
+    return splitMode === 'divider'
+      ? splitContentByDivider(cardData.content)
+      : splitContentIntoCards(cardData.content, {
+          aspectRatio: cardData.aspectRatio,
+          fontSize: cardData.fontSize,
+          templateId: cardData.templateId,
+        });
+  }, [
+    cardData.content,
+    cardData.aspectRatio,
+    cardData.fontSize,
+    cardData.templateId,
+    splitMode,
+  ]);
+
+  // 检测是否有卡片内容溢出画板（被裁切），用于编辑区与拆分面板预警
+  const isOverflowing = useCardsOverflow(chunks.length, cardData);
+
   // 基于当前内容的风格推荐（纯启发式，无 AI / 后端）
   const recommendation = useMemo(
     () => recommendStyle(cardData.content),
     [cardData.content]
-  );
-
-  const handleUpdateCard = useCallback(
-    (updates: Partial<CardData>) => {
-      // 拆分模式下编辑正文：同步回写当前块，切走再切回不丢失编辑
-      if (deckChunks && updates.content !== undefined) {
-        const idx = deckIndex;
-        setDeckChunks((prev) => {
-          if (!prev) return prev;
-          const next = [...prev];
-          next[idx] = updates.content as string;
-          return next;
-        });
-      }
-      history.set((prev) => ({ ...prev, ...updates }));
-    },
-    [history, deckChunks, deckIndex]
-  );
-
-  // 拆分当前长文为多卡（按画幅 + 字号估算单卡容量，块为原子单位不跨卡）
-  const handleSplit = useCallback(() => {
-    const chunks = splitContentIntoCards(cardData.content, {
-      aspectRatio: cardData.aspectRatio,
-      fontSize: cardData.fontSize,
-    });
-    if (chunks.length <= 1) {
-      toast.show('内容较短，无需拆分', 'info');
-      return;
-    }
-    setDeckChunks(chunks);
-    setDeckIndex(0);
-    history.set({ ...cardData, content: chunks[0] }, { immediate: true });
-    toast.show(`已拆分为 ${chunks.length} 张卡片`, 'success');
-  }, [cardData, history, toast]);
-
-  // 切换活动卡（同步 content 到 cardData）
-  const handleDeckNav = useCallback(
-    (index: number) => {
-      if (!deckChunks) return;
-      const i = Math.max(0, Math.min(index, deckChunks.length - 1));
-      setDeckIndex(i);
-      history.set({ ...cardData, content: deckChunks[i] }, { immediate: true });
-    },
-    [deckChunks, cardData, history]
-  );
-
-  // 退出拆分模式（保留当前块为单卡）
-  const handleExitDeck = useCallback(() => {
-    setDeckChunks(null);
-    setDeckIndex(0);
-  }, []);
-
-  // 一键应用智能匹配推荐（模板 / 画幅 / 字体）
-  const handleSmartMatch = useCallback(() => {
-    history.set(
-      {
-        ...cardData,
-        templateId: recommendation.templateId,
-        aspectRatio: recommendation.aspectRatio,
-        fontFamily: recommendation.fontFamily,
-      },
-      { immediate: true }
-    );
-    toast.show(`已应用：${recommendation.reason}`, 'success');
-  }, [cardData, recommendation, history, toast]);
-
-  // 批量导出全部卡片（每张编号文件名）
-  const handleExportAll = useCallback(async () => {
-    if (!deckChunks || isBatchExporting) return;
-    const el = exportTargetRef.current;
-    if (!el) return;
-    setIsBatchExporting(true);
-    const startIdx = deckIndex;
-    const base = buildCardFilename(cardData.templateId, cardData.title);
-    try {
-      const { exportCardImage } = await import('@/core/export/exporter');
-      for (let i = 0; i < deckChunks.length; i++) {
-        setDeckIndex(i);
-        history.set({ ...cardData, content: deckChunks[i] }, { immediate: true });
-        // 等下一帧渲染落定，再由 exportCardImage 内部的 ensureRenderReady 闸门兜底
-        await new Promise<void>((r) => requestAnimationFrame(() => r()));
-        await new Promise<void>((r) => setTimeout(() => r(), 60));
-        await exportCardImage(el, `${base}-${i + 1}`, cardExport.config);
-      }
-      toast.show(`已导出 ${deckChunks.length} 张图片`, 'success');
-    } catch (err) {
-      console.error('批量导出失败:', err);
-      toast.show('批量导出失败，请重试', 'error');
-    } finally {
-      history.set({ ...cardData, content: deckChunks[startIdx] }, { immediate: true });
-      setDeckIndex(startIdx);
-      setIsBatchExporting(false);
-    }
-  }, [deckChunks, deckIndex, isBatchExporting, cardData, history, cardExport, toast]);
-
-  const handleResetExample = useCallback(() => {
-    history.set(INITIAL_CARD_DATA, { immediate: true });
-  }, [history]);
-
-  const handleApplyPresetSample = useCallback(
-    (type: PresetType) => {
-      history.set(buildPresetData(cardData, type), { immediate: true });
-    },
-    [cardData, history]
   );
 
   // 客户端挂载后恢复数据（replace 不入历史栈，避免污染撤销）。
@@ -185,9 +114,21 @@ export default function HomePage() {
     } else {
       history.replace(loadPersistedCardData());
     }
+    setSplitMode(loadPersistedSplitMode());
+    setSplitModeHydrated(true);
     // 仅执行一次
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 拆分模式持久化（挂载恢复完成后才写回）
+  useEffect(() => {
+    if (!splitModeHydrated) return;
+    try {
+      window.localStorage.setItem(SPLIT_MODE_KEY, splitMode);
+    } catch {
+      // 隐私模式等，静默忽略
+    }
+  }, [splitMode, splitModeHydrated]);
 
   // 持久化：防抖写入 localStorage
   useEffect(() => {
@@ -219,6 +160,48 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [history]);
 
+  const handleUpdateCard = useCallback(
+    (updates: Partial<CardData>) => {
+      history.set((prev) => ({ ...prev, ...updates }));
+    },
+    [history]
+  );
+
+  const handleResetExample = useCallback(() => {
+    history.set(INITIAL_CARD_DATA, { immediate: true });
+  }, [history]);
+
+  const handleApplyPresetSample = useCallback(
+    (type: PresetType) => {
+      history.set(buildPresetData(cardData, type), { immediate: true });
+    },
+    [cardData, history]
+  );
+
+  // 一键应用智能匹配推荐（模板 / 画幅 / 字体）
+  const handleSmartMatch = useCallback(() => {
+    history.set(
+      {
+        ...cardData,
+        templateId: recommendation.templateId,
+        aspectRatio: recommendation.aspectRatio,
+        fontFamily: recommendation.fontFamily,
+      },
+      { immediate: true }
+    );
+    toast.show(`已应用：${recommendation.reason}`, 'success');
+  }, [cardData, recommendation, history, toast]);
+
+  const splitPanel = (surface: 'light' | 'dark') => (
+    <SplitPanel
+      surface={surface}
+      splitMode={splitMode}
+      onSplitModeChange={setSplitMode}
+      cardCount={chunks.length}
+      isOverflowing={isOverflowing}
+    />
+  );
+
   return (
     <div
       className={`w-full flex flex-col bg-neutral-950 relative select-none ${
@@ -236,9 +219,9 @@ export default function HomePage() {
 
       {isDesktop ? (
         <>
-          {/* 大屏三栏工作台：文案编辑 | 实时画板 | 参数设置栏 */}
+          {/* 大屏三栏工作台：文案编辑 | 实时画板（多卡堆叠） | 参数设置栏 */}
           <div className="flex-1 min-h-0 flex overflow-hidden">
-            {/* 左栏：文案编辑（内部滚动） */}
+            {/* 左栏：文案编辑（始终编辑完整正文，内部滚动） */}
             <aside className="w-[460px] xl:w-[500px] h-full min-h-0 flex flex-col flex-shrink-0 border-r border-neutral-800/60 bg-neutral-50 text-neutral-900 z-10 shadow-2xl shadow-black/20 overflow-hidden">
               <div
                 tabIndex={0}
@@ -249,29 +232,17 @@ export default function HomePage() {
                   onChange={handleUpdateCard}
                   onApplyPresetSample={handleApplyPresetSample}
                   isOverflowing={isOverflowing}
-                  deckState={
-                    deckChunks ? { chunks: deckChunks, index: deckIndex } : null
-                  }
-                  onSplit={handleSplit}
-                  onDeckNav={handleDeckNav}
-                  onExitDeck={handleExitDeck}
-                  onExportAll={handleExportAll}
-                  isBatchExporting={isBatchExporting}
                 />
               </div>
             </aside>
 
-            {/* 中栏：实时画板 + 底部状态/操作条（模板/比例/字数 + 复制/下载） */}
+            {/* 中栏：实时画板 + 底部状态条 */}
             <main className="flex-1 min-w-0 h-full min-h-0 flex flex-col overflow-hidden">
-              <CardStage
-                data={cardData}
-                renderRef={exportTargetRef}
-                exportState={cardExport}
-              />
-              <BottomActionBar data={cardData} exportState={cardExport} />
+              <CardStage data={cardData} chunks={chunks} exportState={cardExport} />
+              <BottomActionBar data={cardData} cardCount={chunks.length} />
             </main>
 
-            {/* 右栏：Figma 式暗色参数栏（风格排版 + 导出复制，可折叠分区，上下滚动） */}
+            {/* 右栏：Figma 式暗色参数栏（风格排版 + 拆分多卡 + 导出复制，可折叠分区，上下滚动） */}
             <aside className="w-[300px] xl:w-[320px] h-full min-h-0 flex-shrink-0 overflow-y-auto border-l border-neutral-800/60 bg-neutral-950 z-10">
               <SettingsPanel
                 data={cardData}
@@ -279,6 +250,10 @@ export default function HomePage() {
                 onSmartMatch={handleSmartMatch}
                 matchHint={recommendation.reason}
                 exportState={cardExport}
+                splitMode={splitMode}
+                onSplitModeChange={setSplitMode}
+                cardCount={chunks.length}
+                isOverflowing={isOverflowing}
               />
             </aside>
           </div>
@@ -361,14 +336,6 @@ export default function HomePage() {
                     onChange={handleUpdateCard}
                     onApplyPresetSample={handleApplyPresetSample}
                     isOverflowing={isOverflowing}
-                    deckState={
-                      deckChunks ? { chunks: deckChunks, index: deckIndex } : null
-                    }
-                    onSplit={handleSplit}
-                    onDeckNav={handleDeckNav}
-                    onExitDeck={handleExitDeck}
-                    onExportAll={handleExportAll}
-                    isBatchExporting={isBatchExporting}
                   />
                 )}
 
@@ -382,30 +349,36 @@ export default function HomePage() {
                 )}
 
                 {activeTab === 'export' && (
-                  <ExportPanel
-                    data={cardData}
-                    exportState={cardExport}
-                  />
+                  <div className="space-y-6">
+                    <ExportPanel
+                      data={cardData}
+                      exportState={cardExport}
+                      cardCount={chunks.length}
+                    />
+                    <div className="pt-4 border-t border-neutral-200">
+                      <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-700 mb-3">
+                        <Scissors className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+                        拆分多卡
+                      </h3>
+                      {splitPanel('light')}
+                    </div>
+                  </div>
                 )}
               </div>
             </aside>
 
-            {/* 上方实时画板区域（按比例智能分配高度） */}
+            {/* 上方实时画板区域（按比例智能分配高度，多卡纵向滚动浏览） */}
             <main
               className="flex-1 min-w-0 flex flex-col min-h-0 h-[var(--mobile-stage-h)] order-1"
               style={{ '--mobile-stage-h': `${mobileStageHeightVh}vh` } as React.CSSProperties}
             >
-              <CardStage
-                data={cardData}
-                renderRef={exportTargetRef}
-                exportState={cardExport}
-              />
+              <CardStage data={cardData} chunks={chunks} exportState={cardExport} />
             </main>
           </div>
 
-          {/* 底部吸固操作条 */}
+          {/* 底部吸固状态条 */}
           <div className="fixed bottom-0 left-0 right-0 z-40 flex-shrink-0">
-            <BottomActionBar data={cardData} exportState={cardExport} />
+            <BottomActionBar data={cardData} cardCount={chunks.length} />
           </div>
         </>
       )}

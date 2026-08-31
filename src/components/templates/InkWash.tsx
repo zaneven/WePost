@@ -32,9 +32,11 @@ export const InkWash: React.FC<TemplateProps> = ({ data }) => {
           </span>
         </div>
 
-        <h1 className="mt-5 text-3xl md:text-4xl font-normal tracking-wide text-stone-900 leading-[1.35] font-serif">
-          {data.title}
-        </h1>
+        {data.title && (
+          <h1 className="mt-5 text-3xl md:text-4xl font-normal tracking-wide text-stone-900 leading-[1.35] font-serif">
+            {data.title}
+          </h1>
+        )}
 
         {data.subtitle && (
           <div className="mt-3 text-xs tracking-[0.25em] text-stone-500 font-serif">

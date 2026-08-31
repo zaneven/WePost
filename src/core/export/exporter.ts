@@ -129,3 +129,91 @@ export async function copyCardToClipboard(element: HTMLElement): Promise<boolean
     throw error;
   }
 }
+
+// ---- 多卡拼接长图 ----
+
+/** 拼接长图中相邻卡片之间的间距（导出物理像素 / card scale）。 */
+const STITCH_GAP = 24;
+
+function loadImageFromUrl(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('拼接图片加载失败'));
+    img.src = url;
+  });
+}
+
+/**
+ * 把多张卡片渲染并纵向拼接为一张长图 canvas。
+ * 卡片按 DOM 顺序自上而下排列，卡片间留 STITCH_GAP 间距。
+ */
+export async function stitchCardsToCanvas(
+  elements: HTMLElement[],
+  config: ExportConfig = { scale: 2, format: 'png', quality: 0.95 }
+): Promise<HTMLCanvasElement> {
+  await ensureRenderReady();
+
+  const pixelRatio = config.scale || 2;
+  const filter = (node: HTMLElement) =>
+    !(node.classList && node.classList.contains('no-export'));
+
+  const urls: string[] = [];
+  for (const el of elements) {
+    const fontEmbedCSS = await computeFontEmbedCSS(el);
+    const options = {
+      pixelRatio,
+      quality: config.quality,
+      cacheBust: true,
+      filter,
+      skipFonts: true,
+      ...(fontEmbedCSS ? { fontEmbedCSS } : {}),
+    };
+    urls.push(config.format === 'jpeg' ? await toJpeg(el, options) : await toPng(el, options));
+  }
+
+  const imgs: HTMLImageElement[] = [];
+  for (const url of urls) imgs.push(await loadImageFromUrl(url));
+
+  const gap = STITCH_GAP * pixelRatio;
+  const width = Math.max(...imgs.map((i) => i.width));
+  const height = imgs.reduce((s, i) => s + i.height, 0) + gap * (imgs.length - 1);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('创建画布失败');
+  if (config.format === 'jpeg') {
+    // JPEG 无透明通道：先铺白底，避免间距处变黑
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+  }
+  let y = 0;
+  for (const img of imgs) {
+    ctx.drawImage(img, Math.round((width - img.width) / 2), Math.round(y));
+    y += img.height + gap;
+  }
+  return canvas;
+}
+
+/**
+ * 把多张卡片拼接为长图并复制到系统剪贴板（剪贴板仅支持 PNG，固定 2x）。
+ */
+export async function copyCardsStitched(elements: HTMLElement[]): Promise<boolean> {
+  const canvas = await stitchCardsToCanvas(elements, {
+    scale: 2,
+    format: 'png',
+    quality: 0.95,
+  });
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/png')
+  );
+  if (!blob) throw new Error('生成长图失败');
+
+  if (navigator.clipboard && window.ClipboardItem) {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    return true;
+  }
+  throw new Error('当前浏览器不支持直接复制图片到剪贴板');
+}

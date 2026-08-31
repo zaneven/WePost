@@ -56,15 +56,17 @@ export const NeonCyber: React.FC<TemplateProps> = ({ data }) => {
           </div>
         )}
 
-        <h1
+        {data.title && (
+          <h1
           className="mt-2 text-2xl md:text-3xl font-black tracking-tight leading-snug bg-clip-text text-transparent"
           style={{
             backgroundImage: `linear-gradient(90deg, ${cyan}, ${fuchsia})`,
             textShadow: `0 0 24px ${cyan}33`,
           }}
         >
-          {data.title}
-        </h1>
+            {data.title}
+          </h1>
+        )}
       </header>
 
       <main className="my-auto py-6 relative z-10">

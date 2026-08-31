@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { CardData } from '@/types/card';
 import type { useCardExport } from '@/lib/useCardExport';
+import type { SplitMode } from '@/core/split/splitContent';
 import { StyleToolbar } from './StyleToolbar';
 import { ExportPanel } from './ExportPanel';
-import { ChevronDown, Palette, Download } from 'lucide-react';
+import { SplitPanel } from './SplitPanel';
+import { ChevronDown, Palette, Download, Scissors } from 'lucide-react';
 
 type ExportState = ReturnType<typeof useCardExport>;
 
@@ -13,6 +15,13 @@ interface SettingsPanelProps {
   onSmartMatch?: () => void;
   matchHint?: string | null;
   exportState: ExportState;
+  /** 当前拆分模式 */
+  splitMode: SplitMode;
+  onSplitModeChange: (mode: SplitMode) => void;
+  /** 当前拆分出的卡片总数 */
+  cardCount: number;
+  /** 是否有卡片内容溢出画板 */
+  isOverflowing?: boolean;
 }
 
 /** Figma 式可折叠分区标题条 */
@@ -49,7 +58,7 @@ const CollapsibleSection: React.FC<{
 };
 
 /**
- * 桌面端右侧常驻参数栏：风格排版 + 导出复制，可折叠分区堆叠，上下滚动。
+ * 桌面端右侧常驻参数栏：风格排版 + 拆分多卡 + 导出复制，可折叠分区堆叠，上下滚动。
  * （移动端仍走 page.tsx 的 Tab 布局，不经过本组件。）
  */
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -58,6 +67,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onSmartMatch,
   matchHint,
   exportState,
+  splitMode,
+  onSplitModeChange,
+  cardCount,
+  isOverflowing = false,
 }) => {
   return (
     <div>
@@ -71,8 +84,23 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         />
       </CollapsibleSection>
 
+      <CollapsibleSection title="拆分多卡" icon={<Scissors className="w-3.5 h-3.5" aria-hidden="true" />}>
+        <SplitPanel
+          surface="dark"
+          splitMode={splitMode}
+          onSplitModeChange={onSplitModeChange}
+          cardCount={cardCount}
+          isOverflowing={isOverflowing}
+        />
+      </CollapsibleSection>
+
       <CollapsibleSection title="导出复制" icon={<Download className="w-3.5 h-3.5" aria-hidden="true" />}>
-        <ExportPanel data={data} exportState={exportState} surface="dark" />
+        <ExportPanel
+          data={data}
+          exportState={exportState}
+          cardCount={cardCount}
+          surface="dark"
+        />
       </CollapsibleSection>
     </div>
   );

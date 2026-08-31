@@ -26,9 +26,11 @@ export const ZenQuote: React.FC<TemplateProps> = ({ data }) => {
         </div>
 
         {/* 标题 */}
-        <h1 className="text-3xl md:text-4xl font-normal tracking-wide text-stone-900 leading-[1.4] font-serif pt-2">
-          {data.title}
-        </h1>
+        {data.title && (
+          <h1 className="text-3xl md:text-4xl font-normal tracking-wide text-stone-900 leading-[1.4] font-serif pt-2">
+            {data.title}
+          </h1>
+        )}
 
         {data.subtitle && (
           <div className="pt-3 text-xs tracking-[0.25em] text-stone-500 font-serif">

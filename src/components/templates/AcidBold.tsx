@@ -33,9 +33,11 @@ export const AcidBold: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 标题 */}
         <div className="mt-3 bg-white border-3 border-black p-4 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-black leading-tight">
-            {data.title}
-          </h1>
+          {data.title && (
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-black leading-tight">
+              {data.title}
+            </h1>
+          )}
         </div>
       </header>
 

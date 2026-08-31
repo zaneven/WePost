@@ -15,11 +15,18 @@ type ExportState = ReturnType<typeof useCardExport>;
 interface ExportPanelProps {
   data: CardData;
   exportState: ExportState;
+  /** 当前卡片总数（>1 时：下载 = 全部逐张导出，复制 = 拼接长图） */
+  cardCount: number;
   /** 所在表面主题：light=浅色面板（移动端 Tab），dark=暗色参数栏（桌面端右栏） */
   surface?: 'light' | 'dark';
 }
 
-export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState, surface = 'light' }) => {
+export const ExportPanel: React.FC<ExportPanelProps> = ({
+  data,
+  exportState,
+  cardCount,
+  surface = 'light',
+}) => {
   const {
     config,
     setConfig,
@@ -28,8 +35,11 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState, sur
     copiedSuccess,
     handleDownload,
     handleCopyClipboard,
+    handleDownloadAll,
+    handleCopyStitched,
   } = exportState;
   const dark = surface === 'dark';
+  const isDeck = cardCount > 1;
 
   const labelClass = `block text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5 ${
     dark ? 'text-neutral-400' : 'text-neutral-500'
@@ -104,12 +114,12 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState, sur
         </div>
       </div>
 
-      {/* 操作按钮组 */}
+      {/* 操作按钮组：多卡时下载 = 全部逐张导出、复制 = 拼接长图 */}
       <div className="space-y-2.5 pt-1">
         {/* 一键复制到剪贴板 */}
         <button
           type="button"
-          onClick={() => handleCopyClipboard()}
+          onClick={() => (isDeck ? handleCopyStitched() : handleCopyClipboard())}
           disabled={isCopying}
           className={`w-full py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-[0.98] ${
             copiedSuccess
@@ -126,13 +136,21 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState, sur
           ) : (
             <Copy className="w-3.5 h-3.5" aria-hidden="true" />
           )}
-          <span>{copiedSuccess ? '已复制' : isCopying ? '复制中…' : '复制图片'}</span>
+          <span>
+            {copiedSuccess
+              ? '已复制'
+              : isCopying
+                ? '复制中…'
+                : isDeck
+                  ? `复制拼接长图（${cardCount} 张）`
+                  : '复制图片'}
+          </span>
         </button>
 
         {/* 下载高清图片 */}
         <button
           type="button"
-          onClick={() => handleDownload(data)}
+          onClick={() => (isDeck ? handleDownloadAll(data) : handleDownload(data))}
           disabled={isExporting}
           className="w-full py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all active:scale-[0.98] bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-500 text-neutral-950 shadow-lg shadow-emerald-500/25"
         >
@@ -141,7 +159,13 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ data, exportState, sur
           ) : (
             <Download className="w-3.5 h-3.5" aria-hidden="true" />
           )}
-          <span>{isExporting ? '导出中…' : `下载 ${config.scale}x ${config.format === 'png' ? 'PNG' : 'JPG'}`}</span>
+          <span>
+            {isExporting
+              ? '导出中…'
+              : isDeck
+                ? `下载全部 ${cardCount} 张`
+                : `下载 ${config.scale}x ${config.format === 'png' ? 'PNG' : 'JPG'}`}
+          </span>
         </button>
       </div>
     </div>

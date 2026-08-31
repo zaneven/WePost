@@ -37,9 +37,11 @@ export const VintageNews: React.FC<TemplateProps> = ({ data }) => {
         </div>
 
         {/* 主标题 */}
-        <h1 className="mt-4 text-2xl md:text-3xl font-black tracking-tight text-[#22170c] leading-[1.25] px-2 font-serif">
-          {data.title}
-        </h1>
+        {data.title && (
+          <h1 className="mt-4 text-2xl md:text-3xl font-black tracking-tight text-[#22170c] leading-[1.25] px-2 font-serif">
+            {data.title}
+          </h1>
+        )}
       </header>
 
       {/* 中间正文 */}

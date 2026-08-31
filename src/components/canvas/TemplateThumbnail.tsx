@@ -48,7 +48,7 @@ export const TemplateThumbnail: React.FC<TemplateThumbnailProps> = ({
       aria-hidden="true"
     >
       <div style={{ width: cw, height: ch, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
-        <CardRenderer data={sampleData} />
+        <CardRenderer data={sampleData} exportable={false} />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   splitContentIntoCards,
+  splitContentByDivider,
   estimateCardCapacity,
 } from '@/core/split/splitContent';
 
@@ -81,5 +82,46 @@ describe('splitContentIntoCards', () => {
     const small = estimateCardCapacity({ aspectRatio: '3:4', fontSize: 'sm' });
     const xl = estimateCardCapacity({ aspectRatio: '3:4', fontSize: 'xl' });
     expect(small).toBeGreaterThan(xl);
+  });
+
+  it('页眉页脚高的模板（低 contentFraction）单卡容量更小', () => {
+    const base = { aspectRatio: '3:4' as const, fontSize: 'base' as const };
+    const minimal = estimateCardCapacity({ ...base, templateId: 'minimal-magazine' });
+    const zen = estimateCardCapacity({ ...base, templateId: 'zen-quote' });
+    expect(zen).toBeLessThan(minimal);
+  });
+});
+
+describe('splitContentByDivider', () => {
+  it('无分割线时返回原内容单项数组', () => {
+    expect(splitContentByDivider('第一段。\n\n第二段。')).toEqual([
+      '第一段。\n\n第二段。',
+    ]);
+    expect(splitContentByDivider('')).toEqual(['']);
+  });
+
+  it('按 --- 分割线切分为多卡，分割线本身不保留', () => {
+    const content = '第一张内容\n\n---\n\n第二张内容\n\n---\n\n第三张内容';
+    const cards = splitContentByDivider(content);
+    expect(cards).toEqual(['第一张内容', '第二张内容', '第三张内容']);
+  });
+
+  it('首尾与连续分割线产生的空片段被丢弃', () => {
+    const content = '---\n\n内容一\n\n---\n\n---\n\n内容二\n\n---';
+    expect(splitContentByDivider(content)).toEqual(['内容一', '内容二']);
+  });
+
+  it('容忍分割线两侧空白与变体写法（*** / ___）', () => {
+    expect(splitContentByDivider('甲\n\n  ---  \n\n乙')).toEqual(['甲', '乙']);
+    expect(splitContentByDivider('甲\n\n***\n\n乙\n\n___\n\n丙')).toEqual([
+      '甲',
+      '乙',
+      '丙',
+    ]);
+  });
+
+  it('表格分隔行 | --- | 不被误判为分割线', () => {
+    const content = '| a | b |\n| --- | --- |\n| 1 | 2 |';
+    expect(splitContentByDivider(content)).toEqual([content]);
   });
 });

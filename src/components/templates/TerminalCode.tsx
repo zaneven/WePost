@@ -31,10 +31,12 @@ export const TerminalCode: React.FC<TemplateProps> = ({ data }) => {
           <span className="tracking-widest uppercase">{data.tag || 'dev.note'}</span>
         </div>
 
-        <h1 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight text-white leading-snug">
-          <span className="text-[#6e7681]"># </span>
-          {data.title}
-        </h1>
+        {data.title && (
+          <h1 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight text-white leading-snug">
+            <span className="text-[#6e7681]"># </span>
+            {data.title}
+          </h1>
+        )}
       </header>
 
       {/* 正文：代码面板 + 行号槽 */}

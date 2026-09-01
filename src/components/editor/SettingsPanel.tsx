@@ -99,6 +99,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           data={data}
           exportState={exportState}
           cardCount={cardCount}
+          splitMode={splitMode}
           surface="dark"
         />
       </CollapsibleSection>

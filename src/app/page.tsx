@@ -354,6 +354,7 @@ export default function HomePage() {
                       data={cardData}
                       exportState={cardExport}
                       cardCount={chunks.length}
+                      splitMode={splitMode}
                     />
                     <div className="pt-4 border-t border-neutral-200">
                       <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-700 mb-3">

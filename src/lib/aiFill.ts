@@ -5,6 +5,7 @@
  * 服务端约束：同源校验、每 IP 每日限流、输入 ≤ 8000 字；LLM 未配置返回 503。
  */
 import type { CardData } from '@/types/card';
+import { FONT_FAMILY_VALUES } from '@/core/fonts';
 
 const API_BASE = 'https://wepost.zaneven.com';
 
@@ -23,8 +24,9 @@ const TEMPLATE_IDS = new Set([
   'editorial-bold',
   'neon-cyber',
 ]);
-const ASPECT_RATIOS = new Set(['3:4', '1:1', '9:16', '2.35:1', '4:3']);
-const FONT_FAMILIES = new Set(['sans', 'serif', 'mono', 'kaiti']);
+/** AI 填写画幅白名单 = UI 可见画幅（2.35:1 / 4:3 已从页面移除，不由 AI 选择） */
+const ASPECT_RATIOS = new Set(['3:4', '1:1', '9:16']);
+const FONT_FAMILIES = new Set<string>(FONT_FAMILY_VALUES);
 const FONT_SIZES = new Set(['sm', 'base', 'lg', 'xl']);
 const ALIGNS = new Set(['left', 'center', 'justify']);
 

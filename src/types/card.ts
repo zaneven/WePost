@@ -14,7 +14,19 @@ export type TemplateId =
 
 export type FontSizeType = 'sm' | 'base' | 'lg' | 'xl';
 export type AlignType = 'left' | 'center' | 'justify';
-export type FontFamilyType = 'sans' | 'serif' | 'mono' | 'kaiti';
+/**
+ * 卡片字体。系统字体（sans/serif/mono/kaiti）零加载成本；开源字体（OFL 许可）
+ * 自托管于同源静态资产，注册表见 src/core/fonts.ts：
+ * noto-sans=思源黑体、noto-serif=思源宋体、wenkai=霞鹜文楷。
+ */
+export type FontFamilyType =
+  | 'sans'
+  | 'serif'
+  | 'mono'
+  | 'kaiti'
+  | 'noto-sans'
+  | 'noto-serif'
+  | 'wenkai';
 
 export interface CardData {
   title: string;

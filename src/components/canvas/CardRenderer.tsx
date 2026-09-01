@@ -1,6 +1,7 @@
 import React from 'react';
-import { CardData, FontFamilyType } from '@/types/card';
+import { CardData } from '@/types/card';
 import { getCanvasDimensions } from '@/core/templates/registry';
+import { FONT_FAMILY_STACKS } from '@/core/fonts';
 import { MinimalMagazine } from '../templates/MinimalMagazine';
 import { DarkGlass } from '../templates/DarkGlass';
 import { VintageNews } from '../templates/VintageNews';
@@ -24,13 +25,8 @@ interface CardRendererProps {
   exportable?: boolean;
 }
 
-/** 所选字体 → CSS 字体栈（与 tailwind.config.ts / globals.css 的字体变量保持一致） */
-const CARD_FONT_STACKS: Record<FontFamilyType, string> = {
-  sans: 'var(--font-sans, system-ui), -apple-system, "PingFang SC", sans-serif',
-  serif: 'var(--font-serif, "Songti SC"), SimSun, serif',
-  mono: 'var(--font-mono, Menlo), Monaco, Consolas, monospace',
-  kaiti: '"STKaiti", "KaiTi", "楷体", "Noto Serif SC", "Songti SC", serif',
-};
+/** 所选字体 → CSS 字体栈（单一数据源：src/core/fonts.ts，与下拉选择器共用） */
+const CARD_FONT_STACKS = FONT_FAMILY_STACKS;
 
 export const CardRenderer: React.FC<CardRendererProps> = ({
   data,

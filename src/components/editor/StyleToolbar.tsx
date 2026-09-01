@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   CardData,
-  FontFamilyType,
   FontSizeType
 } from '@/types/card';
 import { TEMPLATES, ASPECT_RATIOS } from '@/core/templates/registry';
+import { FONT_OPTIONS } from '@/core/fonts';
 import {
   TemplateThumbnail,
   AspectRatioThumbnail,
@@ -17,6 +17,7 @@ import {
   AlignCenter,
   AlignJustify,
   Check,
+  ChevronDown,
   Wand2,
 } from 'lucide-react';
 
@@ -24,14 +25,6 @@ import {
 const VISIBLE_RATIOS = ASPECT_RATIOS.filter(
   (item) => item.ratio !== '2.35:1' && item.ratio !== '4:3'
 );
-
-/** 可选字体（与 tailwind fontFamily 配置一一对应） */
-const FONT_OPTIONS: { value: FontFamilyType; label: string }[] = [
-  { value: 'sans', label: '无衬线' },
-  { value: 'serif', label: '衬线' },
-  { value: 'mono', label: '等宽' },
-  { value: 'kaiti', label: '楷体' },
-];
 
 interface StyleToolbarProps {
   data: CardData;
@@ -52,6 +45,26 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
   surface = 'light',
 }) => {
   const dark = surface === 'dark';
+  const [fontMenuOpen, setFontMenuOpen] = useState(false);
+  const fontMenuRef = useRef<HTMLDivElement>(null);
+  const currentFont =
+    FONT_OPTIONS.find((f) => f.value === data.fontFamily) ?? FONT_OPTIONS[0];
+
+  // 下拉打开时点击外部区域关闭
+  useEffect(() => {
+    if (!fontMenuOpen) return;
+    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+      if (fontMenuRef.current && !fontMenuRef.current.contains(e.target as Node)) {
+        setFontMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+    };
+  }, [fontMenuOpen]);
 
   // 分区标签：与 ExportPanel 保持全局统一
   const labelClass = `block text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 ${
@@ -190,22 +203,97 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
           <span>文字与对齐</span>
         </label>
 
-        {/* 字体 */}
-        <div>
+        {/* 字体：下拉选择，选项以各自字体渲染预览 */}
+        <div className="relative" ref={fontMenuRef}>
           <label className={subLabelClass}>字体</label>
-          <div className={segContainer}>
-            {FONT_OPTIONS.map((font) => (
-              <button
-                key={font.value}
-                type="button"
-                onClick={() => onChange({ fontFamily: font.value })}
-                aria-pressed={data.fontFamily === font.value}
-                className={`py-1.5 px-2 ${segBtn(data.fontFamily === font.value)}`}
+          <button
+            type="button"
+            onClick={() => setFontMenuOpen((prev) => !prev)}
+            aria-haspopup="listbox"
+            aria-expanded={fontMenuOpen}
+            className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-2 text-xs transition-all ${
+              dark
+                ? 'bg-neutral-900 border border-neutral-700/60 hover:border-neutral-500 text-neutral-200'
+                : 'bg-white border border-neutral-200 hover:border-neutral-400 text-neutral-800 shadow-sm'
+            }`}
+          >
+            <span className="flex items-baseline gap-2 min-w-0">
+              <span className="font-medium flex-shrink-0">{currentFont.label}</span>
+              <span
+                className="opacity-60 truncate"
+                style={{ fontFamily: currentFont.cssFamily }}
               >
-                {font.label}
-              </button>
-            ))}
-          </div>
+                {currentFont.preview}
+              </span>
+            </span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 flex-shrink-0 opacity-60 transition-transform duration-200 ${
+                fontMenuOpen ? 'rotate-180' : ''
+              }`}
+              aria-hidden="true"
+            />
+          </button>
+
+          {fontMenuOpen && (
+            <div
+              role="listbox"
+              aria-label="选择字体"
+              className={`absolute left-0 right-0 mt-1 rounded-lg overflow-hidden border shadow-lg z-20 ${
+                dark
+                  ? 'bg-neutral-900 border-neutral-700'
+                  : 'bg-white border-neutral-200'
+              }`}
+            >
+              <div className="max-h-56 overflow-y-auto">
+                {FONT_OPTIONS.map((font) => {
+                  const isSelected = data.fontFamily === font.value;
+                  return (
+                    <button
+                      key={font.value}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      onClick={() => {
+                        onChange({ fontFamily: font.value });
+                        setFontMenuOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 flex items-center justify-between gap-2 text-left transition-colors ${
+                        isSelected
+                          ? dark
+                            ? 'bg-neutral-800'
+                            : 'bg-neutral-100'
+                          : dark
+                            ? 'hover:bg-neutral-800/60'
+                            : 'hover:bg-neutral-50'
+                      }`}
+                    >
+                      <span className="min-w-0">
+                        <span
+                          className={`block text-sm leading-snug truncate ${
+                            dark ? 'text-neutral-100' : 'text-neutral-900'
+                          }`}
+                          style={{ fontFamily: font.cssFamily }}
+                        >
+                          {font.label}
+                        </span>
+                        <span
+                          className={`block text-[11px] leading-snug truncate ${
+                            dark ? 'text-neutral-400' : 'text-neutral-500'
+                          }`}
+                          style={{ fontFamily: font.cssFamily }}
+                        >
+                          {font.preview}
+                        </span>
+                      </span>
+                      {isSelected && (
+                        <Check className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500" aria-hidden="true" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 字号 */}

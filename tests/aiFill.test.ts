@@ -54,6 +54,21 @@ describe('sanitizeAiCard', () => {
     expect(card).toEqual({ content: '保留的正文' });
   });
 
+  it('已下线画幅（2.35:1 / 4:3）不由 AI 选择，合法可见画幅与开源字体保留', () => {
+    const card = sanitizeAiCard({
+      aspectRatio: '2.35:1',
+      fontFamily: 'wenkai',
+      content: 'x',
+    });
+    expect(card.aspectRatio).toBeUndefined();
+    expect(card.fontFamily).toBe('wenkai');
+    expect(sanitizeAiCard({ aspectRatio: '4:3' })).toEqual({});
+    expect(sanitizeAiCard({ aspectRatio: '3:4' })).toEqual({ aspectRatio: '3:4' });
+    expect(sanitizeAiCard({ fontFamily: 'noto-sans' })).toEqual({
+      fontFamily: 'noto-sans',
+    });
+  });
+
   it('文本字段 trim 且超长截断', () => {
     const card = sanitizeAiCard({
       title: '  标题  ',

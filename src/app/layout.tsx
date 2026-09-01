@@ -1,6 +1,16 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import 'katex/dist/katex.min.css';
+// 自托管开源 CJK 字体（OFL 许可，无版权风险）：按 unicode-range 子集拆分，仅加载用到的分片。
+// 同源部署保证 html-to-image 导出时能内嵌字体文件，导出图字形与预览一致。
+import '@fontsource/noto-sans-sc/400.css';
+import '@fontsource/noto-sans-sc/500.css';
+import '@fontsource/noto-sans-sc/700.css';
+import '@fontsource/noto-serif-sc/400.css';
+import '@fontsource/noto-serif-sc/500.css';
+import '@fontsource/noto-serif-sc/700.css';
+import 'lxgw-wenkai-webfont/lxgwwenkai-regular.css';
+import 'lxgw-wenkai-webfont/lxgwwenkai-bold.css';
 import { ToastProvider } from '@/components/ui/Toast';
 
 export const metadata: Metadata = {

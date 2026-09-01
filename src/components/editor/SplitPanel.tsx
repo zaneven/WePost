@@ -1,12 +1,15 @@
 import React from 'react';
-import { Wand2, Minus, Layers } from 'lucide-react';
+import { Wand2, Minus, Layers, BookOpen } from 'lucide-react';
 import type { SplitMode } from '@/core/split/splitContent';
 
 interface SplitPanelProps {
   /** 当前拆分模式（自动容量 / 分割线），状态由 page 持有并持久化 */
   splitMode: SplitMode;
   onSplitModeChange: (mode: SplitMode) => void;
-  /** 当前拆分出的卡片总数 */
+  /** 单页标题模式：首页为大标题封面卡，正文从第二页开始 */
+  titlePage: boolean;
+  onTitlePageChange: (enabled: boolean) => void;
+  /** 当前拆分出的内容卡片总数（不含封面卡） */
   cardCount: number;
   /** 是否有卡片内容溢出画板（提示改用分割线拆分） */
   isOverflowing?: boolean;
@@ -22,6 +25,8 @@ interface SplitPanelProps {
 export const SplitPanel: React.FC<SplitPanelProps> = ({
   splitMode,
   onSplitModeChange,
+  titlePage,
+  onTitlePageChange,
   cardCount,
   isOverflowing = false,
   surface = 'light',
@@ -50,6 +55,59 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
 
   return (
     <div className="space-y-3">
+      {/* 单页标题模式开关：首页封面卡 + 正文从第二页起 */}
+      <button
+        type="button"
+        role="switch"
+        aria-checked={titlePage}
+        onClick={() => onTitlePageChange(!titlePage)}
+        className={`w-full flex items-start gap-2 text-left px-2.5 py-2 rounded-lg border transition-colors cursor-pointer ${
+          titlePage
+            ? dark
+              ? 'border-emerald-400/60 bg-emerald-400/10'
+              : 'border-neutral-900 bg-neutral-100'
+            : dark
+              ? 'border-neutral-800 bg-neutral-900/60 hover:border-neutral-700'
+              : 'border-neutral-200 bg-white hover:border-neutral-300'
+        }`}
+      >
+        <span
+          className={`mt-0.5 flex-shrink-0 ${
+            titlePage
+              ? dark
+                ? 'text-emerald-400'
+                : 'text-neutral-900'
+              : dark
+                ? 'text-neutral-500'
+                : 'text-neutral-400'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
+        </span>
+        <span className="min-w-0">
+          <span
+            className={`block text-xs font-bold ${
+              titlePage
+                ? dark
+                  ? 'text-white'
+                  : 'text-neutral-900'
+                : dark
+                  ? 'text-neutral-300'
+                  : 'text-neutral-700'
+            }`}
+          >
+            单页标题模式
+          </span>
+          <span
+            className={`block text-[11px] leading-snug ${
+              dark ? 'text-neutral-500' : 'text-neutral-400'
+            }`}
+          >
+            首页为大标题封面卡（无正文），正文自动从第二页开始，拆分仅作用于内容区域
+          </span>
+        </span>
+      </button>
+
       {/* 模式选择（单选卡片组） */}
       <div
         role="radiogroup"
@@ -123,8 +181,17 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       >
         <Layers className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
         <span>
-          当前内容拆分为 <span className="font-bold">{cardCount}</span>{' '}
-          张卡片，预览区实时拼接展示
+          {titlePage ? (
+            <>
+              内容拆分为 <span className="font-bold">{cardCount}</span> 张 + 封面 1 张，共{' '}
+              <span className="font-bold">{cardCount + 1}</span> 张卡片
+            </>
+          ) : (
+            <>
+              当前内容拆分为 <span className="font-bold">{cardCount}</span>{' '}
+              张卡片，预览区实时拼接展示
+            </>
+          )}
         </span>
       </div>
 

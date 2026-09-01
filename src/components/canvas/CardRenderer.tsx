@@ -12,6 +12,7 @@ import { InkWash } from '../templates/InkWash';
 import { TerminalCode } from '../templates/TerminalCode';
 import { EditorialBold } from '../templates/EditorialBold';
 import { NeonCyber } from '../templates/NeonCyber';
+import { TitleCard } from './TitleCard';
 
 interface CardRendererProps {
   data: CardData;
@@ -23,6 +24,8 @@ interface CardRendererProps {
    * 不挂 data-wepost-card / 导出 id，避免被导出遍历与溢出检测误伤。
    */
   exportable?: boolean;
+  /** 单页标题模式：渲染为大标题封面卡（仅首页传入） */
+  cover?: boolean;
 }
 
 /** 所选字体 → CSS 字体栈（单一数据源：src/core/fonts.ts，与下拉选择器共用） */
@@ -33,6 +36,7 @@ export const CardRenderer: React.FC<CardRendererProps> = ({
   renderRef,
   index = 0,
   exportable = true,
+  cover = false,
 }) => {
   // 根据比例获取容器基础尺寸 (逻辑像素，统一数据源: registry)
   const { width, height } = getCanvasDimensions(data.aspectRatio);
@@ -79,7 +83,7 @@ export const CardRenderer: React.FC<CardRendererProps> = ({
         '--card-font-family': CARD_FONT_STACKS[data.fontFamily],
       } as React.CSSProperties}
     >
-      {renderTemplate()}
+      {cover ? <TitleCard data={data} /> : renderTemplate()}
     </div>
   );
 };

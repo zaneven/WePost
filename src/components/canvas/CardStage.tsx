@@ -31,7 +31,9 @@ export const CardStage: React.FC<CardStageProps> = ({ data, chunks, exportState 
   const [copiedCard, setCopiedCard] = useState<number | null>(null);
 
   const { width: cardW, height: cardH } = getCanvasDimensions(data.aspectRatio);
-  const cardCount = Math.max(1, chunks.length);
+  // 单页标题模式：首页为封面卡（无正文），正文内容从第二页开始
+  const coverMode = !!data.titlePage;
+  const cardCount = Math.max(1, chunks.length + (coverMode ? 1 : 0));
 
   // 自适应计算缩放比例：以卡片宽度铺满可用空间（垂直方向可滚动浏览多卡）
   const calculateFitZoom = useCallback(() => {
@@ -93,10 +95,11 @@ export const CardStage: React.FC<CardStageProps> = ({ data, chunks, exportState 
   };
 
   // 第 i 张卡的渲染数据：正文换成对应片段；除第一张外不显示正副标题
+  // （封面模式下正文全部从第 2 页起，首页封面已承载标题，正文卡统一隐藏正副标题）
   const buildChunkData = (chunk: string, index: number): CardData => ({
     ...data,
     content: chunk,
-    ...(index > 0 ? { title: '', subtitle: '' } : {}),
+    ...((index > 0 || coverMode) ? { title: '', subtitle: '' } : {}),
   });
 
   const getCardElement = (index: number): HTMLElement | null =>
@@ -171,9 +174,16 @@ export const CardStage: React.FC<CardStageProps> = ({ data, chunks, exportState 
                 transformOrigin: 'top left',
               }}
             >
-              {chunks.map((chunk, i) => (
+              {Array.from({ length: cardCount }, (_, i) => {
+                const isCover = coverMode && i === 0;
+                const chunk = coverMode ? chunks[i - 1] : chunks[i];
+                return (
                 <div key={i} className="relative group">
-                  <CardRenderer data={buildChunkData(chunk, i)} index={i} />
+                  <CardRenderer
+                    data={isCover ? data : buildChunkData(chunk!, i)}
+                    index={i}
+                    cover={isCover}
+                  />
 
                   {/* hover 悬浮操作：单卡复制 / 下载（导出时过滤，不入图） */}
                   <div
@@ -213,7 +223,8 @@ export const CardStage: React.FC<CardStageProps> = ({ data, chunks, exportState 
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

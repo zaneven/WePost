@@ -41,6 +41,8 @@ export interface CardData {
   fontSize: FontSizeType;
   align: AlignType;
   fontFamily: FontFamilyType;
+  /** 单页标题模式：第一页渲染为大标题封面卡，正文内容从第二页开始（仅编辑器多卡预览生效） */
+  titlePage?: boolean;
   customBgColor?: string;
   customTextColor?: string;
   customAccentColor?: string;

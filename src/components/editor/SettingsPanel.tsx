@@ -18,6 +18,9 @@ interface SettingsPanelProps {
   /** 当前拆分模式 */
   splitMode: SplitMode;
   onSplitModeChange: (mode: SplitMode) => void;
+  /** 单页标题模式：首页为大标题封面卡 */
+  titlePage: boolean;
+  onTitlePageChange: (enabled: boolean) => void;
   /** 当前拆分出的卡片总数 */
   cardCount: number;
   /** 是否有卡片内容溢出画板 */
@@ -69,6 +72,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   exportState,
   splitMode,
   onSplitModeChange,
+  titlePage,
+  onTitlePageChange,
   cardCount,
   isOverflowing = false,
 }) => {
@@ -89,6 +94,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           surface="dark"
           splitMode={splitMode}
           onSplitModeChange={onSplitModeChange}
+          titlePage={titlePage}
+          onTitlePageChange={onTitlePageChange}
           cardCount={cardCount}
           isOverflowing={isOverflowing}
         />

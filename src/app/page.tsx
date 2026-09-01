@@ -90,6 +90,11 @@ export default function HomePage() {
   // 检测是否有卡片内容溢出画板（被裁切），用于编辑区与拆分面板预警
   const isOverflowing = useCardsOverflow(chunks.length, cardData);
 
+  // 单页标题模式：首页为大标题封面卡（无正文），正文从第二页开始；拆分仅作用于内容区域
+  const titlePage = !!cardData.titlePage;
+  /** 导出 / 状态条使用的总卡片数（封面卡计入） */
+  const totalCardCount = chunks.length + (titlePage ? 1 : 0);
+
   // 基于当前内容的风格推荐（纯启发式，无 AI / 后端）
   const recommendation = useMemo(
     () => recommendStyle(cardData.content),
@@ -167,6 +172,12 @@ export default function HomePage() {
     [history]
   );
 
+  /** 单页标题模式开关（走历史栈，可撤销） */
+  const handleTitlePageChange = useCallback(
+    (enabled: boolean) => handleUpdateCard({ titlePage: enabled }),
+    [handleUpdateCard]
+  );
+
   const handleResetExample = useCallback(() => {
     history.set(INITIAL_CARD_DATA, { immediate: true });
   }, [history]);
@@ -197,6 +208,8 @@ export default function HomePage() {
       surface={surface}
       splitMode={splitMode}
       onSplitModeChange={setSplitMode}
+      titlePage={titlePage}
+      onTitlePageChange={handleTitlePageChange}
       cardCount={chunks.length}
       isOverflowing={isOverflowing}
     />
@@ -239,7 +252,7 @@ export default function HomePage() {
             {/* 中栏：实时画板 + 底部状态条 */}
             <main className="flex-1 min-w-0 h-full min-h-0 flex flex-col overflow-hidden">
               <CardStage data={cardData} chunks={chunks} exportState={cardExport} />
-              <BottomActionBar data={cardData} cardCount={chunks.length} />
+              <BottomActionBar data={cardData} cardCount={totalCardCount} />
             </main>
 
             {/* 右栏：Figma 式暗色参数栏（风格排版 + 拆分多卡 + 导出复制，可折叠分区，上下滚动） */}
@@ -252,6 +265,8 @@ export default function HomePage() {
                 exportState={cardExport}
                 splitMode={splitMode}
                 onSplitModeChange={setSplitMode}
+                titlePage={titlePage}
+                onTitlePageChange={handleTitlePageChange}
                 cardCount={chunks.length}
                 isOverflowing={isOverflowing}
               />
@@ -353,7 +368,7 @@ export default function HomePage() {
                     <ExportPanel
                       data={cardData}
                       exportState={cardExport}
-                      cardCount={chunks.length}
+                      cardCount={totalCardCount}
                       splitMode={splitMode}
                     />
                     <div className="pt-4 border-t border-neutral-200">
@@ -379,7 +394,7 @@ export default function HomePage() {
 
           {/* 底部吸固状态条 */}
           <div className="fixed bottom-0 left-0 right-0 z-40 flex-shrink-0">
-            <BottomActionBar data={cardData} cardCount={chunks.length} />
+            <BottomActionBar data={cardData} cardCount={totalCardCount} />
           </div>
         </>
       )}

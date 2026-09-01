@@ -395,8 +395,46 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         </button>
       </div>
 
-      {/* 标题区 */}
+      {/* 文案字段：分类标签 + 日期 → 主标题 → 副标题 → 正文 → 作者 → 标语 → 水印 */}
       <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label
+              htmlFor="card-tag"
+              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+            >
+              <Tag className="w-3 h-3 text-neutral-600" aria-hidden="true" />
+              分类标签
+            </label>
+            <input
+              id="card-tag"
+              type="text"
+              value={data.tag}
+              onChange={(e) => onChange({ tag: e.target.value })}
+              placeholder="如：深度阅读、每日金句"
+              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="card-date"
+              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+            >
+              <Calendar className="w-3 h-3 text-neutral-600" aria-hidden="true" />
+              日期 / 期数
+            </label>
+            <input
+              id="card-date"
+              type="text"
+              value={data.date}
+              onChange={(e) => onChange({ date: e.target.value })}
+              placeholder="如：2026.08.19 · ISSUE 042"
+              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+            />
+          </div>
+        </div>
+
         <div>
           <label
             htmlFor="card-title"
@@ -418,41 +456,21 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label
-              htmlFor="card-subtitle"
-              className="block text-xs font-semibold text-neutral-700 mb-1"
-            >
-              副标题 / 栏目名
-            </label>
-            <input
-              id="card-subtitle"
-              type="text"
-              value={data.subtitle}
-              onChange={(e) => onChange({ subtitle: e.target.value })}
-              placeholder="如：THINKING / 思考碎片"
-              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="card-tag"
-              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
-            >
-              <Tag className="w-3 h-3 text-neutral-600" aria-hidden="true" />
-              分类标签
-            </label>
-            <input
-              id="card-tag"
-              type="text"
-              value={data.tag}
-              onChange={(e) => onChange({ tag: e.target.value })}
-              placeholder="如：深度阅读、每日金句"
-              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
-            />
-          </div>
+        <div>
+          <label
+            htmlFor="card-subtitle"
+            className="block text-xs font-semibold text-neutral-700 mb-1"
+          >
+            副标题 / 栏目名
+          </label>
+          <input
+            id="card-subtitle"
+            type="text"
+            value={data.subtitle}
+            onChange={(e) => onChange({ subtitle: e.target.value })}
+            placeholder="如：THINKING / 思考碎片"
+            className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+          />
         </div>
       </div>
 
@@ -722,44 +740,24 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         </div>
       </div>
 
-      {/* 署名、日期与页脚 */}
+      {/* 作者、标语与水印 */}
       <div className="space-y-3 pt-2 border-t border-neutral-200">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label
-              htmlFor="card-author"
-              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
-            >
-              <User className="w-3 h-3 text-neutral-600" aria-hidden="true" />
-              作者 / 公众号署名
-            </label>
-            <input
-              id="card-author"
-              type="text"
-              value={data.author}
-              onChange={(e) => onChange({ author: e.target.value })}
-              placeholder="如：WePost 研习社"
-              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="card-date"
-              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
-            >
-              <Calendar className="w-3 h-3 text-neutral-600" aria-hidden="true" />
-              日期 / 期数
-            </label>
-            <input
-              id="card-date"
-              type="text"
-              value={data.date}
-              onChange={(e) => onChange({ date: e.target.value })}
-              placeholder="如：2026.08.19 · ISSUE 042"
-              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
-            />
-          </div>
+        <div>
+          <label
+            htmlFor="card-author"
+            className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+          >
+            <User className="w-3 h-3 text-neutral-600" aria-hidden="true" />
+            作者 / 公众号署名
+          </label>
+          <input
+            id="card-author"
+            type="text"
+            value={data.author}
+            onChange={(e) => onChange({ author: e.target.value })}
+            placeholder="如：WePost 研习社"
+            className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+          />
         </div>
 
         <div>

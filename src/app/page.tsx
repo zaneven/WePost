@@ -222,7 +222,7 @@ export default function HomePage() {
           {/* 大屏三栏工作台：文案编辑 | 实时画板（多卡堆叠） | 参数设置栏 */}
           <div className="flex-1 min-h-0 flex overflow-hidden">
             {/* 左栏：文案编辑（始终编辑完整正文，内部滚动） */}
-            <aside className="w-[460px] xl:w-[500px] h-full min-h-0 flex flex-col flex-shrink-0 border-r border-neutral-800/60 bg-neutral-50 text-neutral-900 z-10 shadow-2xl shadow-black/20 overflow-hidden">
+            <aside className="w-[380px] xl:w-[400px] h-full min-h-0 flex flex-col flex-shrink-0 border-r border-neutral-800/60 bg-neutral-50 text-neutral-900 z-10 shadow-2xl shadow-black/20 overflow-hidden">
               <div
                 tabIndex={0}
                 className="flex-1 min-h-0 overflow-y-auto p-6 focus:outline-none"

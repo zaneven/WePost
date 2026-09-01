@@ -104,7 +104,7 @@ description: 基于 WePost 接口服务把文字内容做成社交媒体卡片�
    { "id":"...", "url":"https://wepost.zaneven.com/cards/<id>.png",
      "width":1200, "height":1200, "templateId":"zen-quote", "aspectRatio":"1:1", "cached":false }
    ```
-   **长文 / 多卡**：请求体可加 `"split": "auto"`（服务端按画幅容量自动把长文切成多张卡，段落/列表/代码/表格等块为原子单位不跨卡）或 `"split": "divider"`（按用户写的 `---` 分割线切分）。此时响应为：
+   **长文 / 多卡**：请求体可加 `"split": "auto"`（服务端按画幅容量自动把长文切成多张卡，段落/列表/代码/表格等块为原子单位不跨卡）或 `"split": "divider"`（按用户写的 `---` 分割线切分）；需要醒目封面可再加 `"titlePage": true`——首页变为大标题封面卡（无正文，按模板风格放大显示），正文从第二页开始，`split` 仅作用于内容区域。此时响应为：
    ```json
    { "mode":"multi", "total":3,
      "cards":[{ "index":1, "id":"...", "url":".../cards/<id>.png", "width":1080, "height":1440,

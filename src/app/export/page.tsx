@@ -23,5 +23,6 @@ export default function ExportPage() {
     if (fromHash) setData(fromHash);
   }, []);
 
-  return <CardRenderer data={data} />;
+  // 单页标题模式：titlePage: true 的卡数据渲染为大标题封面卡（worker /api/render 拆分管线复用）
+  return <CardRenderer data={data} cover={!!data.titlePage} />;
 }

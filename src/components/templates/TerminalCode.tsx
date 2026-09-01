@@ -40,7 +40,7 @@ export const TerminalCode: React.FC<TemplateProps> = ({ data }) => {
       </header>
 
       {/* 正文：代码面板 + 行号槽 */}
-      <main className="my-auto py-5 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-5 relative z-10">
         <div className="rounded-lg bg-[#0d1117] border border-[#1f2630] p-5 pl-9 relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-7 border-r border-[#1f2630] flex flex-col items-center pt-5 text-[10px] text-[#3b424d] select-none gap-[2px]">
             {Array.from({ length: 8 }, (_, i) => (

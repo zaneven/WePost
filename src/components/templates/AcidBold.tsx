@@ -42,7 +42,7 @@ export const AcidBold: React.FC<TemplateProps> = ({ data }) => {
       </header>
 
       {/* 中间正文 */}
-      <main className="my-auto py-4 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-4 relative z-10">
         <div className="bg-white/90 border-2 border-black p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <MarkdownRenderer
             content={data.content}

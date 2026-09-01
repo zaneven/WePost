@@ -38,7 +38,7 @@ export const EditorialBold: React.FC<TemplateProps> = ({ data }) => {
         )}
       </header>
 
-      <main className="my-auto py-7 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-7 relative z-10">
         <div className="max-w-lg mx-auto border-l-2 border-black/15 pl-5">
           <MarkdownRenderer
             content={data.content}

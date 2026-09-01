@@ -42,7 +42,7 @@ export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
       </header>
 
       {/* 中间正文主体与首字下沉排版 */}
-      <main className="my-auto py-3 relative z-10 overflow-hidden">
+      <main className="my-auto min-h-0 overflow-hidden py-3 relative z-10">
         <MarkdownRenderer
           content={data.content}
           fontSize={data.fontSize}

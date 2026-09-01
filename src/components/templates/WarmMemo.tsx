@@ -44,7 +44,7 @@ export const WarmMemo: React.FC<TemplateProps> = ({ data }) => {
       </header>
 
       {/* 中间便签白卡片 */}
-      <main className="my-auto py-4 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-4 relative z-10">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-amber-100 shadow-sm relative">
           <Pin className="w-4 h-4 text-amber-500 absolute -top-2 right-6 -rotate-12" />
           <MarkdownRenderer

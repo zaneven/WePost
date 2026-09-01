@@ -69,7 +69,7 @@ export const NeonCyber: React.FC<TemplateProps> = ({ data }) => {
         )}
       </header>
 
-      <main className="my-auto py-6 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-6 relative z-10">
         <div
           className="rounded-xl p-5 border bg-white/[0.03] backdrop-blur-sm"
           style={{

@@ -40,7 +40,7 @@ export const ZenQuote: React.FC<TemplateProps> = ({ data }) => {
       </header>
 
       {/* 中间正文 */}
-      <main className="my-auto py-8 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-8 relative z-10">
         <div className="max-w-xl mx-auto pl-4 border-l border-stone-300/80">
           <MarkdownRenderer
             content={data.content}

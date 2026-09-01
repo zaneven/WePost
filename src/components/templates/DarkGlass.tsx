@@ -51,7 +51,7 @@ export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
       </header>
 
       {/* 中间毛玻璃卡片与正文内容 */}
-      <main className="my-auto py-5 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-5 relative z-10">
         <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 shadow-inner">
           <MarkdownRenderer
             content={data.content}

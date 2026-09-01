@@ -45,7 +45,7 @@ export const InkWash: React.FC<TemplateProps> = ({ data }) => {
         )}
       </header>
 
-      <main className="my-auto py-8 relative z-10">
+      <main className="my-auto min-h-0 overflow-hidden py-8 relative z-10">
         <div className="max-w-xl mx-auto pl-5 border-l-2 border-stone-400/50">
           <MarkdownRenderer
             content={data.content}

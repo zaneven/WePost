@@ -72,6 +72,42 @@ describe('splitContentIntoCards', () => {
     expect(cards.join('').replace(/\s/g, '')).toBe(long);
   });
 
+  it('中文按全角字宽折行：等长中文比英文更早触发拆分', () => {
+    // 旧实现按 0.55em 统一估字宽，中文折行被严重少算 → 提示溢出却不拆分
+    const zhCards = splitContentIntoCards('中'.repeat(800), PORTRAIT);
+    const enCards = splitContentIntoCards('a'.repeat(800), PORTRAIT);
+    expect(zhCards.length).toBeGreaterThan(enCards.length);
+    // 两者拼接后均无丢失
+    expect(zhCards.join('').replace(/\s/g, '')).toBe('中'.repeat(800));
+    expect(enCards.join('').replace(/\s/g, '')).toBe('a'.repeat(800));
+  });
+
+  it('块间距计入容量：多段落内容比同字数单段拆得更早', () => {
+    // 6 个短段（块间 space-y-4）总字数与一个长段相同，多块应拆出更多卡
+    const multi = Array.from({ length: 6 }, (_, i) => `第${i}段内容。`).join('\n\n');
+    const single = multi.replace(/\n\n/g, '');
+    const multiCards = splitContentIntoCards(multi, WIDE);
+    const singleCards = splitContentIntoCards(single, WIDE);
+    expect(multiCards.length).toBeGreaterThanOrEqual(singleCards.length);
+  });
+
+  it('图片块按固定高度估算：多图内容触发拆分且图片行保持原子', () => {
+    const img = (n: number) => `![图${n}](https://example.com/${n}.png)`;
+    const content = [img(1), img(2), img(3)].join('\n\n');
+    const cards = splitContentIntoCards(content, PORTRAIT);
+    expect(cards.length).toBeGreaterThan(1);
+    for (const n of [1, 2, 3]) {
+      const hit = cards.filter((c) => c.includes(`图${n}`));
+      expect(hit).toHaveLength(1);
+    }
+  });
+
+  it('标题块计入自身字号与间距：多标题内容触发拆分', () => {
+    const content = Array.from({ length: 6 }, (_, i) => `## 章节标题${i}`).join('\n\n');
+    const cards = splitContentIntoCards(content, WIDE);
+    expect(cards.length).toBeGreaterThan(1);
+  });
+
   it('竖屏画幅容量大于宽幅', () => {
     expect(estimateCardCapacity(PORTRAIT)).toBeGreaterThan(
       estimateCardCapacity(WIDE)

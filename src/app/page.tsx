@@ -14,7 +14,7 @@ import {
 } from '@/core/split/splitContent';
 import { recommendStyle } from '@/core/match/recommendStyle';
 import { useToast } from '@/components/ui/Toast';
-import { Header } from '@/components/editor/Header';
+import { Header, type EditorTheme } from '@/components/editor/Header';
 import { ContentForm } from '@/components/editor/ContentForm';
 import { StyleToolbar } from '@/components/editor/StyleToolbar';
 import { ExportPanel } from '@/components/editor/ExportPanel';
@@ -28,6 +28,18 @@ import { Edit3, Palette, Download, Scissors } from 'lucide-react';
 
 const STORAGE_KEY = 'wepost:card-data:v1';
 const SPLIT_MODE_KEY = 'wepost:split-mode:v1';
+const THEME_KEY = 'wepost:theme:v1';
+
+/** 从 localStorage 读取上次主题（非法值回退暗色——编辑器默认整体暗色） */
+function loadPersistedTheme(): EditorTheme {
+  if (typeof window === 'undefined') return 'dark';
+  try {
+    const raw = window.localStorage.getItem(THEME_KEY);
+    return raw === 'light' ? 'light' : 'dark';
+  } catch {
+    return 'dark';
+  }
+}
 
 /** 从 localStorage 读取上次编辑内容，与默认值合并以保证字段完整 */
 function loadPersistedCardData(): CardData {
@@ -70,6 +82,15 @@ export default function HomePage() {
   const [splitMode, setSplitMode] = useState<SplitMode>('auto');
   // 挂载恢复完成后才允许写回持久化，避免初始 'auto' 在恢复读取前覆盖已存的模式
   const [splitModeHydrated, setSplitModeHydrated] = useState(false);
+
+  // 编辑器亮 / 暗主题（默认暗色，顶部导航可切换），持久化到 localStorage。
+  // 与拆分模式同款两段式水合：挂载恢复后才写回，避免初始 'dark' 覆盖已存的 'light'。
+  const [theme, setTheme] = useState<EditorTheme>('dark');
+  const [themeHydrated, setThemeHydrated] = useState(false);
+
+  const handleToggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
 
   const chunks = useMemo(() => {
     return splitMode === 'divider'
@@ -121,6 +142,8 @@ export default function HomePage() {
     }
     setSplitMode(loadPersistedSplitMode());
     setSplitModeHydrated(true);
+    setTheme(loadPersistedTheme());
+    setThemeHydrated(true);
     // 仅执行一次
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -134,6 +157,16 @@ export default function HomePage() {
       // 隐私模式等，静默忽略
     }
   }, [splitMode, splitModeHydrated]);
+
+  // 主题持久化（挂载恢复完成后才写回）
+  useEffect(() => {
+    if (!themeHydrated) return;
+    try {
+      window.localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // 隐私模式等，静默忽略
+    }
+  }, [theme, themeHydrated]);
 
   // 持久化：防抖写入 localStorage
   useEffect(() => {
@@ -219,7 +252,7 @@ export default function HomePage() {
     <div
       className={`w-full flex flex-col bg-neutral-950 relative select-none ${
         isDesktop ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'
-      }`}
+      } ${theme === 'dark' ? 'dark' : ''}`}
     >
       {/* 顶部固定导航 */}
       <Header
@@ -228,14 +261,16 @@ export default function HomePage() {
         onRedo={history.redo}
         canUndo={history.canUndo}
         canRedo={history.canRedo}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       {isDesktop ? (
         <>
           {/* 大屏三栏工作台：文案编辑 | 实时画板（多卡堆叠） | 参数设置栏 */}
           <div className="flex-1 min-h-0 flex overflow-hidden">
-            {/* 左栏：文案编辑（始终编辑完整正文，内部滚动） */}
-            <aside className="w-[380px] xl:w-[400px] h-full min-h-0 flex flex-col flex-shrink-0 border-r border-neutral-800/60 bg-neutral-50 text-neutral-900 z-10 shadow-2xl shadow-black/20 overflow-hidden">
+            {/* 左栏：文案编辑（始终编辑完整正文，内部滚动；随主题亮暗切换） */}
+            <aside className="w-[380px] xl:w-[400px] h-full min-h-0 flex flex-col flex-shrink-0 border-r border-neutral-200 bg-neutral-50 text-neutral-900 dark:border-neutral-800/60 dark:bg-neutral-950 dark:text-neutral-100 z-10 shadow-2xl shadow-black/5 dark:shadow-black/20 overflow-hidden">
               <div
                 tabIndex={0}
                 className="flex-1 min-h-0 overflow-y-auto p-6 focus:outline-none"
@@ -255,8 +290,8 @@ export default function HomePage() {
               <BottomActionBar data={cardData} cardCount={totalCardCount} />
             </main>
 
-            {/* 右栏：Figma 式暗色参数栏（风格排版 + 拆分多卡 + 导出复制，可折叠分区，上下滚动） */}
-            <aside className="w-[300px] xl:w-[320px] h-full min-h-0 flex-shrink-0 overflow-y-auto border-l border-neutral-800/60 bg-neutral-950 z-10">
+            {/* 右栏：Figma 式参数栏（风格排版 + 拆分多卡 + 导出复制，可折叠分区，上下滚动；随主题亮暗切换） */}
+            <aside className="w-[300px] xl:w-[320px] h-full min-h-0 flex-shrink-0 overflow-y-auto border-l border-neutral-200 bg-neutral-50 dark:border-neutral-800/60 dark:bg-neutral-950 z-10">
               <SettingsPanel
                 data={cardData}
                 onChange={handleUpdateCard}
@@ -269,6 +304,7 @@ export default function HomePage() {
                 onTitlePageChange={handleTitlePageChange}
                 cardCount={chunks.length}
                 isOverflowing={isOverflowing}
+                surface={theme}
               />
             </aside>
           </div>
@@ -277,13 +313,13 @@ export default function HomePage() {
         <>
           {/* 小屏纵向流式排列，画板优先可见 */}
           <div className="flex-1 min-h-0 flex flex-col pb-14">
-            {/* 下方控制区（自适应高度，随页面滚动） */}
-            <aside className="w-full flex flex-col flex-shrink-0 min-h-0 border-t border-neutral-800/60 bg-neutral-50 text-neutral-900 z-10 shadow-2xl shadow-black/20 order-2">
+            {/* 下方控制区（自适应高度，随页面滚动；随主题亮暗切换） */}
+            <aside className="w-full flex flex-col flex-shrink-0 min-h-0 border-t border-neutral-200 bg-neutral-50 text-neutral-900 dark:border-neutral-800/60 dark:bg-neutral-950 dark:text-neutral-100 z-10 shadow-2xl shadow-black/5 dark:shadow-black/20 order-2">
               {/* 导航标签切换 */}
               <div
                 role="tablist"
                 aria-label="编辑面板切换"
-                className="flex border-b border-neutral-800 px-4 pt-3 bg-neutral-950 flex-shrink-0"
+                className="flex border-b border-neutral-200 dark:border-neutral-800 px-4 pt-3 bg-neutral-100 dark:bg-neutral-950 flex-shrink-0"
               >
                 <button
                   type="button"
@@ -294,8 +330,8 @@ export default function HomePage() {
                   onClick={() => setActiveTab('content')}
                   className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'content'
-                      ? 'border-white text-white bg-neutral-900 rounded-t-lg'
-                      : 'border-transparent text-neutral-500 hover:text-white'
+                      ? 'border-neutral-900 text-neutral-900 bg-white dark:border-white dark:text-white dark:bg-neutral-900 rounded-t-lg'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
@@ -311,8 +347,8 @@ export default function HomePage() {
                   onClick={() => setActiveTab('style')}
                   className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'style'
-                      ? 'border-white text-white bg-neutral-900 rounded-t-lg'
-                      : 'border-transparent text-neutral-500 hover:text-white'
+                      ? 'border-neutral-900 text-neutral-900 bg-white dark:border-white dark:text-white dark:bg-neutral-900 rounded-t-lg'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <Palette className="w-3.5 h-3.5" aria-hidden="true" />
@@ -328,8 +364,8 @@ export default function HomePage() {
                   onClick={() => setActiveTab('export')}
                   className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'export'
-                      ? 'border-white text-white bg-neutral-900 rounded-t-lg'
-                      : 'border-transparent text-neutral-500 hover:text-white'
+                      ? 'border-neutral-900 text-neutral-900 bg-white dark:border-white dark:text-white dark:bg-neutral-900 rounded-t-lg'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <Download className="w-3.5 h-3.5" aria-hidden="true" />
@@ -371,12 +407,12 @@ export default function HomePage() {
                       cardCount={totalCardCount}
                       splitMode={splitMode}
                     />
-                    <div className="pt-4 border-t border-neutral-200">
-                      <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-700 mb-3">
-                        <Scissors className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+                    <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+                      <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-3">
+                        <Scissors className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
                         拆分多卡
                       </h3>
-                      {splitPanel('light')}
+                      {splitPanel(theme)}
                     </div>
                   </div>
                 )}

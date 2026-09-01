@@ -30,6 +30,11 @@
   input, textarea, select {
     color: #171717;
   }
+
+  /* 暗色主题下表单控件兜底色（.dark 类由 page.tsx 根容器按主题挂载） */
+  .dark input, .dark textarea, .dark select {
+    color: #f5f5f5;
+  }
 }
 
 /* 自定义滚动条样式 */

@@ -25,6 +25,8 @@ interface SettingsPanelProps {
   cardCount: number;
   /** 是否有卡片内容溢出画板 */
   isOverflowing?: boolean;
+  /** light = 亮色主题；dark = 暗色主题（默认，与编辑器主题联动） */
+  surface?: 'light' | 'dark';
 }
 
 /** Figma 式可折叠分区标题条 */
@@ -32,24 +34,31 @@ const CollapsibleSection: React.FC<{
   title: string;
   icon: React.ReactNode;
   defaultOpen?: boolean;
+  /** light = 亮色主题；dark = 暗色主题（默认） */
+  surface?: 'light' | 'dark';
   children: React.ReactNode;
-}> = ({ title, icon, defaultOpen = true, children }) => {
+}> = ({ title, icon, defaultOpen = true, surface = 'dark', children }) => {
   const [open, setOpen] = useState(defaultOpen);
+  const dark = surface === 'dark';
 
   return (
-    <section className="border-b border-neutral-800/60">
+    <section className={dark ? 'border-b border-neutral-800/60' : 'border-b border-neutral-200'}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
-        className="w-full flex items-center gap-2 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-neutral-300 hover:text-white hover:bg-neutral-900/60 transition-colors cursor-pointer select-none"
+        className={`w-full flex items-center gap-2 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer select-none ${
+          dark
+            ? 'text-neutral-300 hover:text-white hover:bg-neutral-900/60'
+            : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+        }`}
       >
         <span className="text-emerald-400">{icon}</span>
         <span className="flex-1">{title}</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-neutral-500 transition-transform duration-200 ${
-            open ? '' : '-rotate-90'
-          }`}
+          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+            dark ? 'text-neutral-500' : 'text-neutral-400'
+          } ${open ? '' : '-rotate-90'}`}
           aria-hidden="true"
         />
       </button>
@@ -76,22 +85,23 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onTitlePageChange,
   cardCount,
   isOverflowing = false,
+  surface = 'dark',
 }) => {
   return (
     <div>
-      <CollapsibleSection title="风格排版" icon={<Palette className="w-3.5 h-3.5" aria-hidden="true" />}>
+      <CollapsibleSection title="风格排版" icon={<Palette className="w-3.5 h-3.5" aria-hidden="true" />} surface={surface}>
         <StyleToolbar
           data={data}
           onChange={onChange}
           onSmartMatch={onSmartMatch}
           matchHint={matchHint}
-          surface="dark"
+          surface={surface}
         />
       </CollapsibleSection>
 
-      <CollapsibleSection title="拆分多卡" icon={<Scissors className="w-3.5 h-3.5" aria-hidden="true" />}>
+      <CollapsibleSection title="拆分多卡" icon={<Scissors className="w-3.5 h-3.5" aria-hidden="true" />} surface={surface}>
         <SplitPanel
-          surface="dark"
+          surface={surface}
           splitMode={splitMode}
           onSplitModeChange={onSplitModeChange}
           titlePage={titlePage}
@@ -101,13 +111,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         />
       </CollapsibleSection>
 
-      <CollapsibleSection title="导出复制" icon={<Download className="w-3.5 h-3.5" aria-hidden="true" />}>
+      <CollapsibleSection title="导出复制" icon={<Download className="w-3.5 h-3.5" aria-hidden="true" />} surface={surface}>
         <ExportPanel
           data={data}
           exportState={exportState}
           cardCount={cardCount}
           splitMode={splitMode}
-          surface="dark"
+          surface={surface}
         />
       </CollapsibleSection>
     </div>

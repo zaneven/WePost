@@ -6,6 +6,8 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // 编辑器亮暗主题切换：class 策略，主题状态由 page.tsx 挂在根容器上
+  darkMode: "class",
   theme: {
     extend: {
       colors: {

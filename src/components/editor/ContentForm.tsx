@@ -209,78 +209,78 @@ export const ContentForm: React.FC<ContentFormProps> = ({
   );
 
   return (
-    <div className="space-y-6 text-neutral-900">
+    <div className="space-y-6 text-neutral-900 dark:text-neutral-100">
       {/* 预设文案快速切换 */}
       <div>
         <div
           role="group"
           aria-label="灵感速选文案"
-          className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-2 flex items-center gap-1.5"
+          className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2 flex items-center gap-1.5"
         >
-          <BookOpen className="w-3.5 h-3.5 text-neutral-800" aria-hidden="true" />
+          <BookOpen className="w-3.5 h-3.5 text-neutral-800 dark:text-neutral-200" aria-hidden="true" />
           <span>灵感速选文案</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
             onClick={() => onApplyPresetSample('essay')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             深度长文
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('quote')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             金句格言
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('news')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             早报资讯
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('note')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             日系便签
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('acid')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             态度先锋
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('ink')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             水墨随笔
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('code')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             开发笔记
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('editorial')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             评论专栏
           </button>
           <button
             type="button"
             onClick={() => onApplyPresetSample('neon')}
-            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium border border-neutral-200 transition-colors"
+            className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 font-medium border border-neutral-200 dark:border-neutral-800 transition-colors"
           >
             赛博信号
           </button>
@@ -296,16 +296,16 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               setAiPanelOpen(true);
               setAiError(null);
             }}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white transition-colors cursor-pointer"
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 dark:text-neutral-100 text-white transition-colors cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
             AI 填写：粘贴文字自动生成卡片
           </button>
         ) : (
-          <div className="rounded-lg border border-neutral-200 bg-white shadow-sm p-3 space-y-2.5">
+          <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm p-3 space-y-2.5">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+              <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
                 <span>AI 填写</span>
               </div>
               <button
@@ -317,7 +317,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
                 disabled={aiLoading}
                 title="收起"
                 aria-label="收起 AI 填写面板"
-                className="text-[11px] text-neutral-500 hover:text-neutral-900 transition-colors disabled:opacity-50 cursor-pointer"
+                className="text-[11px] text-neutral-500 hover:text-neutral-900 dark:text-neutral-100 dark:hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
               >
                 收起
               </button>
@@ -331,7 +331,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               }}
               disabled={aiLoading}
               placeholder="粘贴文章、金句、早报、便签…AI 自动识别并填写标题、正文、署名与风格参数"
-              className="w-full text-xs font-normal rounded-md border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 p-2.5 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 disabled:opacity-60 resize-none"
+              className="w-full text-xs font-normal rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 p-2.5 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400 disabled:opacity-60 resize-none"
             />
             <div className="flex items-center justify-between gap-2">
               <span className="text-[10px] text-neutral-400 flex-shrink-0">
@@ -339,14 +339,14 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               </span>
               <span
                 className={`text-[10px] font-mono flex-shrink-0 ${
-                  aiText.length > AI_FILL_MAX_CHARS ? 'text-red-600' : 'text-neutral-400'
+                  aiText.length > AI_FILL_MAX_CHARS ? 'text-red-600 dark:text-red-400' : 'text-neutral-400'
                 }`}
               >
                 {aiText.length}/{AI_FILL_MAX_CHARS}
               </span>
             </div>
             {aiError && (
-              <div className="text-[11px] text-red-600 flex items-start gap-1">
+              <div className="text-[11px] text-red-600 dark:text-red-400 flex items-start gap-1">
                 <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
                 <span>{aiError}</span>
               </div>
@@ -355,7 +355,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               type="button"
               onClick={handleAiFill}
               disabled={aiLoading || !aiText.trim() || aiText.length > AI_FILL_MAX_CHARS}
-              className="w-full py-2 rounded-md bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-2 rounded-md bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 dark:text-neutral-100 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               {aiLoading ? (
                 <>
@@ -379,7 +379,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           type="button"
           onClick={handleCopyText}
           title="复制当前全部文案到剪贴板"
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:bg-neutral-50 transition-colors"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors"
         >
           <Clipboard className="w-3.5 h-3.5" aria-hidden="true" />
           复制全文
@@ -388,7 +388,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           type="button"
           onClick={handleClearAll}
           title="清空所有文案字段"
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 hover:border-red-300 hover:text-red-600 text-neutral-700 hover:bg-red-50/50 transition-colors"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 hover:border-red-300 hover:text-red-600 dark:text-red-400 text-neutral-700 dark:text-neutral-300 hover:bg-red-50/50 transition-colors"
         >
           <Eraser className="w-3.5 h-3.5" aria-hidden="true" />
           清空全部
@@ -401,9 +401,9 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           <div>
             <label
               htmlFor="card-tag"
-              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+              className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1"
             >
-              <Tag className="w-3 h-3 text-neutral-600" aria-hidden="true" />
+              <Tag className="w-3 h-3 text-neutral-600 dark:text-neutral-400" aria-hidden="true" />
               分类标签
             </label>
             <input
@@ -412,16 +412,16 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               value={data.tag}
               onChange={(e) => onChange({ tag: e.target.value })}
               placeholder="如：深度阅读、每日金句"
-              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+              className="w-full text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400"
             />
           </div>
 
           <div>
             <label
               htmlFor="card-date"
-              className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+              className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1"
             >
-              <Calendar className="w-3 h-3 text-neutral-600" aria-hidden="true" />
+              <Calendar className="w-3 h-3 text-neutral-600 dark:text-neutral-400" aria-hidden="true" />
               日期 / 期数
             </label>
             <input
@@ -430,7 +430,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               value={data.date}
               onChange={(e) => onChange({ date: e.target.value })}
               placeholder="如：2026.08.19 · ISSUE 042"
-              className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+              className="w-full text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400"
             />
           </div>
         </div>
@@ -438,10 +438,10 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         <div>
           <label
             htmlFor="card-title"
-            className="block text-xs font-medium text-neutral-800 mb-1 flex items-center justify-between"
+            className="block text-xs font-medium text-neutral-800 dark:text-neutral-200 mb-1 flex items-center justify-between"
           >
             <span className="flex items-center gap-1.5 font-bold">
-              <Type className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+              <Type className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
               主标题
             </span>
             <span className="text-[11px] text-neutral-500 font-normal">支持核心观点</span>
@@ -452,14 +452,14 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             value={data.title}
             onChange={(e) => onChange({ title: e.target.value })}
             placeholder="输入主标题..."
-            className="w-full text-sm font-semibold rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 p-2.5 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 resize-none transition-shadow"
+            className="w-full text-sm font-semibold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 p-2.5 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400 resize-none transition-shadow"
           />
         </div>
 
         <div>
           <label
             htmlFor="card-subtitle"
-            className="block text-xs font-semibold text-neutral-700 mb-1"
+            className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1"
           >
             副标题 / 栏目名
           </label>
@@ -469,7 +469,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             value={data.subtitle}
             onChange={(e) => onChange({ subtitle: e.target.value })}
             placeholder="如：THINKING / 思考碎片"
-            className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+            className="w-full text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400"
           />
         </div>
       </div>
@@ -479,9 +479,9 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         <div className="mb-1.5 relative">
           <label
             htmlFor="card-content-textarea"
-            className="text-xs font-bold text-neutral-800 flex items-center gap-1.5"
+            className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5"
           >
-            <Quote className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+            <Quote className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
             正文内容 (支持轻量 Markdown)
           </label>
           {/* 工具独立成行并允许换行，避免窄栏下按钮被裁切 */}
@@ -495,7 +495,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('# ', '')}
               title="一级标题 # title"
               aria-label="插入一级标题"
-              className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               H1
             </button>
@@ -504,7 +504,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('## ', '')}
               title="二级标题 ## title"
               aria-label="插入二级标题"
-              className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               H2
             </button>
@@ -513,7 +513,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('### ', '')}
               title="三级标题 ### title"
               aria-label="插入三级标题"
-              className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="px-1.5 py-0.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               H3
             </button>
@@ -522,7 +522,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('**', '**')}
               title="加粗 **text**"
               aria-label="加粗"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <Bold className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -531,7 +531,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('*', '*')}
               title="斜体 *text*"
               aria-label="斜体"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <Italic className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -540,7 +540,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('> ')}
               title="引用卡片 > quote"
               aria-label="插入引用"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <MessageSquareQuote className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -549,7 +549,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('==', '==')}
               title="重点高亮 ==highlight=="
               aria-label="重点高亮"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <Highlighter className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -558,7 +558,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('`', '`')}
               title="行内代码 `code`"
               aria-label="行内代码"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <Code className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -567,7 +567,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('- ')}
               title="无序列表 - item"
               aria-label="无序列表"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <List className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -576,7 +576,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('1. ')}
               title="有序列表 1. item"
               aria-label="有序列表"
-              className="px-1.5 py-0.5 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="px-1.5 py-0.5 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               1.
             </button>
@@ -585,7 +585,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('\n---\n')}
               title="分割线 ---"
               aria-label="分割线"
-              className="px-1 py-0.5 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="px-1 py-0.5 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               —
             </button>
@@ -598,7 +598,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               }
               title="插入表格（Markdown 表格，需含表头分隔行）"
               aria-label="插入表格"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <Table className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -607,7 +607,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertMarkdown('```\n', '\n```')}
               title="代码块 ```…```"
               aria-label="插入代码块"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <SquareCode className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -616,7 +616,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onClick={() => insertRaw('\n\n')}
               title="插入空行（分段）"
               aria-label="插入空行"
-              className="p-1 text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80 rounded"
+              className="p-1 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"
             >
               <CornerDownLeft className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -629,8 +629,8 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               data-image-menu
               className={`p-1 rounded ${
                 imageMenuOpen
-                  ? 'text-neutral-950 bg-neutral-200/80'
-                  : 'text-neutral-700 hover:text-neutral-950 hover:bg-neutral-200/80'
+                  ? 'text-neutral-950 bg-neutral-200/80 dark:text-white dark:bg-neutral-700/60'
+                  : 'text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60'
               }`}
             >
               <ImagePlus className="w-3.5 h-3.5" aria-hidden="true" />
@@ -641,10 +641,10 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           {imageMenuOpen && (
             <div
               data-image-menu
-              className="absolute right-0 top-full mt-1 z-30 w-64 rounded-lg border border-neutral-200 bg-white shadow-xl p-3 space-y-2.5 text-left"
+              className="absolute right-0 top-full mt-1 z-30 w-64 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl p-3 space-y-2.5 text-left"
             >
-              <div className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
-                <ImagePlus className="w-3.5 h-3.5 text-neutral-700" aria-hidden="true" />
+              <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+                <ImagePlus className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
                 <span>插入图片</span>
               </div>
               <div className="flex gap-1.5">
@@ -662,14 +662,14 @@ export const ContentForm: React.FC<ContentFormProps> = ({
                     }
                   }}
                   placeholder="粘贴图片链接 https://…"
-                  className="flex-1 min-w-0 text-xs rounded-md border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2 py-1.5 focus:outline-none focus:border-neutral-900"
+                  className="flex-1 min-w-0 text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2 py-1.5 focus:outline-none focus:border-neutral-900"
                 />
                 <button
                   type="button"
                   onClick={handleInsertImageUrl}
                   title="插入图片链接"
                   aria-label="插入图片链接"
-                  className="p-1.5 rounded-md bg-neutral-900 hover:bg-neutral-800 text-white flex-shrink-0 cursor-pointer"
+                  className="p-1.5 rounded-md bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 dark:text-neutral-100 text-white flex-shrink-0 cursor-pointer"
                 >
                   <Link2 className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
@@ -678,7 +678,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="w-full py-1.5 rounded-md border border-neutral-300 hover:border-neutral-900 text-xs font-medium text-neutral-800 flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
+                className="w-full py-1.5 rounded-md border border-neutral-300 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-neutral-200 dark:border-neutral-800 text-xs font-medium text-neutral-800 dark:text-neutral-200 flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
               >
                 {isUploading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
@@ -688,7 +688,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
                 <span>{isUploading ? '上传中…' : '上传本地图片（存入 R2）'}</span>
               </button>
               {uploadError && (
-                <div className="text-[11px] text-red-600 flex items-start gap-1">
+                <div className="text-[11px] text-red-600 dark:text-red-400 flex items-start gap-1">
                   <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
                   <span>{uploadError}</span>
                 </div>
@@ -716,10 +716,10 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           value={data.content}
           onChange={(e) => onChange({ content: e.target.value })}
           placeholder="输入正文，不同格式换行即可分块。支持 ## 标题、**加粗**、*斜体*、> 引用金句、- 列表、1. 编号、--- 分割线..."
-          className={`w-full text-sm font-normal rounded-lg border bg-white text-neutral-900 placeholder:text-neutral-400 p-3 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 font-sans ${
+          className={`w-full text-sm font-normal rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 p-3 leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-900/20 font-sans ${
             isOverflowing
               ? 'border-amber-400 focus:ring-amber-500/20 focus:border-amber-500'
-              : 'border-neutral-300 focus:border-neutral-900'
+              : 'border-neutral-300 dark:border-neutral-700 focus:border-neutral-900'
           }`}
           aria-describedby="card-content-hint"
         />
@@ -727,7 +727,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
         <div
           id="card-content-hint"
           className={`mt-1.5 flex items-center justify-between text-[11px] transition-colors ${
-            isOverflowing ? 'text-amber-600' : 'text-neutral-400'
+            isOverflowing ? 'text-amber-600 dark:text-amber-400' : 'text-neutral-400'
           }`}
         >
           <span className="flex items-center gap-1">
@@ -741,13 +741,13 @@ export const ContentForm: React.FC<ContentFormProps> = ({
       </div>
 
       {/* 作者、标语与水印 */}
-      <div className="space-y-3 pt-2 border-t border-neutral-200">
+      <div className="space-y-3 pt-2 border-t border-neutral-200 dark:border-neutral-800">
         <div>
           <label
             htmlFor="card-author"
-            className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center gap-1"
+            className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1"
           >
-            <User className="w-3 h-3 text-neutral-600" aria-hidden="true" />
+            <User className="w-3 h-3 text-neutral-600 dark:text-neutral-400" aria-hidden="true" />
             作者 / 公众号署名
           </label>
           <input
@@ -756,14 +756,14 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             value={data.author}
             onChange={(e) => onChange({ author: e.target.value })}
             placeholder="如：WePost 研习社"
-            className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+            className="w-full text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400"
           />
         </div>
 
         <div>
           <label
             htmlFor="card-footer-text"
-            className="block text-xs font-semibold text-neutral-700 mb-1"
+            className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1"
           >
             底部标语 / Slogan
           </label>
@@ -773,21 +773,21 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             value={data.footerText}
             onChange={(e) => onChange({ footerText: e.target.value })}
             placeholder="如：记录每一次深度思考 · 保持专注"
-            className="w-full text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900"
+            className="w-full text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400"
           />
         </div>
 
         <div className="flex items-center justify-between pt-1">
           <label
             htmlFor="card-show-watermark"
-            className="text-xs font-semibold text-neutral-700 flex items-center gap-2 cursor-pointer"
+            className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 cursor-pointer"
           >
             <input
               id="card-show-watermark"
               type="checkbox"
               checked={data.showWatermark ?? true}
               onChange={(e) => onChange({ showWatermark: e.target.checked })}
-              className="rounded text-neutral-900 focus:ring-neutral-900"
+              className="rounded text-neutral-900 dark:text-neutral-100 focus:ring-neutral-900"
             />
             <span>显示品牌水印角标</span>
           </label>
@@ -800,7 +800,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               onChange={(e) => onChange({ watermarkText: e.target.value })}
               placeholder="水印文字"
               aria-label="水印文字"
-              className="w-36 text-xs font-medium rounded border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+              className="w-36 text-xs font-medium rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-emerald-400/40"
             />
           )}
         </div>

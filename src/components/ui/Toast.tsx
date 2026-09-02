@@ -37,9 +37,9 @@ const ICONS: Record<ToastType, React.ReactNode> = {
 };
 
 const ACCENT: Record<ToastType, string> = {
-  success: 'border-emerald-200',
-  error: 'border-red-200',
-  info: 'border-blue-200',
+  success: 'border-emerald-200 dark:border-emerald-500/40',
+  error: 'border-red-200 dark:border-red-500/40',
+  info: 'border-blue-200 dark:border-blue-500/40',
 };
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -71,7 +71,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`flex items-start gap-2.5 bg-white border ${ACCENT[t.type]} shadow-lg rounded-xl px-3.5 py-3 text-sm text-neutral-800 animate-in`}
+            className={`flex items-start gap-2.5 bg-white dark:bg-neutral-900 border ${ACCENT[t.type]} shadow-lg dark:shadow-black/40 rounded-xl px-3.5 py-3 text-sm text-neutral-800 dark:text-neutral-100 animate-in`}
           >
             <span className="flex-shrink-0 mt-0.5">{ICONS[t.type]}</span>
             <span className="flex-1 leading-snug">{t.message}</span>
@@ -79,7 +79,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               type="button"
               onClick={() => dismiss(t.id)}
               aria-label="关闭提示"
-              className="flex-shrink-0 -mr-1 text-neutral-400 hover:text-neutral-700 transition-colors"
+              className="flex-shrink-0 -mr-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
             >
               <X className="w-3.5 h-3.5" aria-hidden="true" />
             </button>

@@ -138,7 +138,11 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
                 }`}
               >
                 {/* 固定高度缩略图区（真实渲染预览，等比缩放居中） */}
-                <div className="h-28 flex items-center justify-center overflow-hidden px-2 pt-2 bg-neutral-100">
+                <div
+                  className={`h-28 flex items-center justify-center overflow-hidden px-2 pt-2 ${
+                    dark ? 'bg-neutral-800' : 'bg-neutral-100'
+                  }`}
+                >
                   <TemplateThumbnail
                     templateId={tmpl.id}
                     aspectRatio={data.aspectRatio}
@@ -152,9 +156,15 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
                   )}
                 </div>
                 {/* 名称条 */}
-                <div className="px-2 py-1.5 bg-white">
-                  <div className="font-bold text-xs text-neutral-900">{tmpl.name}</div>
-                  <div className="text-[10px] text-neutral-400 font-mono line-clamp-1">
+                <div className={`px-2 py-1.5 ${dark ? 'bg-neutral-900' : 'bg-white'}`}>
+                  <div className={`font-bold text-xs ${dark ? 'text-neutral-100' : 'text-neutral-900'}`}>
+                    {tmpl.name}
+                  </div>
+                  <div
+                    className={`text-[10px] font-mono line-clamp-1 ${
+                      dark ? 'text-neutral-500' : 'text-neutral-400'
+                    }`}
+                  >
                     {tmpl.tags[0]}
                   </div>
                 </div>

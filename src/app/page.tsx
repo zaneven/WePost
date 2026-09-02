@@ -158,8 +158,10 @@ export default function HomePage() {
     }
   }, [splitMode, splitModeHydrated]);
 
-  // 主题持久化（挂载恢复完成后才写回）
+  // 主题持久化（挂载恢复完成后才写回）；同时把 dark class 同步到 <html>，
+  // 使 dark: 变体对编辑器根 div 之外的浮层（如 Toast）同样生效
   useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
     if (!themeHydrated) return;
     try {
       window.localStorage.setItem(THEME_KEY, theme);

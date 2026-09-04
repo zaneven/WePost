@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
   }) => {
     const isDark = theme === 'dark';
     return (
-      <header className="h-14 border-b border-neutral-200 bg-white/95 dark:border-neutral-800/90 dark:bg-neutral-950/95 backdrop-blur-xl w-full flex-shrink-0 z-50 px-5 flex items-center justify-between text-neutral-900 dark:text-neutral-100 select-none">
+      <header className="h-14 border-b border-neutral-200 bg-white/95 dark:border-neutral-800/90 dark:bg-neutral-950/95 backdrop-blur-xl w-full flex-shrink-0 z-50 px-3 sm:px-5 flex items-center justify-between text-neutral-900 dark:text-neutral-100 select-none overflow-hidden">
         {/* 左侧 Logo 与品牌 */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-neutral-950">
@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-base tracking-tight text-neutral-900 dark:text-white">WePost</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 text-emerald-600 border border-neutral-200 dark:bg-neutral-800/80 dark:text-emerald-400 dark:border-neutral-700/60 font-semibold">
+              <span className="hidden min-[380px]:inline text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 text-emerald-600 border border-neutral-200 dark:bg-neutral-800/80 dark:text-emerald-400 dark:border-neutral-700/60 font-semibold">
                 Studio
               </span>
             </div>
@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
         </div>
 
         {/* 右侧快捷操作与状态 */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
           {/* 亮 / 暗主题切换 */}
           <button
             type="button"
@@ -97,7 +97,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
           <a
             href="/agent"
             title="Agent 接入说明"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 hover:bg-neutral-200 hover:text-neutral-900 border border-neutral-200 dark:text-neutral-300 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white dark:border-neutral-800 rounded-lg transition-all"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 hover:bg-neutral-200 hover:text-neutral-900 border border-neutral-200 dark:text-neutral-300 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white dark:border-neutral-800 rounded-lg transition-all"
           >
             <Bot className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-400" />
             <span className="hidden sm:inline">Agent 接入</span>
@@ -106,7 +106,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
           <button
             type="button"
             onClick={onResetExample}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 hover:bg-neutral-200 hover:text-neutral-900 border border-neutral-200 dark:text-neutral-300 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white dark:border-neutral-800 rounded-lg transition-all"
+            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 hover:bg-neutral-200 hover:text-neutral-900 border border-neutral-200 dark:text-neutral-300 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white dark:border-neutral-800 rounded-lg transition-all"
             title="重置为示范文案"
           >
             <RefreshCw className="w-3.5 h-3.5 text-neutral-400" />

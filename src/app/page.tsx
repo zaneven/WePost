@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CardData } from '@/types/card';
-import { INITIAL_CARD_DATA, getMobileStageHeightVh } from '@/core/templates/registry';
+import { INITIAL_CARD_DATA } from '@/core/templates/registry';
 import { buildPresetData, type PresetType } from '@/data/presets';
 import { useCardHistory } from '@/lib/useCardHistory';
 import { useCardsOverflow } from '@/lib/useCardOverflow';
@@ -22,6 +22,7 @@ import { CardStage } from '@/components/canvas/CardStage';
 import { BottomActionBar } from '@/components/editor/BottomActionBar';
 import { SettingsPanel } from '@/components/editor/SettingsPanel';
 import { SplitPanel } from '@/components/editor/SplitPanel';
+import { MobileEditorSheet } from '@/components/editor/MobileEditorSheet';
 import { useCardExport, DEFAULT_EXPORT_CONFIG } from '@/lib/useCardExport';
 import { useIsDesktop } from '@/lib/useIsDesktop';
 import { Edit3, Palette, Download, Scissors } from 'lucide-react';
@@ -69,12 +70,12 @@ export default function HomePage() {
   const history = useCardHistory<CardData>(INITIAL_CARD_DATA);
   const cardData = history.present;
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'export'>('content');
+  // 移动端底部编辑抽屉：默认收起（预览占满视口），点击 Tab 展开
+  const [mobileSheetExpanded, setMobileSheetExpanded] = useState(false);
   // 布局分流：大屏三栏（文案 | 画板 | Figma 式参数栏），小屏沿用三 Tab 布局
   const isDesktop = useIsDesktop();
   // 导出配置在卡片 hover 操作与配置面板间共享（单一数据源）
   const cardExport = useCardExport(DEFAULT_EXPORT_CONFIG);
-  // 移动端画板高度：按当前比例智能分配（竖屏更高、宽幅更小）
-  const mobileStageHeightVh = getMobileStageHeightVh(cardData.aspectRatio);
   const toast = useToast();
 
   // 拆分模式为常驻必选项（默认自动拆分），选择持久化到 localStorage。
@@ -252,9 +253,7 @@ export default function HomePage() {
 
   return (
     <div
-      className={`w-full flex flex-col bg-neutral-950 relative select-none ${
-        isDesktop ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'
-      } ${theme === 'dark' ? 'dark' : ''}`}
+      className={`w-full flex flex-col bg-neutral-950 relative h-[100dvh] overflow-hidden ${theme === 'dark' ? 'dark' : ''}`}
     >
       {/* 顶部固定导航 */}
       <Header
@@ -313,127 +312,69 @@ export default function HomePage() {
         </>
       ) : (
         <>
-          {/* 小屏纵向流式排列，画板优先可见 */}
-          <div className="flex-1 min-h-0 flex flex-col pb-14">
-            {/* 下方控制区（自适应高度，随页面滚动；随主题亮暗切换） */}
-            <aside className="w-full flex flex-col flex-shrink-0 min-h-0 border-t border-neutral-200 bg-neutral-50 text-neutral-900 dark:border-neutral-800/60 dark:bg-neutral-950 dark:text-neutral-100 z-10 shadow-2xl shadow-black/5 dark:shadow-black/20 order-2">
-              {/* 导航标签切换 */}
-              <div
-                role="tablist"
-                aria-label="编辑面板切换"
-                className="flex border-b border-neutral-200 dark:border-neutral-800 px-4 pt-3 bg-neutral-100 dark:bg-neutral-950 flex-shrink-0"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-content"
-                  aria-selected={activeTab === 'content'}
-                  aria-controls="panel-content"
-                  onClick={() => setActiveTab('content')}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-                    activeTab === 'content'
-                      ? 'border-neutral-900 text-neutral-900 bg-white dark:border-white dark:text-white dark:bg-neutral-900 rounded-t-lg'
-                      : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>文案编辑</span>
-                </button>
-
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-style"
-                  aria-selected={activeTab === 'style'}
-                  aria-controls="panel-style"
-                  onClick={() => setActiveTab('style')}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-                    activeTab === 'style'
-                      ? 'border-neutral-900 text-neutral-900 bg-white dark:border-white dark:text-white dark:bg-neutral-900 rounded-t-lg'
-                      : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Palette className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>风格与排版</span>
-                </button>
-
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-export"
-                  aria-selected={activeTab === 'export'}
-                  aria-controls="panel-export"
-                  onClick={() => setActiveTab('export')}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-                    activeTab === 'export'
-                      ? 'border-neutral-900 text-neutral-900 bg-white dark:border-white dark:text-white dark:bg-neutral-900 rounded-t-lg'
-                      : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Download className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>导出与复制</span>
-                </button>
-              </div>
-
-              {/* 表单内容区 */}
-              <div
-                role="tabpanel"
-                id={`panel-${activeTab}`}
-                aria-labelledby={`tab-${activeTab}`}
-                tabIndex={0}
-                className="flex-1 min-h-0 p-6 focus:outline-none"
-              >
-                {activeTab === 'content' && (
-                  <ContentForm
-                    data={cardData}
-                    onChange={handleUpdateCard}
-                    onApplyPresetSample={handleApplyPresetSample}
-                    isOverflowing={isOverflowing}
-                  />
-                )}
-
-                {activeTab === 'style' && (
-                  <StyleToolbar
-                    data={cardData}
-                    onChange={handleUpdateCard}
-                    onSmartMatch={handleSmartMatch}
-                    matchHint={recommendation.reason}
-                  />
-                )}
-
-                {activeTab === 'export' && (
-                  <div className="space-y-6">
-                    <ExportPanel
-                      data={cardData}
-                      exportState={cardExport}
-                      cardCount={totalCardCount}
-                      splitMode={splitMode}
-                    />
-                    <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                      <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-3">
-                        <Scissors className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
-                        拆分多卡
-                      </h3>
-                      {splitPanel(theme)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </aside>
-
-            {/* 上方实时画板区域（按比例智能分配高度，多卡纵向滚动浏览） */}
-            <main
-              className="flex-1 min-w-0 flex flex-col min-h-0 h-[var(--mobile-stage-h)] order-1"
-              style={{ '--mobile-stage-h': `${mobileStageHeightVh}vh` } as React.CSSProperties}
-            >
-              <CardStage data={cardData} chunks={chunks} exportState={cardExport} />
+          <div className="flex-1 min-h-0 flex flex-col">
+            <main className="flex-1 min-h-0 relative">
+              <CardStage
+                data={cardData}
+                chunks={chunks}
+                exportState={cardExport}
+              />
+              <MobileEditorSheet
+                expanded={mobileSheetExpanded}
+                onExpandedChange={setMobileSheetExpanded}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                tabs={{
+                  content: {
+                    label: '文案编辑',
+                    icon: <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />,
+                    panel: (
+                      <ContentForm
+                        data={cardData}
+                        onChange={handleUpdateCard}
+                        onApplyPresetSample={handleApplyPresetSample}
+                        isOverflowing={isOverflowing}
+                      />
+                    ),
+                  },
+                  style: {
+                    label: '风格与排版',
+                    icon: <Palette className="w-3.5 h-3.5" aria-hidden="true" />,
+                    panel: (
+                      <StyleToolbar
+                        data={cardData}
+                        onChange={handleUpdateCard}
+                        onSmartMatch={handleSmartMatch}
+                        matchHint={recommendation.reason}
+                      />
+                    ),
+                  },
+                  export: {
+                    label: '导出与复制',
+                    icon: <Download className="w-3.5 h-3.5" aria-hidden="true" />,
+                    panel: (
+                      <div className="space-y-6">
+                        <ExportPanel
+                          data={cardData}
+                          exportState={cardExport}
+                          cardCount={totalCardCount}
+                          splitMode={splitMode}
+                        />
+                        <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+                          <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-3">
+                            <Scissors className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
+                            拆分多卡
+                          </h3>
+                          {splitPanel(theme)}
+                        </div>
+                      </div>
+                    ),
+                  },
+                }}
+              />
             </main>
           </div>
-
-          {/* 底部吸固状态条 */}
-          <div className="fixed bottom-0 left-0 right-0 z-40 flex-shrink-0">
-            <BottomActionBar data={cardData} cardCount={totalCardCount} />
-          </div>
+          <BottomActionBar data={cardData} cardCount={totalCardCount} />
         </>
       )}
     </div>

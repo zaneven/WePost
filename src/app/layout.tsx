@@ -38,6 +38,13 @@ export const metadata: Metadata = {
     title: 'WePost - 高审美排版工作台',
     description: '现代微信贴图号图片生成器，10 款风格模版、Retina 超清一键导出。',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport: Viewport = {

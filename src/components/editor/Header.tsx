@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layers, RefreshCw, Undo2, Redo2, Bot, Sun, Moon } from 'lucide-react';
+import { RefreshCw, Undo2, Redo2, Bot, Sun, Moon } from 'lucide-react';
+import { WePostLogo } from '@/components/ui/WePostLogo';
 
 export type EditorTheme = 'light' | 'dark';
 
@@ -30,8 +31,8 @@ export const Header: React.FC<HeaderProps> = React.memo(
       <header className="h-14 border-b border-neutral-200 bg-white/95 dark:border-neutral-800/90 dark:bg-neutral-950/95 backdrop-blur-xl w-full flex-shrink-0 z-50 px-3 sm:px-5 flex items-center justify-between text-neutral-900 dark:text-neutral-100 select-none overflow-hidden">
         {/* 左侧 Logo 与品牌 */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-neutral-950">
-            <Layers className="w-4 h-4" />
+          <div className="flex items-center justify-center shadow-lg shadow-emerald-500/15 rounded-xl">
+            <WePostLogo size={34} />
           </div>
           <div>
             <div className="flex items-center gap-2">

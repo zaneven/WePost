@@ -62,6 +62,27 @@ async function shoot(page, sample) {
   console.log(`✓ ${sample.id} → ${outPath}`);
 }
 
+async function shootCover(page, sample) {
+  const coverData = { ...sample.data, titlePage: true };
+  const b64 = Buffer.from(JSON.stringify(coverData), 'utf8').toString('base64url');
+  const url = `${BASE}/export?_=${Date.now()}#card=${b64}`;
+  await page.goto(url, { waitUntil: 'load' });
+
+  await page.waitForFunction(
+    (t) => !!document.querySelector('#wepost-card-export-target')?.textContent?.includes(t),
+    { timeout: 30000 },
+    sample.data.title
+  );
+  await page.evaluate(() => (document.fonts ? document.fonts.ready : Promise.resolve())).catch(() => {});
+  await new Promise((r) => setTimeout(r, 600));
+
+  const el = await page.$('#wepost-card-export-target');
+  if (!el) throw new Error(`未找到 #wepost-card-export-target：cover-${sample.id}`);
+  const outPath = resolve(OUT_DIR, `cover-${sample.id}.png`);
+  await el.screenshot({ path: outPath, type: 'png' });
+  console.log(`✓ cover-${sample.id} → ${outPath}`);
+}
+
 (async () => {
   mkdirSync(OUT_DIR, { recursive: true });
   const browser = await puppeteer.launch({
@@ -77,6 +98,14 @@ async function shoot(page, sample) {
         await shoot(page, sample);
       } catch (e) {
         console.error(`✗ ${sample.id}: ${e.message}`);
+      }
+    }
+    console.log('--- 开始生成大标题模式（封面卡）样例 ---');
+    for (const sample of SAMPLES) {
+      try {
+        await shootCover(page, sample);
+      } catch (e) {
+        console.error(`✗ cover-${sample.id}: ${e.message}`);
       }
     }
   } finally {

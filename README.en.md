@@ -10,45 +10,46 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](docs/CONTRIBUTING.md)
 
-**🚀 Live Demo: <https://zaneven.github.io/WePost/>**
+**Live Demo: <https://zaneven.github.io/WePost/>**  
+**Production Base: <https://wepost.zaneven.com>**
 
-[中文文档](README.md) | [English](README.en.md) | [Architecture](docs/ARCHITECTURE.md) | [Contributing](docs/CONTRIBUTING.md)
+[中文文档](README.md) | [English](README.en.md) | [Architecture](docs/ARCHITECTURE.md) | [Contributing](docs/CONTRIBUTING.md) | [Roadmap](docs/ROADMAP.md)
 
 </div>
 
 ---
 
-## 📖 Introduction
+## Introduction
 
-**WePost** is a card generation workbench for content creators, media operators, and developers. It structures any text—quotes, daily briefings, essays, dev notes, opinions—into `CardData`, auto-matches a template and aspect ratio, renders it as a beautiful card in real time, and exports high-resolution images ready for Xiaohongshu, WeChat Moments, and Official Account covers.
+**WePost** is a card generation workbench designed for content creators, media operators, and developers. It structures any text—quotes, daily briefings, essays, dev notes, and opinions—into `CardData`, auto-matches templates and aspect ratios, renders cards in real time, and exports high-resolution images ready for Xiaohongshu, WeChat Moments, and Official Account covers.
 
-A pure-frontend architecture with no backend dependency, deployable as a static site to Cloudflare Pages or GitHub Pages.
+The project supports pure-frontend static deployment (GitHub Pages) and is paired with a production service running headless rendering APIs (`/api/render`) and management console at `https://wepost.zaneven.com`.
 
 ---
 
-## 🎯 Use Cases
+## Use Cases
 
-WePost turns any text into ready-to-publish social images across high-frequency creation scenarios:
+WePost quickly turns any text into ready-to-publish social images across high-frequency scenarios:
 
-- **Xiaohongshu (XHS) posts & covers**: note covers, collection covers, quote stickers—3:4 portrait and 1:1 square with Minimal Magazine, Acid Bold, and more
-- **WeChat Moments / 9-grid**: daily check-ins, casual notes, greetings—comfortable 1:1 layout
+- **Xiaohongshu (XHS) posts & covers**: note covers, collection covers, quote stickers—3:4 portrait and 1:1 square, paired with "Cover Card Mode" for high-CTR cover images
+- **WeChat Moments / 9-grid**: daily check-ins, casual notes, greetings in a clean 1:1 square layout
 - **WeChat Official Account covers**: 2.35:1 banner headers, paired with Vintage Press / Editorial Bold for news and opinion
-- **WeChat Video Account (Channels) covers**: 9:16 full-screen portrait, Neon Cyber / Dark Glass for tech and trends
+- **WeChat Video Account covers**: 9:16 full-screen portrait, Neon Cyber / Dark Glass for tech and trends
 - **Quote / saying images**: Zen Aesthetic / Ink Wash templates for zen quotes and poetry
 - **Daily briefing / news images**: Vintage Press with tables / quotes / lists for high information density
-- **Dev notes / code screenshots**: Terminal Code template + Shiki syntax highlighting—turn snippets into shareable images
-- **Long-text / multi-image series**: smart splitting into card decks with batch-numbered export, ideal for Official Account long posts and XHS collections
-- **Article / blog illustrations**: render Markdown paragraphs, quotes, and formulas (KaTeX) into polished images
-
-> Whether posting to Xiaohongshu, Moments, making an Official Account cover, or turning text / code / quotes into shareable images, WePost generates them in a sentence.
+- **Dev notes / code screenshots**: Terminal Code template + Shiki syntax highlighting—turn code snippets into shareable images
+- **Long-text / multi-card series & stitched long images**: smart multi-card deck splitting, cover card mode, batch-numbered export, and one-click long image stitching
+- **Article / blog illustrations**: Markdown paragraphs, inline images (`![alt](url)`), blockquotes, formulas (KaTeX) rendered with ease
 
 ---
 
-## 🎨 Template Gallery
+## Template Gallery
 
-10 hand-crafted card templates spanning dark/light, Eastern/modern, vintage/trendy styles. The samples below are real exports rendered via WePost's `/export` route (3:4 aspect, with Shiki syntax highlighting, tables, watermark, etc.):
+10 hand-crafted card templates spanning dark/light, Eastern/modern, vintage/trendy styles. The samples below are real exports rendered via WePost's `/export` route (3:4 aspect, with Shiki syntax highlighting, tables, KaTeX formulas, watermarks, etc.):
 
-|  |  |
+### Standard Content Templates
+
+| | |
 |:---:|:---:|
 | **Minimalist Magazine**<br><sub>极简杂志</sub><br><img src="docs/samples/minimal-magazine.png" width="300" alt="Minimalist Magazine sample"> | **Modern Dark Glass**<br><sub>暗黑毛玻璃</sub><br><img src="docs/samples/dark-glass.png" width="300" alt="Dark Glass sample"> |
 | **Vintage Press**<br><sub>复古报刊</sub><br><img src="docs/samples/vintage-news.png" width="300" alt="Vintage Press sample"> | **Warm Healing Note**<br><sub>温暖便签</sub><br><img src="docs/samples/warm-memo.png" width="300" alt="Warm Memo sample"> |
@@ -56,68 +57,79 @@ WePost turns any text into ready-to-publish social images across high-frequency 
 | **Ink Wash Aesthetic**<br><sub>水墨留白</sub><br><img src="docs/samples/ink-wash.png" width="300" alt="Ink Wash sample"> | **Terminal / Dev Note**<br><sub>终端代码</sub><br><img src="docs/samples/terminal-code.png" width="300" alt="Terminal Code sample"> |
 | **Editorial Bold**<br><sub>先锋杂志</sub><br><img src="docs/samples/editorial-bold.png" width="300" alt="Editorial Bold sample"> | **Neon Cyberpunk**<br><sub>霓虹赛博</sub><br><img src="docs/samples/neon-cyber.png" width="300" alt="Neon Cyber sample"> |
 
-> 👉 Try all templates live: <https://zaneven.github.io/WePost/>
+### Cover Card Mode (Single-Page Title Mode)
+
+When "Cover Card Mode" is enabled, the first card is rendered as a standalone **headline cover card** (content starts from the second card onwards), tailor-made for multi-card carousel covers, Xiaohongshu first slides, and article header banners:
+
+| | |
+|:---:|:---:|
+| **Minimalist Magazine · Cover**<br><img src="docs/samples/cover-minimal-magazine.png" width="300" alt="Minimalist Magazine cover card"> | **Modern Dark Glass · Cover**<br><img src="docs/samples/cover-dark-glass.png" width="300" alt="Dark Glass cover card"> |
+| **Vintage Press · Cover**<br><img src="docs/samples/cover-vintage-news.png" width="300" alt="Vintage Press cover card"> | **Acid & Neo-Brutalism · Cover**<br><img src="docs/samples/cover-acid-bold.png" width="300" alt="Acid Bold cover card"> |
+| **Warm Healing Note · Cover**<br><img src="docs/samples/cover-warm-memo.png" width="300" alt="Warm Memo cover card"> | **Ink Wash Aesthetic · Cover**<br><img src="docs/samples/cover-ink-wash.png" width="300" alt="Ink Wash cover card"> |
+
+> Try all templates & cover modes live: <https://zaneven.github.io/WePost/>
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-- 🎨 **Card Rendering Engine**
-  - In-card Markdown / rich text: headings, paragraphs, quotes (incl. nested `>>`), lists (incl. task lists `- [ ]` / `- [x]`), tables, fenced code blocks
-  - 10 hand-crafted card templates (Minimal Magazine, Dark Glass, Vintage Press, Warm Memo, Zen Aesthetic, Acid Bold, Ink Wash, Terminal Code, Editorial Bold, Neon Cyber)
-  - 5 aspect ratios (3:4 / 1:1 / 9:16 / 2.35:1 / 4:3) covering Xiaohongshu, Moments, video covers, and Official Account headers
-  - Code syntax highlighting ([Shiki](https://shiki.style/), lazy-loaded to control bundle size)
-  - Math formulas ([KaTeX](https://katex.org/): inline `$...$` / block `$$...$$`, fonts embedded into exports via `fontEmbedCSS`)
-  - Cross-platform CJK font fallbacks (macOS / Windows / Linux serif / kaiti / sans / mono)
-  - Single source of truth for dimensions (`getCanvasDimensions`)—no hardcoded ratios
+### 1. Card Rendering Engine
+- **Versatile Markdown / Rich Text**: Headings, paragraphs, nested blockquotes (`>>`), ordered/unordered lists, task lists (`- [ ]` / `- [x]`), tables, and fenced code blocks
+- **Image & Text Mixing**: Native Markdown image rendering (`![alt](url)`) and built-in local image upload support in the editor
+- **10 Curated Card Templates**: Minimal Magazine, Dark Glass, Vintage Press, Warm Memo, Zen Aesthetic, Acid Bold, Ink Wash, Terminal Code, Editorial Bold, and Neon Cyber
+- **Multi-Aspect Ratios**: UI prioritizes 3:4 (XHS/WeChat), 1:1 (square), and 9:16 (vertical story); registry preserves 2.35:1 and 4:3 compatibility
+- **Code Syntax Highlighting**: Powered by [Shiki](https://shiki.style/) with on-demand language and WASM loading for export fidelity
+- **Math Formula Rendering**: Powered by [KaTeX](https://katex.org/) supporting inline `$...$` and block `$$...$$` with embedded fonts
+- **Open-Source CJK Font Library**: Integrated Noto Sans SC, Noto Serif SC, LXGW WenKai, and system font stacks with live dropdown preview
+- **Single Source of Truth**: `getCanvasDimensions` provides unified dimensions across canvas stages and export pipelines
 
-- 🛠️ **Content Editor Workbench**
-  - Content form + style toolbar + export panel + header + bottom action bar
-  - 9 content presets for instant inspiration
-  - **Smart matching**: `recommendStyle` heuristically recommends template + aspect ratio + font by block type / length / keywords, with one-click apply and a reasoning tooltip (pure function, no AI dependency)
-  - **Long-text splitting**: capacity estimation by aspect ratio / font size, block-atomic (no block split across cards), deck navigation and "export all" with batch numbering
-  - **Watermark control**: `showWatermark` toggle unified across all 10 templates
-  - Undo / redo history (`useCardHistory`) with `localStorage` persistence and keyboard shortcuts
-  - Real-time overflow warning (`useCardOverflow`) to avoid cropped exports
+### 2. Modern Content Workbench
+- **AI Auto-Fill**: Paste raw articles, notes, news, or memos—LLMs extract structured fields (titles, body, author, date, tag, and style params) and auto-fill the form with undo support
+- **Three-Column Desktop Layout**: Left content editor, middle responsive stage, and right Figma-style collapsible settings panel
+- **Mobile Editor Sheet**: Dedicated bottom drawer editor (`MobileEditorSheet`) for intuitive mobile phone operation
+- **Dark & Light Themes**: Default dark immersion theme with a smooth one-click toggle in the header; fully adapted modals, toasts, and candidate cards
+- **Long-Text Splitting & Multi-Card Decks**:
+  - **Auto Splitting**: Capacity estimation by aspect ratio and font size, block-atomic
+  - **Divider Splitting**: Split manually with `---` in Markdown
+  - **Cover Card Mode**: Turn the first card into a large headline cover card
+- **Smart Style Matching**: `recommendStyle` heuristic engine suggests templates, aspect ratios, and fonts based on content characteristics (pure function, zero external dependencies)
+- **9 Inspiration Presets**: One-click application for quotes, tech, news, and healing notes
+- **History & Overflow Warning**: Undo/redo history with keyboard shortcuts and localStorage persistence; real-time overflow warning
 
-- 🖼️ **High-Res Export & Automation**
-  - In-browser export via `html-to-image`, supporting 2x / 3x scale, PNG / JPEG
-  - **PDF export** (`puppeteer-core`), ideal for long images and multi-card booklets
-  - Puppeteer automation scripts for single / batch export and daily-briefing pipelines
-  - URL hash prefill protocol (`#card=base64url-json`) for one-click content injection from external skills or share links
-
-- 🚀 **Static Deployment (dual-target)**
-  - Pure frontend architecture, statically exported to `out/` via `next build`
-  - One-click deploy to Cloudflare Pages (root path) or GitHub Pages (subpath, auto-built via GitHub Actions)
-  - No backend, zero ops overhead
+### 3. High-Res Export & API Capabilities
+- **Multi-Format Export**: In-browser export via `html-to-image` at 2x / 3x scale, PNG / JPEG downloads, and instant copy to clipboard
+- **Long-Image Stitching**: Seamlessly stitch all cards in a deck into one continuous long image and copy to clipboard
+- **Copy API Parameters**: One-click copy of the active card state as a `POST /api/render` JSON payload for Agents and script automation
+- **Headless Automation**: Puppeteer scripts and `/export` route for daily briefing pipelines and CI automated exports
+- **URL Hash Protocol**: `#card=<base64url-json>` pure client-side injection protocol for instant sharing and skill integration
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-| Layer | Stack | Notes |
+| Layer | Stack | Description |
 | :--- | :--- | :--- |
-| **Frontend** | Next.js 14 (App Router), React 18, TypeScript 5 | Static export, no server runtime |
-| **Styling** | Tailwind CSS, Lucide Icons | Vector icons only, no Emoji in UI |
-| **Card Rendering** | In-house engine + template components | Stage, renderer, template registry |
-| **Markdown** | In-house block parser + Shiki + KaTeX | Headings / quotes / lists / tables / code blocks + syntax highlighting + math |
-| **Image Export** | html-to-image, file-saver | In-browser 2x / 3x PNG / JPEG |
-| **PDF & Automation** | puppeteer-core | PDF export + headless batch scripts |
-| **Deploy** | Cloudflare Pages (wrangler) + GitHub Pages (Actions) | Dual static hosting targets |
-
-> Data layer (Prisma + PostgreSQL), cache/queue (Redis + BullMQ), object storage, and multi-platform publishing APIs are **far-future optional** capabilities not used by the current static card generator. See [Roadmap Phase 5](docs/ROADMAP.md).
+| **Frontend Framework** | Next.js 14 (App Router), React 18, TypeScript 5 | Pure static export with client-side state & persistence |
+| **Styling & UI** | Tailwind CSS, Lucide React | Unified vector icons, strict no-emoji policy |
+| **Open-Source Fonts** | Noto Sans SC, Noto Serif SC, LXGW WenKai | Self-hosted commercially-free Chinese font library |
+| **Rendering Engine** | Custom CardRenderer + CardStage + Registry | Single source of dimensions, adaptive canvas scale |
+| **Rich Text Parsing** | Custom Markdown parser + Shiki + KaTeX | Headings / quotes / lists / tables / math / images |
+| **Image Export** | html-to-image, file-saver | Browser high-res image export & long-image stitching |
+| **Headless Automation** | puppeteer-core | Headless rendering and automated sample generation |
+| **Production API** | Cloudflare Workers (WePost-API) | Single-source `/api/render` endpoint & full service |
+| **Static Hosting** | GitHub Pages (Actions) | Automated CI static preview deployment |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1. Prerequisites
+### 1. Requirements
 
 - Node.js >= 18.18.0 (20.x+ recommended)
 - npm >= 9.x
 - Git
 
-### 2. Setup
+### 2. Clone & Install
 
 ```bash
 git clone https://github.com/zaneven/WePost.git
@@ -125,224 +137,137 @@ cd WePost
 npm install
 ```
 
-### 3. Development
+### 3. Development Server
 
 ```bash
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to open the WePost card workbench.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 4. Production Build
+### 4. Production Build & Tests
 
 ```bash
-# Static export to out/ (root path by default, for Cloudflare Pages)
+# Static export to out/ directory
 npm run build
-```
 
-### 5. Tests
-
-```bash
-npm test           # single run (vitest)
-npm run test:watch
+# Run unit tests
+npm test
 ```
 
 ---
 
-## ☁️ Deployment
+## Deployment
 
-WePost produces a pure static artifact (`output: 'export'` → `out/`) and supports two hosting targets from one codebase: `basePath` / `assetPrefix` in `next.config.mjs` are gated by the `GITHUB_PAGES` env var, injected only for the GitHub Pages subpath so the Cloudflare Pages root-path deploy is unaffected.
+WePost compiles into a static production bundle in `out/` via `next build`.
 
-### Option A: Cloudflare Pages (root path)
+### Static Site (GitHub Pages)
 
-```bash
-npm run deploy          # build + wrangler deploy to the wepost project
-# or a preview branch
-npm run deploy:preview
-```
+Pushing to `main` automatically triggers [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml):
+1. Injects `GITHUB_PAGES=true` to configure subpath base URLs
+2. Generates `out/.nojekyll` and publishes to GitHub Pages
+3. Live URL: <https://zaneven.github.io/WePost/>
 
-### Option B: GitHub Pages (subpath, automated CI)
+### Production Service (wepost.zaneven.com)
 
-Pushing to `main` triggers [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml):
-
-1. Run `next build` with `GITHUB_PAGES=true`, injecting the `/<repo>` subpath
-2. Write `out/.nojekyll` so `_next` and other underscore directories are served
-3. Upload `out/` as the Pages artifact and publish
-
-Live URL: <https://zaneven.github.io/WePost/>
-
-> First-time setup: in **Settings → Pages → Build and deployment → Source**, choose **GitHub Actions** (already configured for this repo).
+The full production service (frontend app + headless rendering worker + Agent API) is consolidated into the `WePost-API` repository:
+- Deployed to Cloudflare Workers with unified domain handling
+- The legacy `npm run deploy` script in this repo has been deprecated in favor of the upstream assembly pipeline
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 WePost/
-├── .github/workflows/         # CI: GitHub Pages auto-deploy
+├── .github/workflows/         # CI/CD: GitHub Pages automated deployment
 ├── .claude/
-│   ├── agents/                # AI Agent role configs
-│   └── skills/wepost-card-gen # Claude skill: text → card in one click
-├── docs/                      # In-depth design docs
-│   ├── ARCHITECTURE.md        # System architecture
-│   ├── CONTRIBUTING.md        # Contribution & collaboration guide
-│   └── ROADMAP.md             # Milestones & roadmap
+│   ├── agents/                # AI Agent role definitions & collaboration rules
+│   └── skills/wepost-card-gen # Claude skill for direct API card generation
+├── docs/                      # Documentation
+│   ├── ARCHITECTURE.md        # Architecture & domain model
+│   ├── CONTRIBUTING.md        # Contribution guidelines
+│   ├── ROADMAP.md             # Project roadmap & milestones
+│   └── samples/               # 20 real export samples (templates & cover cards)
 ├── scripts/                   # Automation scripts
-│   ├── export-card*.mjs       # Puppeteer single / batch export
-│   ├── export-daily.mjs       # Daily-briefing pipeline
-│   └── gen-card-url.mjs       # CardData → prefill URL encoder
+│   ├── gen-template-samples.mjs # Automated sample generator (templates + covers)
+│   ├── template-samples.json    # Sample dataset
+│   ├── export-card*.mjs       # Headless card export scripts
+│   └── export-daily.mjs       # Daily automated briefing export pipeline
 ├── src/
-│   ├── app/                   # Routes & pages (/ and /export)
+│   ├── app/                   # Next.js app router (/ and /export)
 │   ├── components/
-│   │   ├── canvas/            # Stage, renderer, thumbnail
-│   │   ├── templates/         # 10 card templates
-│   │   ├── editor/            # Content form, style toolbar, export panel
-│   │   └── ui/                # Base UI components (Toast, etc.)
+│   │   ├── canvas/            # Stage, CardRenderer, TitleCard, thumbnails
+│   │   ├── templates/         # 10 card template components
+│   │   ├── editor/            # 3-column workbench (ContentForm, SettingsPanel, etc.)
+│   │   └── ui/                # Vector UI components (Toast, etc.)
 │   ├── core/
-│   │   ├── templates/         # Template & aspect-ratio registry (single size source)
-│   │   ├── markdown/          # Markdown block parser
-│   │   ├── split/             # Long-text → multi-card splitting & capacity estimation
-│   │   ├── match/             # Content → template/aspect/font smart recommendation
-│   │   └── export/            # Image / PDF export pipeline
+│   │   ├── fonts.ts           # Open-source font registry & CSS stacks
+│   │   ├── templates/         # Template registry & aspect ratios (single source)
+│   │   ├── split/             # Multi-card deck splitting & capacity engine
+│   │   ├── match/             # Heuristic style recommendation engine
+│   │   └── export/            # Export pipeline & configurations
 │   ├── data/presets.ts        # Content presets
-│   ├── lib/                   # Hooks & utilities (export, history, overflow, inject, filename)
-│   └── types/card.ts          # CardData core type
-├── tests/                     # Automated tests (vitest)
-├── AGENTS.md                  # Agent collaboration & hard constraints
-├── README.md / README.en.md   # Bilingual docs
-└── LICENSE                    # MIT License
+│   ├── lib/                   # Hooks & utilities (aiFill, export, history, overflow)
+│   └── types/card.ts          # Core CardData type definitions
+├── tests/                     # Automated test suites (vitest)
+├── AGENTS.md                  # Agent guidelines & hard constraints
+├── README.md / README.en.md   # Bilingual primary documentation
+└── wrangler.toml              # Deployment configuration
 ```
 
 ---
 
-## 🤖 Agent & Developer Guide (AGENTS.md)
+## AI Agents & wepost-card-gen Skill
 
-This project supports AI-agent-assisted development. All contributors and agents must follow the rules in [AGENTS.md](AGENTS.md):
+### Collaboration Rules (AGENTS.md)
+Every agent and developer follows [AGENTS.md](AGENTS.md):
+1. **Chinese Language**: All plans, discussions, and docs are in Chinese.
+2. **Vector Icons**: Strict ban on Emoji icons in frontend UI; use `Lucide React` vector icons.
+3. **Quality Gates**: Every change must pass `npm test` and `npm run build`.
 
-1. **Unified language**: plans and replies are in Chinese throughout.
-2. **Vector icons**: Emoji is forbidden in the frontend UI; use `Lucide React` vector icons.
-3. **Card prefill contract**: external card data injection must follow the `#card=base64url-json` protocol—see AGENTS.md §5.
-
-Externally, the `wepost-card-gen` Claude skill structures arbitrary text into a card and opens a prefill URL in the browser in one click.
-
----
-
-## 🧩 wepost-card-gen Skill
-
-The repo ships a built-in [`wepost-card-gen`](.claude/skills/wepost-card-gen/SKILL.md) Claude Code skill: give it some text and it structures it into `CardData`, auto-matches a template / aspect ratio / layout, and produces a prefill URL that opens the browser straight to the rendered card — ready to copy to clipboard or download as a high-res image. **No manual field-by-field pasting.**
-
-### Installation
-
-The skill needs a running WePost instance to render cards.
-
-**A. Clone WePost (skill included, recommended)**
-
-```bash
-git clone https://github.com/zaneven/WePost.git
-cd WePost && npm install && npm run dev   # → http://localhost:3000
-```
-
-Open the project in Claude Code — the skill lives at `.claude/skills/wepost-card-gen/` and is auto-discovered, no extra install.
-
-**B. Install the skill directory standalone**
-
-If you only have the skill directory (copied from this repo's `.claude/skills/wepost-card-gen/`), drop it into Claude Code's skills folder:
-
-```bash
-# user-level (available in all projects)
-cp -r wepost-card-gen ~/.claude/skills/
-# or project-level
-cp -r wepost-card-gen <your-project>/.claude/skills/
-```
-
-Or simply hand the `wepost-card-gen` directory to Claude Code and say "install this skill for me" — the agent places it under `.claude/skills/` for you.
-
-> ⚠️ The skill still needs a local WePost dev server running (method A's `npm run dev`) to render — `gen-card-url.mjs` targets `http://localhost:3000` by default.
-
-### How it works
-
-- **Injection channel**: on mount the app reads the URL hash `#card=<base64url-json>` (pure client-side, static-export compatible). Priority: URL hash > last edit in localStorage > default sample.
-- **Encoder**: `scripts/gen-card-url.mjs` reads a CardData JSON file → outputs a prefill URL.
-- **Render target**: local `npm run dev` (default `http://localhost:3000`). The `#card=` protocol also works on the live demo, so you can share cards by URL.
-
-### Triggering
-
-Open this project in Claude Code (the skill travels with the repo — no extra install needed) and just say "make this into a card", "generate a Xiaohongshu image", "pair this with a card image", or "make a daily-briefing image" to auto-trigger; or invoke `/wepost-card-gen` explicitly.
-
-### Two output modes
-
-- **Single card**: one piece of text → one card + prefill URL.
-- **Multi-card series**: a long article or multiple points → split into N same-template cards (first can be a cover), each with its own URL; only the first opens by default, the rest are listed numbered.
-
-### Smart matching (when no template is specified)
-
-| Content type | Template | Aspect |
-|:---|:---|:---|
-| Long-form / thinking / book notes | Minimal Magazine | 3:4 |
-| Quote / saying / poetry / zen | Zen Aesthetic | 3:4 / 1:1 |
-| Daily briefing / industry watch | Vintage Press | 3:4 |
-| Life memo / healing / casual | Warm Memo | 1:1 |
-| Tech / geek / business insight | Dark Glass | 9:16 / 3:4 |
-| Attitude / trendy / youth opinion | Acid Bold | 3:4 |
-| Official Account cover | any | 2.35:1 |
-
-### Quick example
-
-```bash
-# 1. Write CardData JSON to a temp file (generated by the skill)
-# 2. Generate the prefill URL
-node scripts/gen-card-url.mjs /tmp/wepost-card.json
-# → http://localhost:3000/#card=eyJ0aXRsZ...
-
-# 3. Ensure the dev server is running (npm run dev if not)
-# 4. Open the browser (macOS)
-open "http://localhost:3000/#card=..."
-```
-
-Field definitions, body Markdown syntax, aspect-ratio capacity, and multi-card splitting details are in the [skill docs](.claude/skills/wepost-card-gen/SKILL.md).
+### wepost-card-gen Skill
+The repository comes with the [`wepost-card-gen`](.claude/skills/wepost-card-gen/SKILL.md) skill:
+- **Direct API Output**: Calls `POST https://wepost.zaneven.com/api/render` to render cards in the cloud and return image links—**no local dev server or browser required**.
+- **Smart Structuring**: Give raw text, and the agent structures titles, quotes, author, date, tags, and matches the ideal template.
+- **URL Hash Protocol**: Also supports `#card=<base64url-json>` for direct browser preview and sharing.
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
-- [x] **Phase 1: Card generation core** — rendering engine, 10 templates, 5 ratios, editor, image export, undo/redo, URL hash prefill, Cloudflare Pages deploy, test baseline
-- [x] **Phase 2: Rendering & export quality** — Shiki highlighting, KaTeX formulas, tables/nested quotes/task lists, cross-platform CJK font fallbacks, export stability, watermark standardization, template × ratio visual regression snapshots
-- [ ] **Phase 3: Content input & automation (in progress)**
-  - [x] Content → card smart matching (`recommendStyle`)
-  - [x] Long-text → multi-card splitting & batch export
-  - [ ] AI assist: copy polish, summary & quote extraction, cover-card generation
-  - [ ] Batch pipeline productization, preset library expansion
-- [ ] **Phase 4: Sharing & distribution** — card share links, usage analytics
-- [ ] **Phase 5 (far-future optional): Multi-platform publishing matrix** — Official Account / Zhihu / Toutiao / Xiaohongshu
+- [x] **Phase 1: Card Generation Core** — Rendering engine, 10 templates, aspect ratios, editor, image export, undo/redo, URL hash injection
+- [x] **Phase 2: Quality & Rendering Enhancements** — Shiki syntax highlighting, KaTeX math, tables / quotes / task lists, Markdown image support, open-source fonts, visual snapshot tests
+- [ ] **Phase 3: Content Input & Automation (In Progress)**
+  - [x] Content-to-card smart recommendation (`recommendStyle`)
+  - [x] Long-text multi-card splitting (auto capacity & divider) and batch export
+  - [x] Cover card mode (headline cover card generation & headless export)
+  - [x] AI auto-fill (extract structured card data from pasted text)
+  - [x] Multi-card stitched long-image export
+  - [x] Copy API parameters button
+  - [ ] Daily briefing export pipeline productization
+- [ ] **Phase 4: Sharing & Distribution** — URL hash sharing enhancements & lightweight analytics
+- [ ] **Phase 5 (Future Optional): Multi-Platform Matrix** — Adapters for Official Accounts, Zhihu, Toutiao, and Xiaohongshu
 
 See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Issues and Pull Requests are welcome! Please read the [Contributing Guide](docs/CONTRIBUTING.md) and the collaboration constraints in [AGENTS.md](AGENTS.md) first. Ensure `npm test` and `npm run build` pass before submitting.
-
----
-
-## 📄 License
-
-Licensed under the [MIT License](LICENSE) © 2026 WePost Contributors.
+Issues and PRs are welcome! Please check [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) first. Ensure `npm test` and `npm run build` pass before submitting.
 
 ---
 
-## 🔍 Keywords
+## License
 
-> Common search keywords to help discover this project (xiaohongshu image generator / wechat image generator / text-to-image, etc.).
+This project is licensed under the [MIT License](LICENSE) © 2026 WePost Contributors.
 
-**Xiaohongshu**: xiaohongshu image generator · xiaohongshu cover maker · xhs image tool · xiaohongshu note cover · xhs collection cover · redbook image generator
+---
 
-**WeChat**: wechat moments image · wechat 9-grid image · moments caption image · wechat official account cover · official account header maker · wechat channels cover · video account cover · wechat article image · wechat sticker image
+## Keywords
 
-**Text to image**: text to image · text to picture · text-to-image tool · text illustration · sentence to image · text-to-image generator
-
-**Content types**: quote image generator · saying image · quote card · poetry image · daily briefing image · news image maker · morning brief image · code screenshot · dev note image · code snippet to image · code to image
-
-**Image forms**: long image generator · multi-image generator · card image generator · image card · markdown to image · markdown illustration
-
-**General**: social media image tool · content image tool · blog image · article illustration · online image maker · card generator
+**Xiaohongshu**: XHS image generator · XHS cover maker · Xiaohongshu card tool · Social card maker · Note cover generator  
+**WeChat**: Moments quotes · 9-grid image maker · Official Account header · Video account cover · Social card generator  
+**Text to Image**: Text to image · Markdown to image · Quote image maker · Dev notes to image · One sentence to card  
+**Formats**: Long image stitching · Multi-card deck · Cover card · Card generator · Web card workbench

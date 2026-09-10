@@ -201,7 +201,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
             {isExporting
               ? '导出中…'
               : isDeck
-                ? `下载全部 ${cardCount} 张`
+                ? `下载全部 ${cardCount} 张（ZIP）`
                 : `下载 ${config.scale}x ${config.format === 'png' ? 'PNG' : 'JPG'}`}
           </span>
         </button>

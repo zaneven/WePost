@@ -99,6 +99,57 @@ export async function exportCardImage(
 }
 
 /**
+ * 从 dataURL 中提取 base64 载荷（供 JSZip 以 base64 模式写入，省去二次 Blob 转换）。
+ */
+function base64FromDataUrl(dataUrl: string): string {
+  return dataUrl.slice(dataUrl.indexOf(',') + 1);
+}
+
+/**
+ * 多卡批量导出：逐张渲染后打包为单个 zip 下载。
+ *
+ * 浏览器（Chrome / Safari）对一次用户点击触发的多次自动下载有安全限制——
+ * 第一张之后的 saveAs 会被静默拦截（Chrome 需手动允许"下载多个文件"，Safari 直接丢弃），
+ * 导致"下载全部"只能拿到第一张。打包成 zip 后仅触发一次下载，各浏览器均可靠。
+ */
+export async function exportCardsAsZip(
+  elements: HTMLElement[],
+  baseFilename: string = 'wepost-cards',
+  config: ExportConfig = { scale: 2, format: 'png', quality: 0.95 }
+): Promise<void> {
+  await ensureRenderReady();
+
+  const { default: JSZip } = await import('jszip');
+  const zip = new JSZip();
+
+  const pixelRatio = config.scale || 2;
+  const filter = (node: HTMLElement) =>
+    !(node.classList && node.classList.contains('no-export'));
+  const ext = config.format === 'jpeg' ? 'jpg' : 'png';
+
+  for (let i = 0; i < elements.length; i++) {
+    const el = elements[i];
+    const fontEmbedCSS = await computeFontEmbedCSS(el);
+    const options = {
+      pixelRatio,
+      quality: config.quality,
+      cacheBust: true,
+      filter,
+      skipFonts: true,
+      ...(fontEmbedCSS ? { fontEmbedCSS } : {}),
+    };
+    const dataUrl =
+      config.format === 'jpeg' ? await toJpeg(el, options) : await toPng(el, options);
+    // 多卡编号 -1、-2 …；单卡（理论不走此路径）保留原名
+    const name = elements.length > 1 ? `${baseFilename}-${i + 1}` : baseFilename;
+    zip.file(`${name}.${ext}`, base64FromDataUrl(dataUrl), { base64: true });
+  }
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  saveAs(blob, `${baseFilename}.zip`);
+}
+
+/**
  * 将卡片复制到系统剪贴板 (PNG Blob)
  */
 export async function copyCardToClipboard(element: HTMLElement): Promise<boolean> {

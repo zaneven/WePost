@@ -74,23 +74,23 @@ export function useCardExport(initialConfig: ExportConfig = DEFAULT_EXPORT_CONFI
     }
   };
 
-  /** 多卡：逐张编号导出（文件名 -1、-2 …），卡片已在 DOM 中按序排列 */
+  /**
+   * 多卡：逐张渲染后打包为单个 zip 下载（文件名 -1、-2 … 编号在 zip 内）。
+   * 不再逐张 saveAs——浏览器会拦截一次点击触发的多次自动下载，导致只能下载第一张。
+   */
   const handleDownloadAll = async (data: CardData) => {
     const els = getExportElements();
     if (!els.length) return;
 
     try {
       setIsExporting(true);
-      const { exportCardImage } = await import('@/core/export/exporter');
+      const { exportCardsAsZip } = await import('@/core/export/exporter');
       const base = buildCardFilename(data.templateId, data.title);
-      for (let i = 0; i < els.length; i++) {
-        const filename = els.length > 1 ? `${base}-${i + 1}` : base;
-        await exportCardImage(els[i], filename, config);
-      }
-      toast.show(`已导出 ${els.length} 张图片`, 'success');
+      await exportCardsAsZip(els, base, config);
+      toast.show(`已打包 ${els.length} 张图片（ZIP）`, 'success');
     } catch (err) {
       console.error('批量导出失败:', err);
-      toast.show('批量导出失败，请重试', 'error');
+      toast.show('批量打包下载失败，请重试', 'error');
     } finally {
       setIsExporting(false);
     }

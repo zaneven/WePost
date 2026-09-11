@@ -37,7 +37,7 @@ export const WarmMemo: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 标题 */}
         {data.title && (
-          <h1 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight text-[#2d241c] leading-snug">
+          <h1 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight whitespace-pre-line text-[#2d241c] leading-snug">
             {data.title}
           </h1>
         )}

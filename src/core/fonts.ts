@@ -1,4 +1,4 @@
-import type { FontFamilyType } from '@/types/card';
+import type { FontFamilyType, FontWeightType } from '@/types/card';
 
 /**
  * 卡片可选字体注册表（单一数据源）。
@@ -77,3 +77,15 @@ export const FONT_FAMILY_STACKS: Record<FontFamilyType, string> =
 
 /** 全部合法的 fontFamily 值（供 AI 填写白名单等校验方使用） */
 export const FONT_FAMILY_VALUES: FontFamilyType[] = FONT_OPTIONS.map((f) => f.value);
+
+/**
+ * 字重值 → CSS font-weight 数值（CardRenderer 写入 --card-font-weight 变量，
+ * globals.css 的 .wepost-card-font[data-card-weight] 覆盖规则读取）。
+ * 注：部分字体（霞鹜文楷等）仅提供 400/700 字形，500/900 由浏览器就近匹配。
+ */
+export const FONT_WEIGHT_CSS: Record<Exclude<FontWeightType, 'inherit'>, number> = {
+  normal: 400,
+  medium: 500,
+  bold: 700,
+  black: 900,
+};

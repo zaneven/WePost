@@ -13,6 +13,11 @@ export type TemplateId =
   | 'neon-cyber';
 
 export type FontSizeType = 'sm' | 'base' | 'lg' | 'xl';
+/**
+ * 卡片字重。inherit=跟随模板设计（默认，不覆盖模板内硬编码字重）；
+ * 其余值经 .wepost-card-font 覆盖规则全局生效（与 fontFamily 同机制）。
+ */
+export type FontWeightType = 'inherit' | 'normal' | 'medium' | 'bold' | 'black';
 export type AlignType = 'left' | 'center' | 'justify';
 /**
  * 卡片字体。系统字体（sans/serif/mono/kaiti）零加载成本；开源字体（OFL 许可）
@@ -41,6 +46,8 @@ export interface CardData {
   fontSize: FontSizeType;
   align: AlignType;
   fontFamily: FontFamilyType;
+  /** 卡片字重，缺省为 inherit（跟随模板设计）。历史数据 / API 请求可不传 */
+  fontWeight?: FontWeightType;
   /** 单页标题模式：第一页渲染为大标题封面卡，正文内容从第二页开始（仅编辑器多卡预览生效） */
   titlePage?: boolean;
   customBgColor?: string;

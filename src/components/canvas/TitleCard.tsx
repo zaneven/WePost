@@ -196,7 +196,7 @@ export const TitleCard: React.FC<{ data: CardData }> = ({ data }) => {
       {/* 中部：超大标题 + 副标题 */}
       <main className="relative z-10 flex-1 min-h-0 flex flex-col justify-center py-8 break-words">
         {theme.decor?.(accent, data)}
-        <h1 className={theme.title}>{data.title || '输入标题'}</h1>
+        <h1 className={`${theme.title} whitespace-pre-line`}>{data.title || '输入标题'}</h1>
         {data.subtitle && <p className={theme.subtitle}>{data.subtitle}</p>}
       </main>
 

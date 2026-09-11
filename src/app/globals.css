@@ -69,6 +69,14 @@
   font-family: var(--card-font-family) !important;
 }
 
+/* 卡片字重选择（CardData.fontWeight）：仅在用户显式选择字重时生效
+   （CardRenderer 此时才挂 data-card-weight 与 --card-font-weight），
+   inherit / 未传时保持模板自身字重设计。排除集合与字体规则一致 */
+.wepost-card-font[data-card-weight],
+.wepost-card-font[data-card-weight] *:not(pre):not(code):not(.katex):not(.katex *) {
+  font-weight: var(--card-font-weight) !important;
+}
+
 /* Markdown 工具栏横向滚动（隐藏滚动条，可滚动时悬停温和显现） */
 .wepost-toolbar-scroll {
   scrollbar-width: thin;

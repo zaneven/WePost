@@ -58,7 +58,7 @@ export const NeonCyber: React.FC<TemplateProps> = ({ data }) => {
 
         {data.title && (
           <h1
-          className="mt-2 text-2xl md:text-3xl font-black tracking-tight leading-snug bg-clip-text text-transparent"
+          className="mt-2 text-2xl md:text-3xl font-black tracking-tight whitespace-pre-line leading-snug bg-clip-text text-transparent"
           style={{
             backgroundImage: `linear-gradient(90deg, ${cyan}, ${fuchsia})`,
             textShadow: `0 0 24px ${cyan}33`,

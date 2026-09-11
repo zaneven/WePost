@@ -216,6 +216,7 @@ export const INITIAL_CARD_DATA: CardData = {
   fontSize: 'base',
   align: 'left',
   fontFamily: 'serif',
+  fontWeight: 'inherit',
   showWatermark: true,
   watermarkText: 'WEPOST · CARD',
 };

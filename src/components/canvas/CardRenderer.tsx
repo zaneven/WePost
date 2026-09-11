@@ -1,7 +1,7 @@
 import React from 'react';
 import { CardData } from '@/types/card';
 import { getCanvasDimensions } from '@/core/templates/registry';
-import { FONT_FAMILY_STACKS } from '@/core/fonts';
+import { FONT_FAMILY_STACKS, FONT_WEIGHT_CSS } from '@/core/fonts';
 import { MinimalMagazine } from '../templates/MinimalMagazine';
 import { DarkGlass } from '../templates/DarkGlass';
 import { VintageNews } from '../templates/VintageNews';
@@ -41,6 +41,10 @@ export const CardRenderer: React.FC<CardRendererProps> = ({
   // 根据比例获取容器基础尺寸 (逻辑像素，统一数据源: registry)
   const { width, height } = getCanvasDimensions(data.aspectRatio);
 
+  // 字重：inherit / 未传时不挂 data-card-weight，保持模板自身字重设计（globals.css 门控）
+  const fontWeight =
+    data.fontWeight && data.fontWeight !== 'inherit' ? data.fontWeight : undefined;
+
   const renderTemplate = () => {
     switch (data.templateId) {
       case 'minimal-magazine':
@@ -75,12 +79,15 @@ export const CardRenderer: React.FC<CardRendererProps> = ({
       id={exportable ? (index === 0 ? 'wepost-card-export-target' : `wepost-card-export-target-${index}`) : undefined}
       data-wepost-card={exportable ? true : undefined}
       data-card-index={exportable ? index : undefined}
+      data-card-weight={fontWeight}
       className="wepost-card-font relative flex-shrink-0 overflow-hidden"
       style={{
         width: `${width}px`,
         height: `${height}px`,
         // 字体选择：经 .wepost-card-font 覆盖模板内硬编码字体（globals.css）
         '--card-font-family': CARD_FONT_STACKS[data.fontFamily],
+        // 字重选择：显式选择时写入，经 [data-card-weight] 覆盖规则全局生效
+        ...(fontWeight ? { '--card-font-weight': FONT_WEIGHT_CSS[fontWeight] } : {}),
       } as React.CSSProperties}
     >
       {cover ? <TitleCard data={data} /> : renderTemplate()}

@@ -44,7 +44,7 @@ export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 标题 */}
         {data.title && (
-          <h1 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight text-white leading-snug">
+          <h1 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight whitespace-pre-line text-white leading-snug">
             {data.title}
           </h1>
         )}

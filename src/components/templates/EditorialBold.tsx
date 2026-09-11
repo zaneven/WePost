@@ -32,7 +32,7 @@ export const EditorialBold: React.FC<TemplateProps> = ({ data }) => {
         )}
 
         {data.title && (
-          <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight text-black leading-[1.1] uppercase">
+          <h1 className="mt-2 text-3xl md:text-4xl font-black tracking-tight whitespace-pre-line text-black leading-[1.1] uppercase">
             {data.title}
           </h1>
         )}

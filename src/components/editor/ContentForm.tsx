@@ -444,7 +444,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
               <Type className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" aria-hidden="true" />
               主标题
             </span>
-            <span className="text-[11px] text-neutral-500 font-normal">支持核心观点</span>
+            <span className="text-[11px] text-neutral-500 font-normal">支持换行 · 核心观点</span>
           </label>
           <textarea
             id="card-title"

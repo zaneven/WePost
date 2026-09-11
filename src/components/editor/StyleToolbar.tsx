@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   CardData,
-  FontSizeType
+  FontSizeType,
+  FontWeightType
 } from '@/types/card';
 import { TEMPLATES, ASPECT_RATIOS } from '@/core/templates/registry';
 import { FONT_OPTIONS } from '@/core/fonts';
@@ -325,6 +326,35 @@ export const StyleToolbar: React.FC<StyleToolbarProps> = ({
               >
                 <span>{size.label}</span>
                 <span className="opacity-60 ml-0.5 font-mono text-[10px]">{size.px}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 字重：inherit=跟随模板设计（不覆盖模板内硬编码字重） */}
+        <div>
+          <label className={subLabelClass}>字重</label>
+          <div className={segContainer}>
+            {([
+              { value: 'inherit', label: '模板', css: undefined },
+              { value: 'normal', label: '常规', css: 400 },
+              { value: 'medium', label: '中等', css: 500 },
+              { value: 'bold', label: '加粗', css: 700 },
+              { value: 'black', label: '特粗', css: 900 },
+            ] as { value: FontWeightType; label: string; css?: number }[]).map((weight) => (
+              <button
+                key={weight.value}
+                type="button"
+                onClick={() => onChange({ fontWeight: weight.value })}
+                title={weight.css ? `${weight.label} · ${weight.css}` : '跟随模板设计'}
+                className={`py-1.5 px-2 flex-1 ${segBtn((data.fontWeight ?? 'inherit') === weight.value)}`}
+              >
+                <span style={weight.css ? { fontWeight: weight.css } : undefined}>
+                  {weight.label}
+                </span>
+                <span className="opacity-60 ml-0.5 font-mono text-[10px]">
+                  {weight.css ?? '—'}
+                </span>
               </button>
             ))}
           </div>

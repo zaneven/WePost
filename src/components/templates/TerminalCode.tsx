@@ -32,7 +32,7 @@ export const TerminalCode: React.FC<TemplateProps> = ({ data }) => {
         </div>
 
         {data.title && (
-          <h1 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight text-white leading-snug">
+          <h1 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight whitespace-pre-line text-white leading-snug">
             <span className="text-[#6e7681]"># </span>
             {data.title}
           </h1>

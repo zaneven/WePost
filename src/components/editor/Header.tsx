@@ -96,7 +96,9 @@ export const Header: React.FC<HeaderProps> = React.memo(
           <div className="h-4 w-[1px] bg-neutral-200 dark:bg-neutral-800 mx-0.5 hidden sm:block" />
 
           <a
-            href="/agent"
+            href="https://wepost.zaneven.com/agent"
+            target="_blank"
+            rel="noopener noreferrer"
             title="Agent 接入说明"
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 hover:bg-neutral-200 hover:text-neutral-900 border border-neutral-200 dark:text-neutral-300 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white dark:border-neutral-800 rounded-lg transition-all"
           >

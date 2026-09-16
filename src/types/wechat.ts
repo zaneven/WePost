@@ -19,6 +19,8 @@ export interface WeChatPublishForm {
   author: string;
   /** 摘要（微信限制 0~120 字符） */
   digest: string;
+  /** 草稿类型：newspic=贴图号（小红书多图轮播） | news=传统图文文章 */
+  draftType: 'newspic' | 'news';
   /** 正文内容组织模式：仅卡片图 | 卡片图 + 文字排版 */
   contentMode: 'image-only' | 'image-with-text';
   /** 是否开启评论 (1=开启, 0=不开启) */
@@ -62,6 +64,12 @@ export interface WeChatArticlePayload {
   digest?: string;
   content: string;
   thumb_media_id: string;
+  /** 文章类型：newspic=贴图号图片消息 | news=图文文章 */
+  article_type?: 'news' | 'newspic';
+  /** 贴图号专属：多张永久素材图片集合（最多 20 张） */
+  image_info?: {
+    image_list: Array<{ image_media_id: string }>;
+  };
   need_open_comment?: number;
   only_fans_can_comment?: number;
   content_source_url?: string;

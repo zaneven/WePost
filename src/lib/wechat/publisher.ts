@@ -7,6 +7,7 @@ import {
   WeChatApiError,
 } from '@/types/wechat';
 import { extractIpFromWeChatError } from './ip';
+import { stripMarkdown } from './markdown';
 
 const DEFAULT_PROXY_ENDPOINT = '/api/wechat/proxy';
 
@@ -219,7 +220,9 @@ export function buildDraftArticleHtml(
     )
     .join('');
 
-  if (mode === 'image-only' || !textContent?.trim()) {
+  const cleanText = stripMarkdown(textContent);
+
+  if (mode === 'image-only' || !cleanText.trim()) {
     return `
       <section style="margin: 0 auto; max-width: 677px; padding: 12px 4px; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
         ${imageSection}
@@ -227,8 +230,8 @@ export function buildDraftArticleHtml(
     `.trim();
   }
 
-  // 纯文本换行转段落
-  const paragraphs = textContent
+  // 纯文本换行转段落（已去除 Markdown 格式标记）
+  const paragraphs = cleanText
     .split(/\n+/)
     .map((p) => p.trim())
     .filter(Boolean)
@@ -268,7 +271,7 @@ export interface PublishExecutionParams {
 }
 
 /**
- * 完整发布流水线编排
+ * 完整发布流水线编排（支持 newspic 贴图号 与 news 经典图文）
  */
 export async function publishCardsToDraft(
   params: PublishExecutionParams
@@ -283,6 +286,60 @@ export async function publishCardsToDraft(
   onStep?.('authenticating', '正在验证微信 AppID 与 Secret...');
   const token = await getAccessToken(config.appId, config.appSecret, config.proxyUrl);
 
+  const isNewspic = form.draftType === 'newspic';
+
+  if (isNewspic) {
+    // —— 分支 A: 贴图号（图片消息 newspic，小红书多图轮播模式，推荐） ——
+    // 微信要求贴图号的每一张图片都必须是永久素材的 media_id，最多支持 20 张
+    const countToUpload = Math.min(cardBlobs.length, 20);
+    onStep?.(
+      'uploading_cover',
+      `正在上传卡片永久素材 (共 ${countToUpload} 张贴图)...`
+    );
+
+    const permanentMediaIds: string[] = [];
+    for (let i = 0; i < countToUpload; i++) {
+      onStep?.(
+        'uploading_cover',
+        `正在上传第 ${i + 1}/${countToUpload} 张永久图片素材...`
+      );
+      const mediaId = await uploadCoverMaterial(token, cardBlobs[i], config.proxyUrl);
+      permanentMediaIds.push(mediaId);
+    }
+
+    // 正文去除 markdown 标记的纯文本说明（微信贴图号 content 为纯文本描述）
+    const cleanCaption =
+      form.contentMode === 'image-with-text' ? stripMarkdown(textContent) : '';
+
+    onStep?.('creating_draft', '正在提交至微信草稿箱（贴图号模式）...');
+    const articlePayload: WeChatArticlePayload = {
+      article_type: 'newspic',
+      title: form.title.trim() || 'WePost 社交卡片',
+      author: form.author.trim() || config.authorDefault || '',
+      digest: form.digest.trim(),
+      content: cleanCaption,
+      thumb_media_id: permanentMediaIds[0],
+      image_info: {
+        image_list: permanentMediaIds.map((id) => ({ image_media_id: id })),
+      },
+      need_open_comment: form.needOpenComment ?? 0,
+      only_fans_can_comment: form.onlyFansCanComment ?? 0,
+    };
+
+    const draftMediaId = await addDraft(token, articlePayload, config.proxyUrl);
+    const previewUrl = await getDraftPreviewUrl(token, draftMediaId, config.proxyUrl);
+    onStep?.('success', '贴图号发布成功！已保存至公众号草稿箱。');
+
+    return {
+      mediaId: draftMediaId,
+      previewUrl,
+      title: articlePayload.title,
+      author: articlePayload.author || '',
+      thumbMediaId: permanentMediaIds[0],
+    };
+  }
+
+  // —— 分支 B: 传统图文文章 (news) ——
   // 阶段 2: 上传封面素材 (取第一张卡片作为封面图)
   onStep?.('uploading_cover', '正在上传草稿箱封面图片...');
   const coverBlob = cardBlobs[0];
@@ -302,12 +359,13 @@ export async function publishCardsToDraft(
     cdnUrls.push(cdnUrl);
   }
 
-  // 阶段 4: 组装正文 HTML
+  // 阶段 4: 组装正文 HTML（段落已清理 Markdown）
   const contentHtml = buildDraftArticleHtml(cdnUrls, textContent, form.contentMode);
 
   // 阶段 5: 提交至草稿箱
   onStep?.('creating_draft', '正在保存到微信公众号草稿箱...');
   const articlePayload: WeChatArticlePayload = {
+    article_type: 'news',
     title: form.title.trim() || 'WePost 精美卡片',
     author: form.author.trim() || config.authorDefault || '',
     digest: form.digest.trim(),
@@ -318,11 +376,8 @@ export async function publishCardsToDraft(
   };
 
   const draftMediaId = await addDraft(token, articlePayload, config.proxyUrl);
-
-  // 阶段 6: 尝试拉取临时预览链接
   const previewUrl = await getDraftPreviewUrl(token, draftMediaId, config.proxyUrl);
-
-  onStep?.('success', '发布到草稿箱成功！');
+  onStep?.('success', '图文文章发布成功！已保存至公众号草稿箱。');
 
   return {
     mediaId: draftMediaId,

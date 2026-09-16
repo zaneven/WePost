@@ -125,11 +125,11 @@ export const WeChatPublishModal: React.FC<WeChatPublishModalProps> = ({
 
     // 初始化表单默认值
     setForm({
-      title: cardData.title?.trim() || 'WePost 社交卡片',
-      author: (cardData.author?.trim() || saved?.authorDefault || '').slice(0, 8),
+      title: (cardData.title?.trim() || 'WePost 社交卡片').slice(0, 32),
+      author: (cardData.author?.trim() || saved?.authorDefault || '').slice(0, 16),
       digest: cardData.subtitle?.trim() || cardData.content.slice(0, 50).trim() || '',
       draftType: 'newspic',
-      contentMode: 'image-only',
+      contentMode: cardData.content?.trim() ? 'image-with-text' : 'image-only',
     });
 
     setPublishStep('idle');
@@ -478,8 +478,8 @@ export const WeChatPublishModal: React.FC<WeChatPublishModalProps> = ({
                     type="text"
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    maxLength={64}
-                    placeholder="输入微信文章标题（必填）"
+                    maxLength={32}
+                    placeholder="输入微信文章标题（必填，最多 32 字）"
                     className={`w-full px-3.5 py-2 text-xs rounded-lg border outline-none transition-all ${
                       dark
                         ? 'bg-neutral-950 border-neutral-800 focus:border-emerald-500 text-white'
@@ -541,8 +541,8 @@ export const WeChatPublishModal: React.FC<WeChatPublishModalProps> = ({
                       type="text"
                       value={form.author}
                       onChange={(e) => setForm({ ...form, author: e.target.value })}
-                      maxLength={8}
-                      placeholder="选填（最多 8 字）"
+                      maxLength={16}
+                      placeholder="选填（最多 16 字）"
                       className={`w-full px-3.5 py-2 text-xs rounded-lg border outline-none transition-all ${
                         dark
                           ? 'bg-neutral-950 border-neutral-800 focus:border-emerald-500 text-white'

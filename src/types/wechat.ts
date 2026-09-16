@@ -63,7 +63,8 @@ export interface WeChatArticlePayload {
   author?: string;
   digest?: string;
   content: string;
-  thumb_media_id: string;
+  /** 图文消息必填封面素材ID，newspic 贴图号无需此字段 */
+  thumb_media_id?: string;
   /** 文章类型：newspic=贴图号图片消息 | news=图文文章 */
   article_type?: 'news' | 'newspic';
   /** 贴图号专属：多张永久素材图片集合（最多 20 张） */

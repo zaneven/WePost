@@ -309,18 +309,26 @@ export async function publishCardsToDraft(
       permanentMediaIds.push(mediaId);
     }
 
-    // 正文去除 markdown 标记的纯文本说明（微信贴图号 content 为纯文本描述）
-    const cleanCaption =
-      form.contentMode === 'image-with-text' ? stripMarkdown(textContent) : '';
+    const titleText = (form.title.trim() || 'WePost 社交卡片').slice(0, 32);
+    const authorText = (form.author.trim() || config.authorDefault || '').slice(0, 16);
+    const cleanText = stripMarkdown(textContent);
+
+    // 微信图片消息（贴图号）在移动端展示逻辑为：图片轮播 + 下方正文描述。
+    // 在微信公众平台后台的草稿箱列表中，图片消息没有单独标题栏，其列表展示名称直接截取自正文第一行。
+    // 因此必须将标题置于正文描述首行，保证微信后台草稿列表与手机端读者均能清晰看到标题。
+    let cleanCaption = '';
+    if (form.contentMode === 'image-with-text' && cleanText.trim()) {
+      cleanCaption = `${titleText}\n\n${cleanText.trim()}`;
+    } else {
+      cleanCaption = titleText;
+    }
 
     onStep?.('creating_draft', '正在提交至微信草稿箱（贴图号模式）...');
     const articlePayload: WeChatArticlePayload = {
       article_type: 'newspic',
-      title: (form.title.trim() || 'WePost 社交卡片').slice(0, 64),
-      author: (form.author.trim() || config.authorDefault || '').slice(0, 8),
-      digest: form.digest.trim().slice(0, 120),
+      title: titleText,
+      author: authorText,
       content: cleanCaption,
-      thumb_media_id: permanentMediaIds[0],
       image_info: {
         image_list: permanentMediaIds.map((id) => ({ image_media_id: id })),
       },
@@ -366,10 +374,12 @@ export async function publishCardsToDraft(
 
   // 阶段 5: 提交至草稿箱
   onStep?.('creating_draft', '正在保存到微信公众号草稿箱...');
+  const titleText = (form.title.trim() || 'WePost 精美卡片').slice(0, 32);
+  const authorText = (form.author.trim() || config.authorDefault || '').slice(0, 16);
   const articlePayload: WeChatArticlePayload = {
     article_type: 'news',
-    title: (form.title.trim() || 'WePost 精美卡片').slice(0, 64),
-    author: (form.author.trim() || config.authorDefault || '').slice(0, 8),
+    title: titleText,
+    author: authorText,
     digest: form.digest.trim().slice(0, 120),
     content: contentHtml,
     thumb_media_id: thumbMediaId,

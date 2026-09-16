@@ -220,4 +220,13 @@ describe('MarkdownRenderer 图片语法', () => {
     const c = renderContent('普通段落，含感叹号! 与方括号 [x] 但不是图片');
     expect(c.querySelector('img')).toBeNull();
   });
+
+  it('段落中间的分割线正常渲染，首尾的分割线被忽略避免页面顶部/底部空白横线', () => {
+    // 首尾含 ---，中间也含 ---
+    const c = renderContent('---\n\n第一段\n\n---\n\n第二段\n\n---');
+    // 只有一个中间的分割线被渲染
+    const hrs = c.querySelectorAll('.my-6.py-2');
+    expect(hrs).toHaveLength(1);
+    expect(c.querySelectorAll('p')).toHaveLength(2);
+  });
 });

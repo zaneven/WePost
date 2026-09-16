@@ -17,7 +17,11 @@ export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
 
       {/* 顶部标签与终端感 Header */}
       <header className="relative z-10">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800/80">
+        <div
+          className={`flex items-center justify-between ${
+            data.title || data.subtitle ? 'pb-4 border-b border-slate-800/80' : 'pb-1'
+          }`}
+        >
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />

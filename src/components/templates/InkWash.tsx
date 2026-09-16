@@ -25,7 +25,11 @@ export const InkWash: React.FC<TemplateProps> = ({ data }) => {
       <span className="absolute top-8 right-8 w-3 h-16 bg-[#9b2222] rounded-sm" />
 
       <header className="relative z-10">
-        <div className="flex items-center gap-2 pb-5 border-b border-stone-400/40">
+        <div
+          className={`flex items-center gap-2 ${
+            data.title || data.subtitle ? 'pb-5 border-b border-stone-400/40' : 'pb-2'
+          }`}
+        >
           <span className="w-1.5 h-1.5 rounded-full bg-[#9b2222]" />
           <span className="text-xs tracking-[0.4em] uppercase text-stone-600 font-serif">
             {data.tag || '水墨 · 留白'}

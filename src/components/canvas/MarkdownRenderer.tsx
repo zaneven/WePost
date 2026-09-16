@@ -474,7 +474,22 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
 
       const blocks = parseBlocks(content);
 
+      // 计算首尾有效内容块索引：卡片作为独立画板，页面最顶部或最底部的分割线无排版意义，跳过不渲染
+      let firstContentIdx = 0;
+      while (firstContentIdx < blocks.length && blocks[firstContentIdx].type === 'hr') {
+        firstContentIdx++;
+      }
+      let lastContentIdx = blocks.length - 1;
+      while (lastContentIdx >= 0 && blocks[lastContentIdx].type === 'hr') {
+        lastContentIdx--;
+      }
+
       return blocks.map((block, bIndex) => {
+        // 卡片首尾的 hr 块直接跳过
+        if (block.type === 'hr' && (bIndex < firstContentIdx || bIndex > lastContentIdx)) {
+          return null;
+        }
+
         switch (block.type) {
           // 1. 分割线 (--- 或 *** 或 ___)
           case 'hr':

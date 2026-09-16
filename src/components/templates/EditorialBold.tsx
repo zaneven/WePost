@@ -15,7 +15,11 @@ export const EditorialBold: React.FC<TemplateProps> = ({ data }) => {
   return (
     <CardLayout className="bg-white text-[#0a0a0a] p-9 md:p-12 font-sans border-t-8 border-[#dc2626] shadow-2xl">
       <header className="relative z-10">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-black">
+        <div
+          className={`flex items-center justify-between ${
+            data.title || data.subtitle ? 'pb-3 border-b-2 border-black' : 'pb-1'
+          }`}
+        >
           <span className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.3em] text-[#dc2626]">
             <span className="w-2.5 h-2.5 bg-[#dc2626]" />
             {data.tag || 'OPINION'}

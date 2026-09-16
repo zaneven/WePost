@@ -13,7 +13,11 @@ export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
     <CardLayout className="bg-[#fcfbf9] text-[#1a1a1a] p-8 md:p-10 font-serif border border-neutral-200/80 shadow-2xl">
       {/* 顶部极简网格与期刊头 */}
       <header className="relative z-10">
-        <div className="flex items-center justify-between border-b border-neutral-800/80 pb-3">
+        <div
+          className={`flex items-center justify-between ${
+            data.title || data.subtitle ? 'border-b border-neutral-800/80 pb-3' : 'pb-1'
+          }`}
+        >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 bg-neutral-900 rotate-45" />
             <span className="font-mono text-xs tracking-[0.3em] uppercase text-neutral-600 font-semibold">

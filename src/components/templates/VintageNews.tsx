@@ -46,7 +46,7 @@ export const VintageNews: React.FC<TemplateProps> = ({ data }) => {
 
       {/* 中间正文 */}
       <main className="my-auto min-h-0 overflow-hidden py-4 relative z-10 px-2">
-        <div className="border-t border-b border-[#c4ab8f] py-4">
+        <div className={`border-b border-[#c4ab8f] py-4 ${data.title ? 'border-t' : ''}`}>
           <MarkdownRenderer
             content={data.content}
             fontSize={data.fontSize}

@@ -37,7 +37,11 @@ export const NeonCyber: React.FC<TemplateProps> = ({ data }) => {
       />
 
       <header className="relative z-10">
-        <div className="flex items-center justify-between pb-3 border-b border-[#2a2a4a]">
+        <div
+          className={`flex items-center justify-between ${
+            data.title || data.subtitle ? 'pb-3 border-b border-[#2a2a4a]' : 'pb-1'
+          }`}
+        >
           <span
             className="text-xs font-mono uppercase tracking-[0.35em]"
             style={{ color: cyan, textShadow: `0 0 8px ${cyan}88` }}

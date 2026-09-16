@@ -160,4 +160,12 @@ describe('splitContentByDivider', () => {
     const content = '| a | b |\n| --- | --- |\n| 1 | 2 |';
     expect(splitContentByDivider(content)).toEqual([content]);
   });
+
+  it('支持包含空格的标准分割线（- - - / * * *）并清理片段边缘多余分割线', () => {
+    const content = '第一页\n\n- - -\n\n第二页\n\n* * *\n\n第三页';
+    expect(splitContentByDivider(content)).toEqual(['第一页', '第二页', '第三页']);
+
+    const messy = '第一页\n---\n---\n第二页\n---';
+    expect(splitContentByDivider(messy)).toEqual(['第一页', '第二页']);
+  });
 });

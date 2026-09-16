@@ -582,7 +582,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => insertMarkdown('\n---\n')}
+              onClick={() => insertRaw('\n\n---\n\n')}
               title="分割线 ---"
               aria-label="分割线"
               className="px-1 py-0.5 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 hover:bg-neutral-200/80 dark:hover:text-white dark:hover:bg-neutral-700/60 rounded"

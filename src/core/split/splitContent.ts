@@ -245,14 +245,22 @@ export function splitContentIntoCards(
 }
 
 /**
- * 按分割线（--- / *** / ___，独占一行）把内容切分为多卡。
- * 分割线本身不保留；切分后空片段（首尾 / 连续分割线产生的）被丢弃。
+ * 按分割线（--- / *** / ___ / - - -，独占一行）把内容切分为多卡。
+ * 分割线本身不保留；切分后空片段与片段首尾残留的分割线行均被彻底清理。
  * @returns 字符串数组，每项为一张卡片的 content；无分割线时返回原内容单项数组。
  */
 export function splitContentByDivider(content: string): string[] {
   if (!content.trim()) return [content];
-  const segments = content.split(/^[\t ]*[-*_]{3,}[\t ]*$/gm);
-  const cards = segments.map((s) => s.trim()).filter((s) => s.length > 0);
+  const dividerRegex = /^[\t ]*(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})[\t ]*$/gm;
+  const segments = content.split(dividerRegex);
+  const cards = segments
+    .map((s) => {
+      let cleaned = s.trim();
+      cleaned = cleaned.replace(/^(?:[\t ]*(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})[\t ]*\n?)+/, '');
+      cleaned = cleaned.replace(/(?:\n?[\t ]*(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})[\t ]*)+$/, '');
+      return cleaned.trim();
+    })
+    .filter((s) => s.length > 0);
   return cards.length ? cards : [content];
 }
 

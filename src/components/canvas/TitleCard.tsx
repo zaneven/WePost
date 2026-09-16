@@ -22,8 +22,26 @@ interface CoverTheme {
   footer: string;
   /** 强调色（装饰 / 分隔线 / 水印） */
   accent: string;
-  /** 模板专属装饰（渲染在标题上方 / 下方） */
+  /** 全卡片级外框/背景装饰（渲染在卡片根节点下，如外框、全局光晕、印章） */
+  frame?: (accent: string, data: CardData) => React.ReactNode;
+  /** 标题上方局部装饰（短横线、标点符号、图标等） */
   decor?: (accent: string, data: CardData) => React.ReactNode;
+}
+
+/** 动态自适应标题字号：防止中长标题在封面模式下刺穿边框或排版爆框 */
+function getResponsiveTitleClass(title: string, defaultClass: string): string {
+  const len = (title || '').trim().length;
+  if (len > 18) {
+    return defaultClass
+      .replace(/text-\[\d+px\]/, 'text-[28px]')
+      .replace(/leading-\[[^\]]+\]/, 'leading-[1.28]');
+  }
+  if (len > 10) {
+    return defaultClass
+      .replace(/text-\[\d+px\]/, 'text-[36px]')
+      .replace(/leading-\[[^\]]+\]/, 'leading-[1.22]');
+  }
+  return defaultClass;
 }
 
 const COVER_THEMES: Record<TemplateId, CoverTheme> = {
@@ -49,25 +67,35 @@ const COVER_THEMES: Record<TemplateId, CoverTheme> = {
     subtitle: 'mt-5 text-lg tracking-[0.2em] text-slate-400',
     footer: 'text-xs text-slate-400 border-t border-slate-800 pt-5',
     accent: '#22d3ee',
+    frame: () => (
+      <div
+        className="absolute -top-24 -right-24 w-64 h-64 rounded-full opacity-25 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #22d3ee 0%, transparent 70%)' }}
+      />
+    ),
     decor: () => (
-      <>
-        <div
-          className="absolute -top-24 -right-24 w-64 h-64 rounded-full opacity-25 blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #22d3ee 0%, transparent 70%)' }}
-        />
-        <div className="mb-6 h-[2px] w-14 bg-cyan-400 shadow-[0_0_12px_#22d3ee]" />
-      </>
+      <div className="mb-6 h-[2px] w-14 bg-cyan-400 shadow-[0_0_12px_#22d3ee]" />
     ),
   },
   'vintage-news': {
-    wrapper: 'bg-[#f6eee3] text-[#3d2e1e] p-10 shadow-2xl',
+    wrapper: 'bg-[#f6eee3] text-[#3d2e1e] p-10 shadow-2xl font-serif',
     meta: 'font-mono text-xs tracking-[0.25em] uppercase text-[#8a6f4d]',
-    title: 'text-[48px] leading-[1.18] font-bold tracking-tight text-[#2c2416]',
+    title: 'text-[44px] leading-[1.2] font-bold tracking-tight text-[#2c2416]',
     subtitle: 'mt-5 text-base font-mono uppercase tracking-[0.2em] text-[#8a6f4d]',
     footer: 'text-xs text-[#6b5836] border-t-2 border-[#3d2e1e]/40 pt-5',
     accent: '#3d2e1e',
+    // 全卡片级经典报纸双边框：绝对定位在根容器下，内容位于边框内侧留白中，绝不发生文字溢出穿透
+    frame: () => (
+      <>
+        <div className="absolute inset-3 border border-[#8a7258]/60 pointer-events-none" />
+        <div className="absolute inset-4 border-2 border-[#3d2e1e] pointer-events-none" />
+      </>
+    ),
     decor: () => (
-      <div className="absolute inset-3 border-2 border-[#3d2e1e]/50 pointer-events-none" />
+      <div className="mb-4 flex items-center gap-2">
+        <div className="h-[2px] w-8 bg-[#3d2e1e]" />
+        <div className="h-[1px] w-12 bg-[#8a7258]" />
+      </div>
     ),
   },
   'warm-memo': {
@@ -114,16 +142,16 @@ const COVER_THEMES: Record<TemplateId, CoverTheme> = {
     subtitle: 'mt-6 text-lg tracking-[0.3em] text-stone-500',
     footer: 'text-xs text-stone-600 border-t border-stone-300/60 pt-5',
     accent: '#b91c1c',
-    decor: (_accent, data) => (
-      <div className="absolute top-10 right-10 flex flex-col items-center gap-3">
-        {/* 朱砂方印：取署名 / 水印前 2 字 */}
+    frame: (_accent, data) => (
+      <div className="absolute top-8 right-8 flex flex-col items-center gap-2 pointer-events-none">
+        {/* 朱砂方印：取署名 / 水印前 2 字，固定在卡片右上角 */}
         <div
-          className="w-14 h-14 flex items-center justify-center text-white text-xl font-bold rounded-sm"
+          className="w-12 h-12 flex items-center justify-center text-white text-lg font-bold rounded-sm shadow-sm"
           style={{ backgroundColor: '#b91c1c' }}
         >
           {(data.watermarkText || data.author || '清心').slice(0, 2)}
         </div>
-        <div className="w-px h-24 bg-stone-400/50" />
+        <div className="w-px h-16 bg-stone-400/50" />
       </div>
     ),
   },
@@ -162,17 +190,17 @@ const COVER_THEMES: Record<TemplateId, CoverTheme> = {
     subtitle: 'mt-5 text-base font-mono tracking-[0.25em] text-fuchsia-400/90',
     footer: 'text-xs font-mono text-slate-400 border-t border-[#1e1e3f] pt-5',
     accent: '#22d3ee',
+    frame: () => (
+      <div
+        className="absolute -bottom-28 -left-28 w-72 h-72 rounded-full opacity-20 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #e879f9 0%, transparent 70%)' }}
+      />
+    ),
     decor: () => (
-      <>
-        <div
-          className="absolute -bottom-28 -left-28 w-72 h-72 rounded-full opacity-20 blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #e879f9 0%, transparent 70%)' }}
-        />
-        <div className="mb-6 flex items-center gap-2 font-mono">
-          <span className="w-2.5 h-2.5 bg-cyan-400 shadow-[0_0_10px_#22d3ee]" />
-          <span className="h-px w-16 bg-gradient-to-r from-cyan-400 to-fuchsia-500" />
-        </div>
-      </>
+      <div className="mb-6 flex items-center gap-2 font-mono">
+        <span className="w-2.5 h-2.5 bg-cyan-400 shadow-[0_0_10px_#22d3ee]" />
+        <span className="h-px w-16 bg-gradient-to-r from-cyan-400 to-fuchsia-500" />
+      </div>
     ),
   },
 };
@@ -180,11 +208,15 @@ const COVER_THEMES: Record<TemplateId, CoverTheme> = {
 export const TitleCard: React.FC<{ data: CardData }> = ({ data }) => {
   const theme = COVER_THEMES[data.templateId] ?? COVER_THEMES['minimal-magazine'];
   const accent = theme.accent;
+  const responsiveTitleClass = getResponsiveTitleClass(data.title, theme.title);
 
   return (
     <div
       className={`w-full h-full flex flex-col justify-between relative overflow-hidden select-none ${theme.wrapper}`}
     >
+      {/* 0. 全卡片级外框与背景装饰（报刊外框、印章、光晕等，绝对定位在整卡根节点） */}
+      {theme.frame?.(accent, data)}
+
       {/* 顶部：分类标签 + 日期 / 期数 */}
       <header className="relative z-10 flex items-start justify-between gap-4">
         <span className={theme.meta}>{data.tag || 'WEPOST'}</span>
@@ -194,9 +226,11 @@ export const TitleCard: React.FC<{ data: CardData }> = ({ data }) => {
       </header>
 
       {/* 中部：超大标题 + 副标题 */}
-      <main className="relative z-10 flex-1 min-h-0 flex flex-col justify-center py-8 break-words">
+      <main className="relative z-10 flex-1 min-h-0 flex flex-col justify-center py-6 break-words [overflow-wrap:anywhere]">
         {theme.decor?.(accent, data)}
-        <h1 className={`${theme.title} whitespace-pre-line`}>{data.title || '输入标题'}</h1>
+        <h1 className={`${responsiveTitleClass} whitespace-pre-line break-words [overflow-wrap:anywhere]`}>
+          {data.title || '输入标题'}
+        </h1>
         {data.subtitle && <p className={theme.subtitle}>{data.subtitle}</p>}
       </main>
 

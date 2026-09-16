@@ -1,6 +1,7 @@
 import React from 'react';
 import { RefreshCw, Undo2, Redo2, Bot, Sun, Moon } from 'lucide-react';
 import { WePostLogo } from '@/components/ui/WePostLogo';
+import { WechatIcon } from '@/components/wechat/WechatIcon';
 
 export type EditorTheme = 'light' | 'dark';
 
@@ -14,6 +15,8 @@ interface HeaderProps {
   theme?: EditorTheme;
   /** 点击切换亮 / 暗主题 */
   onToggleTheme?: () => void;
+  /** 打开微信公众号草稿箱发布/配置弹窗 */
+  onOpenWeChatModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = React.memo(
@@ -25,6 +28,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
     canRedo = false,
     theme = 'dark',
     onToggleTheme,
+    onOpenWeChatModal,
   }) => {
     const isDark = theme === 'dark';
     return (
@@ -46,6 +50,19 @@ export const Header: React.FC<HeaderProps> = React.memo(
 
         {/* 右侧快捷操作与状态 */}
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          {/* 微信公众号发布 / 配置 */}
+          {onOpenWeChatModal && (
+            <button
+              type="button"
+              onClick={onOpenWeChatModal}
+              title="发布到微信公众号草稿箱"
+              aria-label="发布到微信公众号草稿箱"
+              className="p-2 rounded-lg border border-neutral-200 bg-neutral-50 text-emerald-600 hover:text-emerald-700 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-neutral-800 transition-all inline-flex items-center justify-center cursor-pointer"
+            >
+              <WechatIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
+
           {/* 亮 / 暗主题切换 */}
           <button
             type="button"

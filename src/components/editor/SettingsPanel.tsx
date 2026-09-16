@@ -27,6 +27,8 @@ interface SettingsPanelProps {
   isOverflowing?: boolean;
   /** light = 亮色主题；dark = 暗色主题（默认，与编辑器主题联动） */
   surface?: 'light' | 'dark';
+  /** 打开微信草稿箱发布弹窗回调 */
+  onOpenWeChatModal?: () => void;
 }
 
 /** Figma 式可折叠分区标题条 */
@@ -86,6 +88,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   cardCount,
   isOverflowing = false,
   surface = 'dark',
+  onOpenWeChatModal,
 }) => {
   return (
     <div>
@@ -118,6 +121,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           cardCount={cardCount}
           splitMode={splitMode}
           surface={surface}
+          onOpenWeChatModal={onOpenWeChatModal}
         />
       </CollapsibleSection>
     </div>

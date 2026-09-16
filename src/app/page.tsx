@@ -23,6 +23,7 @@ import { BottomActionBar } from '@/components/editor/BottomActionBar';
 import { SettingsPanel } from '@/components/editor/SettingsPanel';
 import { SplitPanel } from '@/components/editor/SplitPanel';
 import { MobileEditorSheet } from '@/components/editor/MobileEditorSheet';
+import { WeChatPublishModal } from '@/components/wechat/WeChatPublishModal';
 import { useCardExport, DEFAULT_EXPORT_CONFIG } from '@/lib/useCardExport';
 import { useIsDesktop } from '@/lib/useIsDesktop';
 import { Edit3, Palette, Download, Scissors } from 'lucide-react';
@@ -91,6 +92,20 @@ export default function HomePage() {
 
   const handleToggleTheme = useCallback(() => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  // 微信公众号草稿箱发布弹窗状态
+  const [isWeChatModalOpen, setIsWeChatModalOpen] = useState(false);
+  const handleOpenWeChatModal = useCallback(() => {
+    setIsWeChatModalOpen(true);
+  }, []);
+  const handleCloseWeChatModal = useCallback(() => {
+    setIsWeChatModalOpen(false);
+  }, []);
+
+  /** 提取画板内所有当前渲染的卡片 DOM 节点（用于转换为 Blob 上传） */
+  const getCardElements = useCallback((): HTMLElement[] => {
+    return Array.from(document.querySelectorAll<HTMLElement>('[data-wepost-card]'));
   }, []);
 
   const chunks = useMemo(() => {
@@ -264,6 +279,7 @@ export default function HomePage() {
         canRedo={history.canRedo}
         theme={theme}
         onToggleTheme={handleToggleTheme}
+        onOpenWeChatModal={handleOpenWeChatModal}
       />
 
       {isDesktop ? (
@@ -306,6 +322,7 @@ export default function HomePage() {
                 cardCount={chunks.length}
                 isOverflowing={isOverflowing}
                 surface={theme}
+                onOpenWeChatModal={handleOpenWeChatModal}
               />
             </aside>
           </div>
@@ -359,6 +376,7 @@ export default function HomePage() {
                           exportState={cardExport}
                           cardCount={totalCardCount}
                           splitMode={splitMode}
+                          onOpenWeChatModal={handleOpenWeChatModal}
                         />
                         <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
                           <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-3">
@@ -377,6 +395,16 @@ export default function HomePage() {
           <BottomActionBar data={cardData} cardCount={totalCardCount} />
         </>
       )}
+
+      {/* 微信公众号草稿箱发布与凭证管理模态框 */}
+      <WeChatPublishModal
+        isOpen={isWeChatModalOpen}
+        onClose={handleCloseWeChatModal}
+        cardData={cardData}
+        cardCount={totalCardCount}
+        getCardElements={getCardElements}
+        surface={theme}
+      />
     </div>
   );
 }

@@ -10,8 +10,9 @@ import {
   Sparkles,
   FileImage,
   Braces,
-  Loader2
+  Loader2,
 } from 'lucide-react';
+import { WechatIcon } from '@/components/wechat/WechatIcon';
 
 type ExportState = ReturnType<typeof useCardExport>;
 
@@ -24,6 +25,8 @@ interface ExportPanelProps {
   splitMode?: SplitMode;
   /** 所在表面主题：light=浅色面板（移动端 Tab），dark=暗色参数栏（桌面端右栏） */
   surface?: 'light' | 'dark';
+  /** 打开微信草稿箱发布弹窗回调 */
+  onOpenWeChatModal?: () => void;
 }
 
 /** 渲染接口请求说明的前缀（方法 + 端点 + 请求头），请求体由当前 CardData 动态生成 */
@@ -40,6 +43,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
   cardCount,
   splitMode = 'auto',
   surface = 'light',
+  onOpenWeChatModal,
 }) => {
   const toast = useToast();
   const [isCopyingParams, setIsCopyingParams] = useState(false);
@@ -205,6 +209,22 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
                 : `下载 ${config.scale}x ${config.format === 'png' ? 'PNG' : 'JPG'}`}
           </span>
         </button>
+
+        {/* 发布到微信公众号草稿箱 */}
+        {onOpenWeChatModal && (
+          <button
+            type="button"
+            onClick={onOpenWeChatModal}
+            className={`w-full py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all active:scale-[0.98] ${
+              dark
+                ? 'bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-950/50'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm'
+            }`}
+          >
+            <WechatIcon className="w-3.5 h-3.5 text-emerald-500" />
+            <span>发布到公众号草稿箱</span>
+          </button>
+        )}
 
         {/* 复制 API 参数：当前状态对应的 /api/render 请求格式，可发给 Agent 复现 */}
         <button

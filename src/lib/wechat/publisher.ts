@@ -85,6 +85,8 @@ async function callProxyApi<T>(
       userFriendlyMsg = `微信 AppID 或 AppSecret 不正确或不匹配 [${errcode}]: ${errmsg}`;
     } else if (errcode === 45009) {
       userFriendlyMsg = '该公众号今日接口调用频率已达上限。';
+    } else if (errcode === 45110) {
+      userFriendlyMsg = '文章作者名超出微信限制（微信要求作者名最多 8 个字），请在表单中缩短作者名后重试。';
     }
 
     const err = new Error(userFriendlyMsg) as Error & { wechatError?: WeChatApiError };
@@ -314,9 +316,9 @@ export async function publishCardsToDraft(
     onStep?.('creating_draft', '正在提交至微信草稿箱（贴图号模式）...');
     const articlePayload: WeChatArticlePayload = {
       article_type: 'newspic',
-      title: form.title.trim() || 'WePost 社交卡片',
-      author: form.author.trim() || config.authorDefault || '',
-      digest: form.digest.trim(),
+      title: (form.title.trim() || 'WePost 社交卡片').slice(0, 64),
+      author: (form.author.trim() || config.authorDefault || '').slice(0, 8),
+      digest: form.digest.trim().slice(0, 120),
       content: cleanCaption,
       thumb_media_id: permanentMediaIds[0],
       image_info: {
@@ -366,9 +368,9 @@ export async function publishCardsToDraft(
   onStep?.('creating_draft', '正在保存到微信公众号草稿箱...');
   const articlePayload: WeChatArticlePayload = {
     article_type: 'news',
-    title: form.title.trim() || 'WePost 精美卡片',
-    author: form.author.trim() || config.authorDefault || '',
-    digest: form.digest.trim(),
+    title: (form.title.trim() || 'WePost 精美卡片').slice(0, 64),
+    author: (form.author.trim() || config.authorDefault || '').slice(0, 8),
+    digest: form.digest.trim().slice(0, 120),
     content: contentHtml,
     thumb_media_id: thumbMediaId,
     need_open_comment: form.needOpenComment ?? 0,

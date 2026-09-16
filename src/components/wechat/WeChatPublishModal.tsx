@@ -126,7 +126,7 @@ export const WeChatPublishModal: React.FC<WeChatPublishModalProps> = ({
     // 初始化表单默认值
     setForm({
       title: cardData.title?.trim() || 'WePost 社交卡片',
-      author: cardData.author?.trim() || saved?.authorDefault || '',
+      author: (cardData.author?.trim() || saved?.authorDefault || '').slice(0, 8),
       digest: cardData.subtitle?.trim() || cardData.content.slice(0, 50).trim() || '',
       draftType: 'newspic',
       contentMode: 'image-only',

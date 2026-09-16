@@ -313,15 +313,10 @@ export async function publishCardsToDraft(
     const authorText = (form.author.trim() || config.authorDefault || '').slice(0, 16);
     const cleanText = stripMarkdown(textContent);
 
-    // 微信图片消息（贴图号）在移动端展示逻辑为：图片轮播 + 下方正文描述。
-    // 在微信公众平台后台的草稿箱列表中，图片消息没有单独标题栏，其列表展示名称直接截取自正文第一行。
-    // 因此必须将标题置于正文描述首行，保证微信后台草稿列表与手机端读者均能清晰看到标题。
-    let cleanCaption = '';
-    if (form.contentMode === 'image-with-text' && cleanText.trim()) {
-      cleanCaption = `${titleText}\n\n${cleanText.trim()}`;
-    } else {
-      cleanCaption = titleText;
-    }
+    // 微信图片消息（贴图号）在移动端展示逻辑：顶部由微信原生展示标题，下方展示正文描述。
+    // 无需在正文第一行再拼接标题，否则手机端会显示两遍重复标题。
+    const cleanCaption =
+      form.contentMode === 'image-with-text' ? cleanText.trim() : '';
 
     onStep?.('creating_draft', '正在提交至微信草稿箱（贴图号模式）...');
     const articlePayload: WeChatArticlePayload = {

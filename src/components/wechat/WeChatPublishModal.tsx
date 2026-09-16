@@ -777,13 +777,16 @@ export const WeChatPublishModal: React.FC<WeChatPublishModalProps> = ({
                       type="text"
                       value={config.proxyUrl || ''}
                       onChange={(e) => setConfig({ ...config, proxyUrl: e.target.value })}
-                      placeholder="留空默认走内置代理"
+                      placeholder="留空默认走固定代理 (168.107.32.13)"
                       className={`w-full px-3.5 py-2 text-xs rounded-lg border outline-none font-mono transition-all ${
                         dark
                           ? 'bg-neutral-950 border-neutral-800 focus:border-emerald-500 text-white'
                           : 'bg-neutral-50 border-neutral-300 focus:border-emerald-600 text-neutral-900'
                       }`}
                     />
+                    <span className="block text-[11px] text-neutral-400 mt-1">
+                      微信白名单请添加 <code className="font-mono text-emerald-400 font-bold select-all">168.107.32.13</code>（ARM 固定出口）。可留空或填 <code className="font-mono text-emerald-400 select-all">https://wx.zaneven.com/api/wechat/proxy</code>
+                    </span>
                   </div>
                 </div>
               </div>

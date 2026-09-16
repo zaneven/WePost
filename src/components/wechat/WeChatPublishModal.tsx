@@ -777,7 +777,7 @@ export const WeChatPublishModal: React.FC<WeChatPublishModalProps> = ({
                       type="text"
                       value={config.proxyUrl || ''}
                       onChange={(e) => setConfig({ ...config, proxyUrl: e.target.value })}
-                      placeholder="留空默认走固定代理 (168.107.32.13)"
+                      placeholder="留空默认走当前站点/服务内置代理"
                       className={`w-full px-3.5 py-2 text-xs rounded-lg border outline-none font-mono transition-all ${
                         dark
                           ? 'bg-neutral-950 border-neutral-800 focus:border-emerald-500 text-white'
@@ -785,7 +785,7 @@ export const WeChatPublishModal: React.FC<WeChatPublishModalProps> = ({
                       }`}
                     />
                     <span className="block text-[11px] text-neutral-400 mt-1">
-                      微信白名单请添加 <code className="font-mono text-emerald-400 font-bold select-all">168.107.32.13</code>（ARM 固定出口）。可留空或填 <code className="font-mono text-emerald-400 select-all">https://wx.zaneven.com/api/wechat/proxy</code>
+                      若自建固定出站代理可填入完整 URL（如 <code className="font-mono text-emerald-400 select-all">https://proxy.example.com/api/wechat/proxy</code>），留空则走系统默认配置。
                     </span>
                   </div>
                 </div>

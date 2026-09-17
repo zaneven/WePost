@@ -56,4 +56,20 @@ describe('TitleCard（单页标题模式封面卡）', () => {
       expect(container.innerHTML).toContain('深度工作的艺术');
     }
   });
+
+  it('酸性潮流（acid-bold）首页渲染白色背景大色块与黑色硬阴影色块', () => {
+    const { container } = render(
+      <TitleCard data={{ ...BASE_DATA, templateId: 'acid-bold' }} />
+    );
+    const html = container.innerHTML;
+    // 包含高反差白色背景容器色块
+    expect(html).toContain('bg-white border-4 border-black');
+    // 包含新野兽派黑色实心阴影色块与底座
+    expect(html).toContain('bg-black translate-x-2.5 translate-y-2.5');
+    // 包含标题、副标题与标签
+    expect(html).toContain('深度工作的艺术');
+    expect(html).toContain('DEEP WORK');
+    expect(html).toContain('深度阅读');
+    expect(html).toContain('ACID COVER EDITION');
+  });
 });

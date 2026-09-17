@@ -1,5 +1,6 @@
 import React from 'react';
 import { CardData, TemplateId } from '@/types/card';
+import { Flame, Zap, Sparkles } from 'lucide-react';
 
 /**
  * 单页标题模式封面卡：第一页不渲染正文，仅呈现大标题的「封面页」。
@@ -26,6 +27,8 @@ interface CoverTheme {
   frame?: (accent: string, data: CardData) => React.ReactNode;
   /** 标题上方局部装饰（短横线、标点符号、图标等） */
   decor?: (accent: string, data: CardData) => React.ReactNode;
+  /** 自定义封面渲染（如有则接管整卡渲染，如酸性潮流专属高冲击色块布局） */
+  customRender?: (data: CardData, responsiveTitleClass: string) => React.ReactNode;
 }
 
 /** 动态自适应标题字号：防止中长标题在封面模式下刺穿边框或排版爆框 */
@@ -127,13 +130,120 @@ const COVER_THEMES: Record<TemplateId, CoverTheme> = {
   },
   'acid-bold': {
     wrapper:
-      'bg-[#facc15] text-black p-10 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]',
+      'bg-[#facc15] text-black p-8 md:p-10 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]',
     meta: 'font-mono text-xs font-black tracking-[0.25em] uppercase',
-    title: 'text-[54px] leading-[1.08] font-black tracking-tight uppercase',
+    title: 'text-[50px] leading-[1.12] font-black tracking-tight uppercase',
     subtitle: 'mt-5 text-lg font-black tracking-[0.15em] uppercase',
     footer: 'text-xs font-bold border-t-4 border-black pt-5',
     accent: '#000000',
     decor: () => <div className="mb-6 h-3 w-20 bg-black" />,
+    customRender: (data, responsiveTitleClass) => {
+      const titleText = data.title || '输入标题';
+      return (
+        <div className="w-full h-full flex flex-col justify-between relative overflow-hidden select-none bg-[#facc15] text-black p-8 md:p-10 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-sans">
+          {/* 0. 背景酸性几何色块装饰（打破纯黄单调感，提升立体冲击力） */}
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-15 pointer-events-none overflow-hidden border-b-2 border-l-2 border-black">
+            <div
+              className="w-full h-full"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(45deg, #000 0, #000 8px, transparent 8px, transparent 16px)',
+              }}
+            />
+          </div>
+          <div className="absolute bottom-24 -left-6 w-20 h-20 bg-black/10 -rotate-12 pointer-events-none border-2 border-black/20" />
+          <div className="absolute top-28 right-8 pointer-events-none text-black/20">
+            <Sparkles className="w-8 h-8" />
+          </div>
+
+          {/* 1. 顶部态度贴纸行（Header） */}
+          <header className="relative z-10 flex items-start justify-between gap-4">
+            <div className="inline-flex items-center gap-1.5 bg-black text-[#facc15] px-3.5 py-1 text-xs font-black uppercase tracking-wider -rotate-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <Flame className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>{data.tag || 'HOT TOPIC // 态度'}</span>
+            </div>
+
+            {data.date && (
+              <div className="bg-white border-2 border-black px-2.5 py-1 text-xs font-mono font-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                {data.date}
+              </div>
+            )}
+          </header>
+
+          {/* 2. 中部核心大标题：白色背景大色块 + 黑色硬阴影立体色块 */}
+          <main className="relative z-10 my-auto flex flex-col justify-center py-4">
+            {/* 黑色阴影底座色块（形成双层错位野兽派立体硬阴影） */}
+            <div className="relative">
+              <div
+                className="absolute inset-0 bg-black translate-x-2.5 translate-y-2.5 rounded-none"
+                aria-hidden="true"
+              />
+
+              {/* 核心白色背景色块 */}
+              <div className="relative bg-white border-4 border-black p-6 md:p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                {/* 顶部酸性几何装饰条与期数标识 */}
+                <div className="flex items-center justify-between pb-3.5 mb-4 border-b-2 border-black">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 bg-black" />
+                    <span className="w-2.5 h-2.5 bg-[#facc15] border border-black" />
+                    <span className="w-2.5 h-2.5 bg-white border border-black" />
+                  </div>
+                  <span className="font-mono text-[10px] font-black tracking-widest uppercase text-black/60">
+                    {'// ACID COVER EDITION'}
+                  </span>
+                </div>
+
+                {/* 纯黑超粗大标题 */}
+                <h1
+                  className={`${responsiveTitleClass} font-black text-black tracking-tight whitespace-pre-line break-words [overflow-wrap:anywhere] uppercase`}
+                >
+                  {titleText}
+                </h1>
+
+                {/* 副标题色块 */}
+                {data.subtitle && (
+                  <div className="mt-4 pt-3.5 border-t-2 border-black/15 flex items-center gap-2">
+                    <span className="bg-black text-[#facc15] px-2 py-0.5 text-[10px] font-black uppercase tracking-wider font-mono flex-shrink-0 shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]">
+                      TOPIC
+                    </span>
+                    <p className="text-xs md:text-sm font-black text-black tracking-wider uppercase truncate">
+                      {data.subtitle}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </main>
+
+          {/* 3. 底部作者与水印贴纸（Footer） */}
+          <footer className="relative z-10 flex items-end justify-between gap-4 pt-2">
+            <div className="min-w-0 bg-white border-2 border-black px-3 py-1.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2">
+              <div className="w-5 h-5 bg-black text-[#facc15] flex items-center justify-center flex-shrink-0">
+                <Zap className="w-3 h-3" />
+              </div>
+              <div className="min-w-0">
+                {data.author && (
+                  <div className="font-black text-xs text-black truncate">
+                    {data.author}
+                  </div>
+                )}
+                {data.footerText && (
+                  <div className="text-[10px] font-bold text-black/70 truncate">
+                    {data.footerText}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {data.showWatermark && (
+              <span className="flex-shrink-0 bg-black text-white px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-black">
+                {data.watermarkText || 'WEPOST ACID'}
+              </span>
+            )}
+          </footer>
+        </div>
+      );
+    },
   },
   'ink-wash': {
     wrapper: 'bg-[#f5f1e6] text-[#1c1917] p-12 border border-stone-300/60 shadow-2xl',
@@ -209,6 +319,10 @@ export const TitleCard: React.FC<{ data: CardData }> = ({ data }) => {
   const theme = COVER_THEMES[data.templateId] ?? COVER_THEMES['minimal-magazine'];
   const accent = theme.accent;
   const responsiveTitleClass = getResponsiveTitleClass(data.title, theme.title);
+
+  if (theme.customRender) {
+    return <>{theme.customRender(data, responsiveTitleClass)}</>;
+  }
 
   return (
     <div

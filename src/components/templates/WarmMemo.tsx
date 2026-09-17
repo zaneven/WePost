@@ -30,7 +30,7 @@ export const WarmMemo: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 副标题 */}
         {data.subtitle && (
-          <div className="pt-3 text-xs text-amber-700/80 font-medium tracking-wide">
+          <div className="pt-3 text-xs text-amber-700/80 font-medium tracking-wide whitespace-pre-line break-words [overflow-wrap:anywhere]">
             ~ {data.subtitle} ~
           </div>
         )}

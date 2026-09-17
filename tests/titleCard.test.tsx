@@ -72,4 +72,21 @@ describe('TitleCard（单页标题模式封面卡）', () => {
     expect(html).toContain('深度阅读');
     expect(html).toContain('ACID COVER EDITION');
   });
+
+  it('副标题支持多行文本与回车换行样式', () => {
+    const multilineSubtitle = 'FIRST LINE\nSECOND LINE OF SUBTITLE';
+    const { container: coverContainer } = render(
+      <TitleCard data={{ ...BASE_DATA, subtitle: multilineSubtitle, templateId: 'acid-bold' }} />
+    );
+    expect(coverContainer.innerHTML).toContain('FIRST LINE');
+    expect(coverContainer.innerHTML).toContain('SECOND LINE OF SUBTITLE');
+    expect(coverContainer.innerHTML).toContain('whitespace-pre-line');
+
+    const { container: generalContainer } = render(
+      <TitleCard data={{ ...BASE_DATA, subtitle: multilineSubtitle, templateId: 'minimal-magazine' }} />
+    );
+    expect(generalContainer.innerHTML).toContain('FIRST LINE');
+    expect(generalContainer.innerHTML).toContain('SECOND LINE OF SUBTITLE');
+    expect(generalContainer.innerHTML).toContain('whitespace-pre-line');
+  });
 });

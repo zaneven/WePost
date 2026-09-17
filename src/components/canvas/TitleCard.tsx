@@ -200,13 +200,13 @@ const COVER_THEMES: Record<TemplateId, CoverTheme> = {
                   {titleText}
                 </h1>
 
-                {/* 副标题色块 */}
+                {/* 副标题色块：支持长内容自动折行与回车换行 */}
                 {data.subtitle && (
-                  <div className="mt-4 pt-3.5 border-t-2 border-black/15 flex items-center gap-2">
-                    <span className="bg-black text-[#facc15] px-2 py-0.5 text-[10px] font-black uppercase tracking-wider font-mono flex-shrink-0 shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="mt-4 pt-3.5 border-t-2 border-black/15 flex items-start gap-2">
+                    <span className="bg-black text-[#facc15] px-2 py-0.5 text-[10px] font-black uppercase tracking-wider font-mono flex-shrink-0 shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] mt-0.5">
                       TOPIC
                     </span>
-                    <p className="text-xs md:text-sm font-black text-black tracking-wider uppercase truncate">
+                    <p className="text-xs md:text-sm font-black text-black tracking-wider uppercase whitespace-pre-line break-words [overflow-wrap:anywhere] flex-1 min-w-0 leading-relaxed">
                       {data.subtitle}
                     </p>
                   </div>
@@ -345,7 +345,11 @@ export const TitleCard: React.FC<{ data: CardData }> = ({ data }) => {
         <h1 className={`${responsiveTitleClass} whitespace-pre-line break-words [overflow-wrap:anywhere]`}>
           {data.title || '输入标题'}
         </h1>
-        {data.subtitle && <p className={theme.subtitle}>{data.subtitle}</p>}
+        {data.subtitle && (
+          <p className={`${theme.subtitle} whitespace-pre-line break-words [overflow-wrap:anywhere]`}>
+            {data.subtitle}
+          </p>
+        )}
       </main>
 
       {/* 底部：署名 / 标语 + 品牌水印 */}

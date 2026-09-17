@@ -33,7 +33,7 @@ export const ZenQuote: React.FC<TemplateProps> = ({ data }) => {
         )}
 
         {data.subtitle && (
-          <div className="pt-3 text-xs tracking-[0.25em] text-stone-500 font-serif">
+          <div className="pt-3 text-xs tracking-[0.25em] text-stone-500 font-serif whitespace-pre-line break-words [overflow-wrap:anywhere]">
             — {data.subtitle}
           </div>
         )}

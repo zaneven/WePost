@@ -20,7 +20,7 @@ export const TerminalCode: React.FC<TemplateProps> = ({ data }) => {
           <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
           <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
           <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
-          <span className="ml-2 text-[11px] text-[#6e7681] tracking-wide truncate">
+          <span className="ml-2 text-[11px] text-[#6e7681] tracking-wide whitespace-pre-line break-words [overflow-wrap:anywhere] min-w-0">
             {data.subtitle || '~/wepost — zsh'}
           </span>
           <span className="ml-auto text-[11px] text-[#6e7681]">{data.date || 'commit'}</span>

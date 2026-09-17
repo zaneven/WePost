@@ -30,7 +30,7 @@ export const EditorialBold: React.FC<TemplateProps> = ({ data }) => {
         </div>
 
         {data.subtitle && (
-          <div className="mt-3 text-xs font-bold uppercase tracking-[0.25em] text-neutral-500">
+          <div className="mt-3 text-xs font-bold uppercase tracking-[0.25em] text-neutral-500 whitespace-pre-line break-words [overflow-wrap:anywhere]">
             {data.subtitle}
           </div>
         )}

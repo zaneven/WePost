@@ -30,7 +30,7 @@ export const VintageNews: React.FC<TemplateProps> = ({ data }) => {
         {/* 报纸大刊头 */}
         <div className="py-2 border-b border-[#3d2e1e] flex items-center justify-center gap-3">
           <div className="h-[1px] bg-[#3d2e1e] flex-1" />
-          <span className="font-serif text-sm md:text-base tracking-[0.25em] font-black uppercase text-[#3d2e1e]">
+          <span className="font-serif text-sm md:text-base tracking-[0.25em] font-black uppercase text-[#3d2e1e] text-center whitespace-pre-line break-words [overflow-wrap:anywhere]">
             {data.subtitle || 'THE WEPOST CHRONICLE'}
           </span>
           <div className="h-[1px] bg-[#3d2e1e] flex-1" />

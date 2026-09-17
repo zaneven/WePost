@@ -31,9 +31,11 @@ export const MinimalMagazine: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 副标题与小标题 */}
         {data.subtitle && (
-          <div className="pt-3 flex items-center gap-2 text-xs font-mono text-neutral-500 uppercase tracking-widest">
-            <Bookmark className="w-3.5 h-3.5 text-neutral-700" />
-            <span>{data.subtitle}</span>
+          <div className="pt-3 flex items-start gap-2 text-xs font-mono text-neutral-500 uppercase tracking-widest">
+            <Bookmark className="w-3.5 h-3.5 text-neutral-700 mt-0.5 flex-shrink-0" />
+            <span className="whitespace-pre-line break-words [overflow-wrap:anywhere] flex-1 min-w-0">
+              {data.subtitle}
+            </span>
           </div>
         )}
 

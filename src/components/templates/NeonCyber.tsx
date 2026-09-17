@@ -54,7 +54,10 @@ export const NeonCyber: React.FC<TemplateProps> = ({ data }) => {
         </div>
 
         {data.subtitle && (
-          <div className="mt-3 text-xs font-mono tracking-widest uppercase" style={{ color: fuchsia }}>
+          <div
+            className="mt-3 text-xs font-mono tracking-widest uppercase whitespace-pre-line break-words [overflow-wrap:anywhere]"
+            style={{ color: fuchsia }}
+          >
             {'> '}
             {data.subtitle}
           </div>

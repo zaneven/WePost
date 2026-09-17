@@ -26,7 +26,7 @@ export const AcidBold: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 副标题 */}
         {data.subtitle && (
-          <div className="pt-2 text-xs font-black uppercase tracking-widest text-black/80">
+          <div className="pt-2 text-xs font-black uppercase tracking-widest text-black/80 whitespace-pre-line break-words [overflow-wrap:anywhere]">
             ★ {data.subtitle}
           </div>
         )}

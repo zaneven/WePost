@@ -40,7 +40,7 @@ export const DarkGlass: React.FC<TemplateProps> = ({ data }) => {
 
         {/* 副标题 */}
         {data.subtitle && (
-          <div className="pt-4 text-xs font-mono text-cyan-300/70 uppercase tracking-widest">
+          <div className="pt-4 text-xs font-mono text-cyan-300/70 uppercase tracking-widest whitespace-pre-line break-words [overflow-wrap:anywhere]">
             {'// '}
             {data.subtitle}
           </div>

@@ -463,13 +463,13 @@ export const ContentForm: React.FC<ContentFormProps> = ({
           >
             副标题 / 栏目名
           </label>
-          <input
+          <textarea
             id="card-subtitle"
-            type="text"
+            rows={2}
             value={data.subtitle}
             onChange={(e) => onChange({ subtitle: e.target.value })}
-            placeholder="如：THINKING / 思考碎片"
-            className="w-full text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400"
+            placeholder="如：THINKING / 思考碎片（支持回车换行）"
+            className="w-full text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 p-2.5 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400 resize-none transition-shadow"
           />
         </div>
       </div>
